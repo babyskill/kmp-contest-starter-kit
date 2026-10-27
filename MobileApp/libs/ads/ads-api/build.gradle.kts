@@ -6,7 +6,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "com.kotlinfoundation.koko.ads.api"
+        namespace = "com.labellens.app.ads.api"
     }
 
     sourceSets {

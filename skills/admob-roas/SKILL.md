@@ -14,7 +14,7 @@ forwarding it to Firebase Analytics and MMPs as an `ad_impression` event. This i
 **Google Ads Target ROAS (tROAS)** bidding campaigns and accurate Lifetime Value (LTV) calculation.
 
 The data layer already has typed support via `AnalyticsEvent.AdImpression` in
-`shared/src/commonMain/kotlin/com/kotlinfoundation/koko/growth/analytics/AnalyticsEvent.kt`.
+`shared/src/commonMain/kotlin/com/labellens/app/growth/analytics/AnalyticsEvent.kt`.
 
 ---
 
@@ -119,7 +119,7 @@ The Firebase Analytics receiver maps `AnalyticsEvent.AdImpression` to Firebase's
 ### Verification via Firebase DebugView
 1. Enable DebugView on Android:
    ```bash
-   adb shell setprop debug.firebase.analytics.app com.kotlinfoundation.koko
+   adb shell setprop debug.firebase.analytics.app com.labellens.app
    ```
 2. Trigger an ad impression in the app.
 3. Open **Firebase Console ➔ Analytics ➔ DebugView**.

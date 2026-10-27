@@ -5,7 +5,7 @@ trial/purchase — **by honest means only** (no fake scarcity, no buried cancel,
 Fill the `TAILOR PER APP` blanks; the rest are strong defaults.
 
 > Code lives in
-> `MobileApp/shared/src/commonMain/kotlin/com/kotlinfoundation/koko/presentation/screens/paywall/`
+> `MobileApp/shared/src/commonMain/kotlin/com/labellens/app/presentation/screens/paywall/`
 > — `SubscriptionPaywallScreen.kt`, `creditpack/CreditPackPaywallScreen.kt`,
 > `remotepaywall/RemotePaywallScreen.kt`, and `PaywallUiStateMapper`.
 > For conversion rate optimization (price anchoring, trial reassurance copy, trust badges), execute the skill **`skills/paywall-upgrade-cro/SKILL.md`**.

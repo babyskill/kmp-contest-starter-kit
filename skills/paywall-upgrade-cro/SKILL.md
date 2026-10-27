@@ -13,7 +13,7 @@ This skill provides an empirical, data-driven optimization playbook to turn the 
 `PaywallScreen` in KMPStarterKit into a high-converting revenue driver.
 
 The starter kit's paywall UI lives at:
-`shared/src/commonMain/kotlin/com/kotlinfoundation/koko/presentation/screens/paywall/`
+`shared/src/commonMain/kotlin/com/labellens/app/presentation/screens/paywall/`
 and its copy resides in `composeResources/values/strings.xml`.
 
 ---

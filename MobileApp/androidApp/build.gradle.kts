@@ -10,14 +10,14 @@ plugins {
 }
 
 android {
-    namespace = "com.kotlinfoundation.koko"
+    namespace = "com.labellens.app"
     compileSdk =
         libs.versions.android.compileSdk
             .get()
             .toInt()
 
     defaultConfig {
-        applicationId = "com.sample.kmp"
+        applicationId = "com.labellens.app"
         minSdk =
             libs.versions.android.minSdk
                 .get()

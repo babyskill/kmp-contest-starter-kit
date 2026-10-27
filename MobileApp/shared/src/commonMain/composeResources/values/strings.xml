@@ -236,4 +236,18 @@
     <string name="downsell_credit_cta">Get %1$d Credits (%2$s)</string>
     <string name="downsell_credit_decline">Skip &amp; Continue Free</string>
 
+    <!-- LabelLens Core Additions -->
+    <string name="app_name">LabelLens</string>
+    <string name="tagline">Understand the label. In seconds.</string>
+    <string name="bottom_nav_label_history">History</string>
+    <string name="bottom_nav_label_scan">Scan</string>
+    <string name="bottom_nav_label_compare">Compare</string>
+    <string name="title_screen_history">History</string>
+    <string name="title_screen_scan">Scan</string>
+    <string name="title_screen_compare">Compare</string>
+    <string name="title_screen_result">Result</string>
+    <string name="title_screen_ingredient_detail">Ingredient Detail</string>
+    <string name="title_screen_paywall">LabelLens Plus</string>
+    <string name="title_screen_settings">Settings</string>
+
 </resources>
