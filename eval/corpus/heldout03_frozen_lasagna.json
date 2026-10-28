@@ -1,0 +1,21 @@
+{
+  "productName": "Classic Meat Lasagna Meal",
+  "calories": 420,
+  "sugar": 8.0,
+  "addedSugar": 0.0,
+  "sodium": 890,
+  "saturatedFat": 7.0,
+  "protein": 22.0,
+  "fiber": 4.0,
+  "allergens": [
+    "wheat / gluten",
+    "milk / dairy"
+  ],
+  "keyIngredients": [
+    "tomato puree",
+    "wheat semolina",
+    "mozzarella cheese",
+    "ricotta cheese",
+    "beef"
+  ]
+}

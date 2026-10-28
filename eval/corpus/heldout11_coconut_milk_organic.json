@@ -1,0 +1,17 @@
+{
+  "productName": "Organic Coconut Milk",
+  "calories": 120,
+  "sugar": 1.0,
+  "addedSugar": 0.0,
+  "sodium": 15,
+  "saturatedFat": 11.0,
+  "protein": 1.0,
+  "fiber": 0.0,
+  "allergens": [
+    "tree nuts"
+  ],
+  "keyIngredients": [
+    "coconut milk",
+    "guar gum"
+  ]
+}

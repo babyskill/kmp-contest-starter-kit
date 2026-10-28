@@ -1,0 +1,19 @@
+{
+  "productName": "Cola Zero Sugar",
+  "calories": 0,
+  "sugar": 0.0,
+  "addedSugar": 0.0,
+  "sodium": 40,
+  "saturatedFat": 0.0,
+  "protein": 0.0,
+  "fiber": 0.0,
+  "allergens": [],
+  "keyIngredients": [
+    "carbonated water",
+    "caramel color",
+    "phosphoric acid",
+    "aspartame",
+    "acesulfame potassium",
+    "caffeine"
+  ]
+}

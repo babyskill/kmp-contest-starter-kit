@@ -22,6 +22,7 @@ class LabelAnalyzer {
         category: ProductCategory = ProductCategory.FOOD,
         scanSource: ScanSource = ScanSource.MANUAL_TEXT,
         barcode: String? = null,
+        sourceAttribution: String? = null,
     ): LabelAnalysisResult {
         val normalizedText = rawLabelText.trim()
         val uncertaintyNotes = mutableListOf<String>()
@@ -44,11 +45,17 @@ class LabelAnalyzer {
             }
         }
 
-        // Fallback: also scan entire label text against knowledge base for missed mentions
-        val allTextMatches = KnowledgeBase.findMatchingIngredients(normalizedText)
-        for (item in allTextMatches) {
-            if (matchedIngredients.none { it.ingredient.canonicalName == item.canonicalName }) {
-                matchedIngredients.add(MatchedItem(rawToken = item.canonicalName, ingredient = item))
+        // Also check explicit "CONTAINS:" or allergen statements on label
+        val containsSection = extractContainsSection(normalizedText)
+        if (containsSection.isNotBlank()) {
+            val allergenTokens = containsSection.split(Regex("[,;、，\n.]"))
+                .map { it.replace("함유", "").replace("を含む", "").replace("由来", "").trim() }
+                .filter { it.isNotBlank() }
+            for (token in allergenTokens) {
+                val match = findBestMatch(token)
+                if (match != null && matchedIngredients.none { it.ingredient.canonicalName == match.canonicalName }) {
+                    matchedIngredients.add(MatchedItem(rawToken = token, ingredient = match))
+                }
             }
         }
 
@@ -326,6 +333,7 @@ class LabelAnalyzer {
             uncertaintyNotes = uncertaintyNotes,
             barcode = barcode,
             quickGlance = quickGlance,
+            sourceAttribution = sourceAttribution,
         )
     }
 
@@ -350,12 +358,53 @@ class LabelAnalyzer {
             .substringBefore("营养成分")
             .substringBefore("CONTAINS:")
             .substringBefore("알레르기")
+            .substringBefore("FREE OF:")
+            .substringBefore("Made in a facility free from")
+            .substringBefore("Manufactured in a facility that also processes")
 
         // Split by commas, semicolons, Korean/Japanese punctuation, or brackets
         val splitRegex = Regex("[,;、，\n]")
         return cleaned.split(splitRegex)
             .map { it.replace(Regex("[()\\[\\]{}•.]"), " ").trim() }
             .filter { it.length in 2..60 }
+    }
+
+    private fun extractContainsSection(text: String): String {
+        val lower = text.lowercase()
+        return when {
+            lower.contains("contains:") -> {
+                val after = text.substring(lower.indexOf("contains:") + 9)
+                after.substringBefore("MANUFACTURED IN")
+                    .substringBefore("Manufactured in")
+                    .substringBefore("MADE IN")
+                    .substringBefore("Made in")
+                    .substringBefore("DISTRIBUTED")
+                    .substringBefore("FREE OF")
+                    .substringBefore("\n\n")
+            }
+
+            lower.contains("알레르기 정보:") -> {
+                val after = text.substring(lower.indexOf("알레르기 정보:") + 8)
+                after.substringBefore("\n\n")
+            }
+
+            lower.contains("알레르기:") -> {
+                val after = text.substring(lower.indexOf("알레르기:") + 5)
+                after.substringBefore("\n\n")
+            }
+
+            lower.contains("アレルギー物質:") -> {
+                val after = text.substring(lower.indexOf("アレルギー物質:") + 8)
+                after.substringBefore("\n\n")
+            }
+
+            lower.contains("アレルゲン情報:") -> {
+                val after = text.substring(lower.indexOf("アレルゲン情報:") + 8)
+                after.substringBefore("\n\n")
+            }
+
+            else -> ""
+        }
     }
 
     private fun findBestMatch(token: String): KnowledgeIngredient? {
@@ -368,8 +417,17 @@ class LabelAnalyzer {
                 val cAlias = alias.lowercase().trim()
                 if (cAlias.length <= 2) {
                     cleanToken == cAlias
+                } else if (cAlias == "milk" || cAlias == "butter") {
+                    // Prevent "coconut milk" matching dairy milk, or "almond butter" matching dairy butter
+                    if (cleanToken.contains("coconut milk") || cleanToken.contains("almond butter") || cleanToken.contains("peanut butter") || cleanToken.contains("cocoa butter")) {
+                        false
+                    } else {
+                        val wordBoundary = Regex("\\b${Regex.escape(cAlias)}\\b")
+                        wordBoundary.containsMatchIn(cleanToken)
+                    }
                 } else {
-                    cleanToken.contains(cAlias) || cAlias.contains(cleanToken)
+                    val wordBoundary = Regex("\\b${Regex.escape(cAlias)}\\b")
+                    wordBoundary.containsMatchIn(cleanToken) || cleanToken.contains(cAlias)
                 }
             }
         }
@@ -380,14 +438,16 @@ class LabelAnalyzer {
 
         // Patterns to match: Calories, Total Sugar/Sugars, Sodium, Saturated Fat, Protein, Dietary Fiber
         val caloriesPattern = Regex("(?i)(calories|칼로리|열량|エネルギー|热量)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(?:kcal|cal)?")
+        val altCaloriesPattern = Regex("(?i)([0-9]+(?:\\.[0-9]+)?)\\s*(?:kcal)")
         val sugarPattern = Regex("(?i)(total sugar|sugars|sugar|당류|糖類|糖)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
         val sodiumPattern = Regex("(?i)(sodium|나트륨|ナトリウム|钠)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(mg|g)?")
         val satFatPattern = Regex("(?i)(saturated fat|sat fat|포화지방|飽和脂肪酸|饱和脂肪)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
         val proteinPattern = Regex("(?i)(protein|단백질|たんぱく質|蛋白质)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
         val fiberPattern = Regex("(?i)(dietary fiber|fiber|fibre|식이섬유|食物繊維|膳食纤维)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
 
-        caloriesPattern.find(text)?.let {
-            val amount = it.groupValues[2]
+        val calMatch = caloriesPattern.find(text) ?: altCaloriesPattern.find(text)
+        calMatch?.let {
+            val amount = if (it.groupValues.size > 2) it.groupValues[2] else it.groupValues[1]
             facts.add(NutritionFact(name = "Calories", amount = "$amount kcal", contextIndicator = if (amount.toDoubleOrNull() ?: 0.0 > 300) "Substantial" else "Standard"))
         }
 

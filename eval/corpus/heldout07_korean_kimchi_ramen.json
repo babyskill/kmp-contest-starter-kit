@@ -1,0 +1,22 @@
+{
+  "productName": "Korean Kimchi Ramyun",
+  "calories": 510,
+  "sugar": 4.0,
+  "addedSugar": 0.0,
+  "sodium": 1750,
+  "saturatedFat": 8.0,
+  "protein": 10.0,
+  "fiber": 3.0,
+  "allergens": [
+    "wheat / gluten",
+    "soy"
+  ],
+  "keyIngredients": [
+    "wheat flour",
+    "palm oil",
+    "potato starch",
+    "salt",
+    "kimchi",
+    "msg"
+  ]
+}

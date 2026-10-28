@@ -1,0 +1,18 @@
+{
+  "productName": "Honey Oat Cereal",
+  "calories": 160,
+  "sugar": 11.0,
+  "addedSugar": 10.0,
+  "sodium": 135,
+  "saturatedFat": 0.0,
+  "protein": 3.0,
+  "fiber": 3.0,
+  "allergens": [
+    "wheat / gluten"
+  ],
+  "keyIngredients": [
+    "oats",
+    "sugar",
+    "honey"
+  ]
+}

@@ -77,10 +77,20 @@ class ResultViewModel(
             val text = rawText ?: BuiltInSamples.sample2.fullLabelText
             val name = productName ?: "Scanned Product"
             val category = if (text.contains("SUPPLEMENT", ignoreCase = true)) ProductCategory.SUPPLEMENT else ProductCategory.FOOD
-            val src = try {
-                ScanSource.valueOf(sourceName ?: "PHOTO")
-            } catch (e: Exception) {
-                ScanSource.PHOTO
+            val src = when (sourceName) {
+                "Open Food Facts" -> ScanSource.BARCODE
+
+                else -> try {
+                    ScanSource.valueOf(sourceName ?: "PHOTO")
+                } catch (e: Exception) {
+                    ScanSource.PHOTO
+                }
+            }
+
+            val sourceAttr = if (sourceName == "Open Food Facts" || (barcode != null && sourceName != null)) {
+                "Source: $sourceName"
+            } else {
+                null
             }
 
             val analysis = analyzer.analyze(
@@ -90,6 +100,7 @@ class ResultViewModel(
                 category = category,
                 scanSource = src,
                 barcode = barcode,
+                sourceAttribution = sourceAttr,
             )
             _uiState.value = _uiState.value.copy(analysisResult = analysis)
         }

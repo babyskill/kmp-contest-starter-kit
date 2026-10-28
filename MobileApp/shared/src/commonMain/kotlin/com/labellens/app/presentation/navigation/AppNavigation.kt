@@ -204,13 +204,14 @@ private fun EntryProviderScope<ScreenRoute>.screens(navigator: Navigator) {
         ScanScreen(
             viewModel = viewModel,
             onNavigateBack = { navigator.switchToTab(HomeScreenRoute) },
-            onNavigateToResult = { rawText, name, barcode, sampleId ->
+            onNavigateToResult = { rawText, name, barcode, sampleId, sourceName ->
                 navigator.navigate(
                     ResultScreenRoute(
                         rawText = rawText,
                         productName = name,
                         barcode = barcode,
                         sampleId = sampleId,
+                        sourceName = sourceName,
                     ),
                 )
             },
@@ -254,13 +255,14 @@ private fun EntryProviderScope<ScreenRoute>.screens(navigator: Navigator) {
         ScanScreen(
             viewModel = viewModel,
             onNavigateBack = { navigator.goBack() },
-            onNavigateToResult = { rawText, name, barcode, sampleId ->
+            onNavigateToResult = { rawText, name, barcode, sampleId, sourceName ->
                 navigator.navigate(
                     ResultScreenRoute(
                         rawText = rawText,
                         productName = name,
                         barcode = barcode,
                         sampleId = sampleId,
+                        sourceName = sourceName,
                     ),
                 )
             },

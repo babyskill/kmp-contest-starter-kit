@@ -1,0 +1,23 @@
+{
+  "productName": "Instant Noodles Shrimp Flavour",
+  "calories": 280,
+  "sugar": 3.0,
+  "addedSugar": 0.0,
+  "sodium": 1420,
+  "saturatedFat": 5.0,
+  "protein": 6.0,
+  "fiber": 0.0,
+  "allergens": [
+    "wheat / gluten",
+    "shellfish / crustaceans",
+    "soy"
+  ],
+  "keyIngredients": [
+    "wheat flour",
+    "palm oil",
+    "salt",
+    "sugar",
+    "msg",
+    "shrimp"
+  ]
+}

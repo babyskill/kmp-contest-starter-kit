@@ -1,0 +1,23 @@
+{
+  "productName": "Peanut Crunch Protein Bar",
+  "calories": 240,
+  "sugar": 2.0,
+  "addedSugar": 0.0,
+  "sodium": 210,
+  "saturatedFat": 3.5,
+  "protein": 20.0,
+  "fiber": 10.0,
+  "allergens": [
+    "peanut",
+    "milk / dairy",
+    "egg",
+    "tree nuts"
+  ],
+  "keyIngredients": [
+    "whey protein",
+    "milk protein",
+    "peanuts",
+    "almonds",
+    "egg white"
+  ]
+}

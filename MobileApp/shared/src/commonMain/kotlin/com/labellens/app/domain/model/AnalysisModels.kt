@@ -71,4 +71,5 @@ data class LabelAnalysisResult(
     val uncertaintyNotes: List<String> = emptyList(),
     val barcode: String? = null,
     val quickGlance: String? = null, // Calm secondary indicator e.g. "Simple recipe • 4 key ingredients"
+    val sourceAttribution: String? = null, // e.g. "Source: Open Food Facts"
 )

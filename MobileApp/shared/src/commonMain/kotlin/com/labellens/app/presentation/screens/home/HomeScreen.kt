@@ -61,7 +61,7 @@ fun HomeScreen(
             .fillMaxSize()
             .background(AppTheme.colors.background)
             .padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(top = 24.dp, bottom = 100.dp),
+        contentPadding = PaddingValues(top = 24.dp, bottom = 140.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         // App Header

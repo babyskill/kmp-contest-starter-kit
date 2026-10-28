@@ -20,10 +20,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +33,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,18 +47,31 @@ import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.SampleProduct
+import com.labellens.app.util.file.openCameraPicker
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import kotlinx.coroutines.launch
 
 @Composable
 fun ScanScreen(
     viewModel: ScanViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToResult: (rawText: String, productName: String, barcode: String?, sampleId: String?) -> Unit,
+    onNavigateToResult: (rawText: String, productName: String, barcode: String?, sampleId: String?, sourceName: String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsState()
     var pastedText by remember { mutableStateOf("") }
     var enteredBarcode by remember { mutableStateOf("") }
-    var isPastingMode by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val galleryLauncher = rememberFilePickerLauncher(type = FileKitType.Image) { platformFile ->
+        if (platformFile != null) {
+            viewModel.processImageSource(platformFile) { raw, name, barcode, sourceName ->
+                onNavigateToResult(raw, name, barcode, null, sourceName)
+            }
+        }
+    }
 
     if (state.isProcessing) {
         // Honest step checklist during processing
@@ -154,9 +170,47 @@ fun ScanScreen(
             .fillMaxSize()
             .background(AppTheme.colors.background)
             .padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(top = 24.dp, bottom = 100.dp),
+        contentPadding = PaddingValues(top = 24.dp, bottom = 140.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
+        // Error card if any
+        state.error?.let { err ->
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFBF3DF)),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Notice",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFB7791F),
+                                style = AppTheme.typography.bodyMedium,
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = err,
+                                style = AppTheme.typography.bodySmall,
+                                color = AppTheme.colors.text.primary,
+                            )
+                        }
+                        IconButton(onClick = { viewModel.dismissError() }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Dismiss",
+                                tint = Color(0xFFB7791F),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         item {
             Text(
                 text = "Scan or Input Label",
@@ -204,13 +258,13 @@ fun ScanScreen(
                             text = "Take Photo",
                             modifier = Modifier.weight(1f),
                             onClick = {
-                                // Fallback simulation for emulator testing
-                                val sample = BuiltInSamples.sample2
-                                viewModel.onSimulateImageScan(
-                                    imageLabelText = sample.fullLabelText,
-                                    productName = sample.name,
-                                ) { raw, name ->
-                                    onNavigateToResult(raw, name, null, sample.id)
+                                coroutineScope.launch {
+                                    val captured = FileKit.openCameraPicker()
+                                    if (captured != null) {
+                                        viewModel.processImageSource(captured) { raw, name, barcode, sourceName ->
+                                            onNavigateToResult(raw, name, barcode, null, sourceName)
+                                        }
+                                    }
                                 }
                             },
                         )
@@ -219,16 +273,21 @@ fun ScanScreen(
                             style = ButtonStyle.ALTERNATIVE,
                             modifier = Modifier.weight(1f),
                             onClick = {
-                                val sample = BuiltInSamples.sample3
-                                viewModel.onSimulateImageScan(
-                                    imageLabelText = sample.fullLabelText,
-                                    productName = sample.name,
-                                ) { raw, name ->
-                                    onNavigateToResult(raw, name, null, sample.id)
-                                }
+                                galleryLauncher.launch()
                             },
                         )
                     }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    AppButton(
+                        text = "Test Held-Out Label",
+                        style = ButtonStyle.ALTERNATIVE,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            viewModel.processImageSource("/data/data/com.labellens.app/files/held_out_label_almond_butter.png") { raw, name, barcode, sourceName ->
+                                onNavigateToResult(raw, name, barcode, null, sourceName)
+                            }
+                        },
+                    )
                 }
             }
         }
@@ -268,8 +327,8 @@ fun ScanScreen(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             if (enteredBarcode.isNotBlank()) {
-                                viewModel.onScanBarcode(enteredBarcode) { raw, name, bc ->
-                                    onNavigateToResult(raw, name, bc, null)
+                                viewModel.onScanBarcode(enteredBarcode) { raw, name, bc, src ->
+                                    onNavigateToResult(raw, name, bc, null, src)
                                 }
                             }
                         },
@@ -313,7 +372,7 @@ fun ScanScreen(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             if (pastedText.isNotBlank()) {
-                                onNavigateToResult(pastedText, "Custom Label Text", null, null)
+                                onNavigateToResult(pastedText, "Custom Label Text", null, null, null)
                             }
                         },
                     )
@@ -342,7 +401,7 @@ fun ScanScreen(
                             imageLabelText = sample.fullLabelText,
                             productName = sample.name,
                         ) { raw, name ->
-                            onNavigateToResult(raw, name, sample.barcode, sample.id)
+                            onNavigateToResult(raw, name, sample.barcode, sample.id, null)
                         }
                     },
                 shape = RoundedCornerShape(16.dp),

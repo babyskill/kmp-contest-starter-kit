@@ -1,0 +1,16 @@
+{
+  "productName": "Spark Orange Soda",
+  "calories": 170,
+  "sugar": 43.0,
+  "addedSugar": 43.0,
+  "sodium": 55,
+  "saturatedFat": 0.0,
+  "protein": 0.0,
+  "fiber": 0.0,
+  "allergens": [],
+  "keyIngredients": [
+    "carbonated water",
+    "high fructose corn syrup",
+    "citric acid"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "productName": "Hot Chili Sriracha Sauce",
+  "calories": 5,
+  "sugar": 1.0,
+  "addedSugar": 0.0,
+  "sodium": 110,
+  "saturatedFat": 0.0,
+  "protein": 0.0,
+  "fiber": 0.0,
+  "allergens": [],
+  "keyIngredients": [
+    "chili",
+    "sugar",
+    "salt",
+    "garlic",
+    "vinegar"
+  ]
+}

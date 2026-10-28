@@ -1,0 +1,22 @@
+{
+  "productName": "Traditional Soy Senbei",
+  "calories": 195,
+  "sugar": 2.5,
+  "addedSugar": 0.0,
+  "sodium": 430,
+  "saturatedFat": 0.2,
+  "protein": 3.8,
+  "fiber": 0.0,
+  "allergens": [
+    "wheat / gluten",
+    "soy",
+    "fish"
+  ],
+  "keyIngredients": [
+    "rice",
+    "soy sauce",
+    "sugar",
+    "mirin",
+    "bonito extract"
+  ]
+}

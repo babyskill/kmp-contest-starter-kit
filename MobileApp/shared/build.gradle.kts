@@ -171,6 +171,8 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)
             implementation(libs.android.inappreview)
+            implementation(libs.mlkit.text)
+            implementation(libs.mlkit.barcode)
         }
 
         iosMain.dependencies {

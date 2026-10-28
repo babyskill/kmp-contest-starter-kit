@@ -1,0 +1,18 @@
+{
+  "productName": "Solid Yellowfin Tuna",
+  "calories": 160,
+  "sugar": 0.0,
+  "addedSugar": 0.0,
+  "sodium": 360,
+  "saturatedFat": 1.0,
+  "protein": 24.0,
+  "fiber": 0.0,
+  "allergens": [
+    "fish"
+  ],
+  "keyIngredients": [
+    "tuna",
+    "olive oil",
+    "sea salt"
+  ]
+}

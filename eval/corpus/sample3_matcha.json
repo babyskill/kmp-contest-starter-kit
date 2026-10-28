@@ -1,0 +1,22 @@
+{
+  "productName": "Matcha Sandwich Biscuits",
+  "calories": 180,
+  "sugar": 14.0,
+  "addedSugar": 0.0,
+  "sodium": 80,
+  "saturatedFat": 4.2,
+  "protein": 2.1,
+  "fiber": 1.2,
+  "allergens": [
+    "wheat / gluten",
+    "milk / dairy",
+    "soy"
+  ],
+  "keyIngredients": [
+    "wheat flour",
+    "sugar",
+    "shortening",
+    "whole milk powder",
+    "matcha powder"
+  ]
+}

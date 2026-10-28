@@ -1,0 +1,20 @@
+{
+  "productName": "Ancient Grains Crunch Cereal",
+  "calories": 210,
+  "sugar": 9.0,
+  "addedSugar": 7.0,
+  "sodium": 190,
+  "saturatedFat": 0.5,
+  "protein": 5.0,
+  "fiber": 6.0,
+  "allergens": [
+    "wheat / gluten"
+  ],
+  "keyIngredients": [
+    "spelt",
+    "oats",
+    "barley",
+    "quinoa",
+    "cane sugar"
+  ]
+}

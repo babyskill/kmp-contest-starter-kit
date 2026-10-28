@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -90,9 +91,62 @@ fun ResultScreen(
             .fillMaxSize()
             .background(AppTheme.colors.background)
             .padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(top = 24.dp, bottom = 120.dp),
+        contentPadding = PaddingValues(top = 24.dp, bottom = 140.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
+        // At-a-glance one-line personal summary banner
+        item {
+            val personalSummaryText = remember(result.watchOutForYou) {
+                if (result.watchOutForYou.isEmpty()) {
+                    "For your profile: nothing flagged"
+                } else {
+                    val flags = result.watchOutForYou.map { item ->
+                        when (item.severity) {
+                            FlagSeverity.PERSONAL_ALLERGEN -> {
+                                val allergenName = item.title.removePrefix("Contains ").lowercase()
+                                "contains $allergenName (your allergen)"
+                            }
+
+                            FlagSeverity.PERSONAL_AVOID -> {
+                                item.title.lowercase()
+                            }
+
+                            else -> item.title.lowercase()
+                        }
+                    }
+                    "For your profile: " + flags.joinToString(" · ")
+                }
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (result.watchOutForYou.isEmpty()) Color(0xFFEDF2ED) else Color(0xFFFDECEA),
+                ),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = if (result.watchOutForYou.isEmpty()) Icons.Default.Check else Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = if (result.watchOutForYou.isEmpty()) Color(0xFF16794C) else Color(0xFFB3261E),
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = personalSummaryText,
+                        style = AppTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (result.watchOutForYou.isEmpty()) Color(0xFF16794C) else Color(0xFFB3261E),
+                        ),
+                    )
+                }
+            }
+        }
+
         // Product Title & Verdict Header
         item {
             Card(
@@ -124,13 +178,24 @@ fun ResultScreen(
                         }
                     }
 
+                    result.sourceAttribution?.let { source ->
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = source,
+                            style = AppTheme.typography.bodySmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = AppTheme.colors.primary,
+                            ),
+                        )
+                    }
+
                     result.quickGlance?.let { glance ->
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = glance,
                             style = AppTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium,
-                                color = AppTheme.colors.primary,
+                                color = AppTheme.colors.text.secondary,
                             ),
                         )
                     }

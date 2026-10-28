@@ -185,6 +185,9 @@ private val dataModule = module {
     single { SubscriptionRepository(get(), get(), get(), get()) }
     single { GenerationRepository(get(), get(), get(), get(), get(), get(), get()) }
     single { AttributionRepository(get(), get()) }
+    single<com.labellens.app.data.source.remote.apiservices.barcode.BarcodeLookupService> {
+        com.labellens.app.data.source.remote.apiservices.barcode.OpenFoodFactsBarcodeLookupService(HttpClientFactory.noAuth())
+    }
     single { com.labellens.app.domain.analyzer.LabelAnalyzer() }
     single<com.labellens.app.data.repository.ScanRepository> {
         com.labellens.app.data.repository.ScanRepositoryImpl(get<com.labellens.app.data.source.local.AppDatabase>().scanHistoryDao(), get(), get())
@@ -237,7 +240,7 @@ private val presentationModule = module {
     viewModelOf(::CreditBalanceViewModel)
     viewModelOf(::DebugMenuViewModel)
 
-    viewModel { com.labellens.app.presentation.screens.scan.ScanViewModel(get()) }
+    viewModel { com.labellens.app.presentation.screens.scan.ScanViewModel(get(), get()) }
     viewModel { com.labellens.app.presentation.screens.result.ResultViewModel(get(), get(), get()) }
     viewModel { com.labellens.app.presentation.screens.profile.LabelLensProfileViewModel(get()) }
     viewModel { com.labellens.app.presentation.screens.history.HistoryViewModel(get()) }

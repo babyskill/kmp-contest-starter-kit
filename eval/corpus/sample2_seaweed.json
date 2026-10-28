@@ -1,0 +1,19 @@
+{
+  "productName": "Roasted Seaweed Snack (재래김)",
+  "calories": 30,
+  "sugar": 0.0,
+  "addedSugar": 0.0,
+  "sodium": 55,
+  "saturatedFat": 0.3,
+  "protein": 1.0,
+  "fiber": 0.0,
+  "allergens": [
+    "sesame"
+  ],
+  "keyIngredients": [
+    "laver / nori",
+    "corn oil",
+    "sesame oil",
+    "msg"
+  ]
+}

@@ -35,6 +35,8 @@ ksp = "2.3.11"
 ktlint = "1.8.0"
 ktor = "3.5.2"
 lifecycleViewmodelNav3 = "2.11.0"
+mlkit-barcode = "17.3.0"
+mlkit-text = "16.0.1"
 napier = "2.7.1"
 nav3 = "1.1.1"
 revenueCat = "3.5.1"
@@ -111,6 +113,8 @@ ktor-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 lifecyle-runtime = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "composeLifecyleRuntime" }
+mlkit-barcode = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkit-barcode" }
+mlkit-text = { module = "com.google.mlkit:text-recognition", version.ref = "mlkit-text" }
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 nav3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "nav3" }
 revenuecat-core = { module = "com.revenuecat.purchases:purchases-kmp-core", version.ref = "revenueCat" }

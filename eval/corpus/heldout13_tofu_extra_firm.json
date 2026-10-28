@@ -1,0 +1,18 @@
+{
+  "productName": "Organic Extra Firm Tofu",
+  "calories": 80,
+  "sugar": 0.0,
+  "addedSugar": 0.0,
+  "sodium": 10,
+  "saturatedFat": 0.5,
+  "protein": 9.0,
+  "fiber": 1.0,
+  "allergens": [
+    "soy"
+  ],
+  "keyIngredients": [
+    "soybeans",
+    "water",
+    "calcium sulfate"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "productName": "Almond Butter Creamy",
+  "calories": 190,
+  "sugar": 2.0,
+  "addedSugar": 0.0,
+  "sodium": 65,
+  "saturatedFat": 1.5,
+  "protein": 7.0,
+  "fiber": 4.0,
+  "allergens": [
+    "tree nuts"
+  ],
+  "keyIngredients": [
+    "almonds",
+    "sea salt"
+  ]
+}
