@@ -2,8 +2,10 @@ package com.labellens.app
 
 import android.app.Application
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
@@ -32,7 +34,16 @@ class AppActivity : ComponentActivity() {
         // Must be called before super.onCreate(); shows the system splash (Theme.App.Starting).
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(
+                Color.TRANSPARENT,
+                Color.TRANSPARENT,
+            ),
+            navigationBarStyle = SystemBarStyle.light(
+                Color.TRANSPARENT,
+                Color.TRANSPARENT,
+            ),
+        )
         setContent { App() }
         KMPNotifier.onCreateOrOnNewIntent(intent)
         FileKit.init(this)

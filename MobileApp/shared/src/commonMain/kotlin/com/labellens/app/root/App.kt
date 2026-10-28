@@ -58,7 +58,11 @@ private fun AppScaffold() {
             uiMessage = null
         }
     }
-    Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) {
+    Scaffold(
+        containerColor = AppTheme.colors.background,
+        contentColor = AppTheme.colors.text.primary,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+    ) {
         AppNavigation()
     }
 }

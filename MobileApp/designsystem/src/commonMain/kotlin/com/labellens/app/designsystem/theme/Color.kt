@@ -1,6 +1,5 @@
 package com.labellens.app.designsystem.theme
 
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
@@ -38,34 +37,19 @@ data class AppColors(
     val bottomNav: BottomNav = BottomNav(),
     val outline: Color = Color.Unspecified,
 ) {
-    // Backup for Material Color Scheme
-    fun asMaterialColorScheme(isDark: Boolean): androidx.compose.material3.ColorScheme = if (isDark) {
-        darkColorScheme(
-            primary = primary,
-            onPrimary = onPrimary,
-            error = status.error,
-            errorContainer = status.errorContainer,
-            background = background,
-            surfaceContainer = surfaceContainer,
-            surfaceContainerHighest = surfaceContainer,
-            surfaceContainerLow = surfaceContainer,
-            onBackground = text.primary,
-            outline = outline,
-        )
-    } else {
-        lightColorScheme(
-            primary = primary,
-            surfaceContainer = surfaceContainer,
-            surfaceContainerHighest = surfaceContainer,
-            surfaceContainerLow = surfaceContainer,
-            onPrimary = onPrimary,
-            error = status.error,
-            errorContainer = status.errorContainer,
-            background = background,
-            onBackground = text.primary,
-            outline = outline,
-        )
-    }
+    // App is light-only; always returns light Material ColorScheme
+    fun asMaterialColorScheme(@Suppress("UNUSED_PARAMETER") isDark: Boolean = false): androidx.compose.material3.ColorScheme = lightColorScheme(
+        primary = primary,
+        surfaceContainer = surfaceContainer,
+        surfaceContainerHighest = surfaceContainer,
+        surfaceContainerLow = surfaceContainer,
+        onPrimary = onPrimary,
+        error = status.error,
+        errorContainer = status.errorContainer,
+        background = background,
+        onBackground = text.primary,
+        outline = outline,
+    )
 
     @Immutable
     data class Status(
