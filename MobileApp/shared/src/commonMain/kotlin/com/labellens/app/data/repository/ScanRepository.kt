@@ -53,6 +53,8 @@ class ScanRepositoryImpl(
     override suspend fun getScanByIdReanalyzed(id: String, profile: UserProfile): LabelAnalysisResult? {
         val entity = scanHistoryDao.getById(id) ?: return null
         val current = entity.toAnalysisResult()
+        val langCode = userPreferences.getString(com.labellens.app.data.source.preferences.UserPreferences.KEY_APP_LANGUAGE, null)
+        val lang = com.labellens.app.domain.model.AppLanguage.fromCode(langCode)
         // Re-analyze with current profile to update personal flags
         return analyzer.analyze(
             productName = current.productName,
@@ -61,6 +63,8 @@ class ScanRepositoryImpl(
             category = current.category,
             scanSource = current.scanSource,
             barcode = current.barcode,
+            sourceAttribution = current.sourceAttribution,
+            language = lang,
         )
     }
 

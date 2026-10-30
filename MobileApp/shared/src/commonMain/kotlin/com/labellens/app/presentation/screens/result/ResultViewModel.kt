@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.labellens.app.data.repository.ScanRepository
 import com.labellens.app.data.repository.UserProfileRepository
 import com.labellens.app.domain.analyzer.LabelAnalyzer
+import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.LabelAnalysisResult
 import com.labellens.app.domain.model.ProductCategory
@@ -22,6 +23,7 @@ data class ResultUiState(
     val feedbackSubmitted: Boolean = false,
     val isLabelTextExpanded: Boolean = false,
     val userProfile: UserProfile = UserProfile(),
+    val language: AppLanguage = AppLanguage.DEFAULT,
 )
 
 class ResultViewModel(
@@ -43,7 +45,8 @@ class ResultViewModel(
     ) {
         viewModelScope.launch {
             val profile = userProfileRepository.getProfile()
-            _uiState.value = _uiState.value.copy(userProfile = profile)
+            val lang = userProfileRepository.getLanguage()
+            _uiState.value = _uiState.value.copy(userProfile = profile, language = lang)
 
             if (!scanId.isNullOrBlank()) {
                 val reanalyzed = scanRepository.getScanByIdReanalyzed(scanId, profile)
@@ -67,6 +70,7 @@ class ResultViewModel(
                         category = sample.category,
                         scanSource = ScanSource.SAMPLE,
                         barcode = sample.barcode,
+                        language = lang,
                     )
                     _uiState.value = _uiState.value.copy(analysisResult = analysis)
                     return@launch
@@ -75,7 +79,7 @@ class ResultViewModel(
 
             // Fallback: analyze rawText
             val text = rawText ?: BuiltInSamples.sample2.fullLabelText
-            val name = productName ?: "Scanned Product"
+            val name = productName ?: if (lang == AppLanguage.VIETNAMESE) "Sản phẩm quét" else "Scanned Product"
             val category = if (text.contains("SUPPLEMENT", ignoreCase = true)) ProductCategory.SUPPLEMENT else ProductCategory.FOOD
             val src = when (sourceName) {
                 "Open Food Facts" -> ScanSource.BARCODE
@@ -88,7 +92,7 @@ class ResultViewModel(
             }
 
             val sourceAttr = if (sourceName == "Open Food Facts" || (barcode != null && sourceName != null)) {
-                "Source: $sourceName"
+                if (lang == AppLanguage.VIETNAMESE) "Nguồn: $sourceName" else "Source: $sourceName"
             } else {
                 null
             }
@@ -101,6 +105,7 @@ class ResultViewModel(
                 scanSource = src,
                 barcode = barcode,
                 sourceAttribution = sourceAttr,
+                language = lang,
             )
             _uiState.value = _uiState.value.copy(analysisResult = analysis)
         }
@@ -122,19 +127,18 @@ class ResultViewModel(
         val current = _uiState.value.analysisResult ?: return
         val newFav = !_uiState.value.isFavorite
         viewModelScope.launch {
-            val id = current.barcode ?: current.productName
-            scanRepository.toggleFavorite(id, newFav)
             _uiState.value = _uiState.value.copy(isFavorite = newFav)
+            current.barcode?.let { scanRepository.toggleFavorite(it, newFav) }
         }
     }
 
-    fun submitFeedback(isAccurate: Boolean) {
+    fun submitFeedback(helpful: Boolean) {
         val current = _uiState.value.analysisResult ?: return
         viewModelScope.launch {
-            val feedback = if (isAccurate) "accurate" else "inaccurate"
-            val id = current.barcode ?: current.productName
-            scanRepository.setFeedback(id, feedback)
             _uiState.value = _uiState.value.copy(feedbackSubmitted = true)
+            current.barcode?.let {
+                scanRepository.setFeedback(it, if (helpful) "helpful" else "needs_fix")
+            }
         }
     }
 }

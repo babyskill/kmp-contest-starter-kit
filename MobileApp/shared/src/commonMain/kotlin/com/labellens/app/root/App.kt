@@ -7,12 +7,15 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.labellens.app.data.repository.UserProfileRepository
 import com.labellens.app.designsystem.AllComponentsGallery
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.presentation.navigation.AppNavigation
@@ -22,21 +25,27 @@ import com.labellens.app.util.logging.AppLogger
 import com.labellens.app.util.logging.logAppOpened
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
+import org.koin.compose.koinInject
 
 /** Root composable — the single entry point every platform (Android/iOS/Desktop/Web) renders. */
 @Composable
 fun App() {
-    AppTheme {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            // Set this to true for showing app, or false for ui components gallery
-            val isPreviewComponentsMode = false
-            if (isPreviewComponentsMode) {
-                AllComponentsGallery()
-            } else {
-                AppScaffold()
+    val userProfileRepository = koinInject<UserProfileRepository>()
+    val currentLanguage by userProfileRepository.languageFlow.collectAsState()
+
+    key(currentLanguage) {
+        AppTheme {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                // Set this to true for showing app, or false for ui components gallery
+                val isPreviewComponentsMode = false
+                if (isPreviewComponentsMode) {
+                    AllComponentsGallery()
+                } else {
+                    AppScaffold()
+                }
             }
         }
     }

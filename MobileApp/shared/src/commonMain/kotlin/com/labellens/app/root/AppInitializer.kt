@@ -63,6 +63,9 @@ object AppInitializer {
         initializeInAppPurchase()
         initializeAds()
 
+        val userProfileRepository by this.koin.inject<com.labellens.app.data.repository.UserProfileRepository>()
+        userProfileRepository.languageFlow
+
         if (AppConfiguration.isAuthEnabled) {
             val userRepository by this.koin.inject<UserRepository>()
             userRepository.signInAnonymouslyIfNecessary()

@@ -1,6 +1,7 @@
 package com.labellens.app.domain.analyzer
 
 import com.labellens.app.domain.model.Allergen
+import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.AvoidPreference
 import com.labellens.app.domain.model.DietaryGoal
 import com.labellens.app.domain.model.FlagSeverity
@@ -23,12 +24,13 @@ class LabelAnalyzer {
         scanSource: ScanSource = ScanSource.MANUAL_TEXT,
         barcode: String? = null,
         sourceAttribution: String? = null,
+        language: AppLanguage = AppLanguage.DEFAULT,
     ): LabelAnalysisResult {
         val normalizedText = rawLabelText.trim()
         val uncertaintyNotes = mutableListOf<String>()
 
         if (normalizedText.length < 15) {
-            uncertaintyNotes.add("Label text appears short or incomplete. Some ingredients or nutrition values might not be captured.")
+            uncertaintyNotes.add(AnalysisStrings.uncertaintyShortText(language))
         }
 
         // 1. Split and parse raw ingredients
@@ -60,13 +62,13 @@ class LabelAnalyzer {
         }
 
         if (unclassifiedTokens.isNotEmpty() && matchedIngredients.isEmpty()) {
-            uncertaintyNotes.add("Could not find standard matches for parsed ingredients: ${unclassifiedTokens.take(3).joinToString(", ")}.")
+            uncertaintyNotes.add(AnalysisStrings.uncertaintyUnclassified(language, unclassifiedTokens.take(3).joinToString(", ")))
         }
 
         // 2. Parse nutrition facts
-        val nutritionFacts = extractNutritionFacts(normalizedText)
-        val highSodiumDetected = isHighSodium(nutritionFacts, normalizedText)
-        val highSugarDetected = isHighSugar(nutritionFacts, normalizedText)
+        val nutritionFacts = extractNutritionFacts(normalizedText, language)
+        val highSodiumDetected = isHighSodium(nutritionFacts, normalizedText, language)
+        val highSugarDetected = isHighSugar(nutritionFacts, normalizedText, language)
 
         // 3. Evaluate Sections: Watch out for you (Personal ONLY), Worth noting, Good to know
         val watchOutForYou = mutableListOf<FlaggedItem>()
@@ -79,8 +81,8 @@ class LabelAnalyzer {
             if (match != null) {
                 watchOutForYou.add(
                     FlaggedItem(
-                        title = "Contains ${allergen.displayName}",
-                        detail = "Found in ingredients (${match.ingredient.canonicalName}). Matched against your profile allergen list.",
+                        title = AnalysisStrings.allergenTitle(language, allergen),
+                        detail = AnalysisStrings.allergenDetail(language, match.ingredient.canonicalName),
                         severity = FlagSeverity.PERSONAL_ALLERGEN,
                         relatedIngredient = match.ingredient.canonicalName,
                     ),
@@ -91,27 +93,29 @@ class LabelAnalyzer {
         // Personal Avoid preference checks
         for (avoid in userProfile.avoidList) {
             when (avoid) {
-                com.labellens.app.domain.model.AvoidPreference.HIGH_SODIUM -> {
+                AvoidPreference.HIGH_SODIUM -> {
                     if (highSodiumDetected) {
                         watchOutForYou.add(
                             FlaggedItem(
-                                title = "High Sodium Level",
-                                detail = "This product provides a high concentration of sodium per serving, which you flagged to avoid.",
+                                title = AnalysisStrings.highSodiumTitle(language),
+                                detail = AnalysisStrings.highSodiumDetail(language),
                                 severity = FlagSeverity.PERSONAL_AVOID,
                             ),
                         )
                     }
                 }
 
-                com.labellens.app.domain.model.AvoidPreference.ADDED_SUGAR -> {
+                AvoidPreference.ADDED_SUGAR -> {
                     val sugarMatch = matchedIngredients.firstOrNull {
-                        it.ingredient.avoidMatch == com.labellens.app.domain.model.AvoidPreference.ADDED_SUGAR
+                        it.ingredient.avoidMatch == AvoidPreference.ADDED_SUGAR
                     }
                     if (sugarMatch != null || highSugarDetected) {
+                        val sugarSource = sugarMatch?.ingredient?.canonicalName
+                            ?: if (language == AppLanguage.VIETNAMESE) "thành phần dinh dưỡng" else "identified in nutrition facts"
                         watchOutForYou.add(
                             FlaggedItem(
-                                title = "Added Sugar / Sweetener",
-                                detail = "Contains added sugars (${sugarMatch?.ingredient?.canonicalName ?: "identified in nutrition facts"}).",
+                                title = AnalysisStrings.addedSugarTitle(language),
+                                detail = AnalysisStrings.addedSugarDetail(language, sugarSource),
                                 severity = FlagSeverity.PERSONAL_AVOID,
                                 relatedIngredient = sugarMatch?.ingredient?.canonicalName,
                             ),
@@ -124,8 +128,8 @@ class LabelAnalyzer {
                     if (match != null) {
                         watchOutForYou.add(
                             FlaggedItem(
-                                title = "Contains ${avoid.displayName}",
-                                detail = "Identified ${match.ingredient.canonicalName}, matching your personal avoidance list.",
+                                title = AnalysisStrings.avoidTitle(language, avoid),
+                                detail = AnalysisStrings.avoidDetail(language, match.ingredient.canonicalName),
                                 severity = FlagSeverity.PERSONAL_AVOID,
                                 relatedIngredient = match.ingredient.canonicalName,
                             ),
@@ -137,13 +141,14 @@ class LabelAnalyzer {
 
         // Personal Dietary Goals
         for (goal in userProfile.goals) {
+            val sodiumTitle = AnalysisStrings.highSodiumTitle(language)
             when (goal) {
                 DietaryGoal.LOW_SODIUM -> {
-                    if (highSodiumDetected && watchOutForYou.none { it.title == "High Sodium Level" }) {
+                    if (highSodiumDetected && watchOutForYou.none { it.title == sodiumTitle }) {
                         watchOutForYou.add(
                             FlaggedItem(
-                                title = "Watch Sodium (Your Goal: Low Sodium)",
-                                detail = "Sodium content is notable relative to your dietary goal.",
+                                title = AnalysisStrings.goalWatchSodiumTitle(language, goal),
+                                detail = AnalysisStrings.goalWatchSodiumDetail(language),
                                 severity = FlagSeverity.PERSONAL_AVOID,
                             ),
                         )
@@ -151,11 +156,12 @@ class LabelAnalyzer {
                 }
 
                 DietaryGoal.LOW_SUGAR, DietaryGoal.DIABETES_CAUTIOUS -> {
-                    if (highSugarDetected && watchOutForYou.none { it.title.contains("Sugar") }) {
+                    val sugarTitle = AnalysisStrings.addedSugarTitle(language)
+                    if (highSugarDetected && watchOutForYou.none { it.title == sugarTitle || it.title.contains("Sugar") || it.title.contains("Đường") }) {
                         watchOutForYou.add(
                             FlaggedItem(
-                                title = "Elevated Sugar Content",
-                                detail = "Contains notable carbohydrates/sugars, which may impact your ${goal.displayName} goal.",
+                                title = AnalysisStrings.goalElevatedSugarTitle(language),
+                                detail = AnalysisStrings.goalElevatedSugarDetail(language, goal),
                                 severity = FlagSeverity.PERSONAL_AVOID,
                             ),
                         )
@@ -170,8 +176,8 @@ class LabelAnalyzer {
                     if (nonVegan != null) {
                         watchOutForYou.add(
                             FlaggedItem(
-                                title = "Not Vegan Suitable",
-                                detail = "Contains ${nonVegan.ingredient.canonicalName}, derived from animal sources.",
+                                title = AnalysisStrings.goalNotVeganTitle(language),
+                                detail = AnalysisStrings.goalNotVeganDetail(language, nonVegan.ingredient.canonicalName),
                                 severity = FlagSeverity.PERSONAL_AVOID,
                                 relatedIngredient = nonVegan.ingredient.canonicalName,
                             ),
@@ -187,8 +193,8 @@ class LabelAnalyzer {
                     if (nonVeg != null) {
                         watchOutForYou.add(
                             FlaggedItem(
-                                title = "Not Vegetarian Suitable",
-                                detail = "Contains ${nonVeg.ingredient.canonicalName}.",
+                                title = AnalysisStrings.goalNotVegetarianTitle(language),
+                                detail = AnalysisStrings.goalNotVegetarianDetail(language, nonVeg.ingredient.canonicalName),
                                 severity = FlagSeverity.PERSONAL_AVOID,
                                 relatedIngredient = nonVeg.ingredient.canonicalName,
                             ),
@@ -201,8 +207,8 @@ class LabelAnalyzer {
                     if (porkItem != null) {
                         watchOutForYou.add(
                             FlaggedItem(
-                                title = "Non-Halal Ingredient",
-                                detail = "Contains ${porkItem.ingredient.canonicalName}.",
+                                title = AnalysisStrings.goalNonHalalTitle(language),
+                                detail = AnalysisStrings.goalNonHalalDetail(language, porkItem.ingredient.canonicalName),
                                 severity = FlagSeverity.PERSONAL_AVOID,
                                 relatedIngredient = porkItem.ingredient.canonicalName,
                             ),
@@ -211,13 +217,12 @@ class LabelAnalyzer {
                 }
 
                 DietaryGoal.PREGNANCY_SAFE -> {
-                    // Check for raw unpasteurized or specific additives
                     val caffeine = matchedIngredients.firstOrNull { it.ingredient.avoidForTags.contains("caffeine") }
                     if (caffeine != null) {
                         watchOutForYou.add(
                             FlaggedItem(
-                                title = "Contains Caffeine",
-                                detail = "Found in ${caffeine.ingredient.canonicalName}; moderate intake during pregnancy.",
+                                title = AnalysisStrings.goalCaffeineTitle(language),
+                                detail = AnalysisStrings.goalCaffeineDetail(language, caffeine.ingredient.canonicalName),
                                 severity = FlagSeverity.PERSONAL_AVOID,
                                 relatedIngredient = caffeine.ingredient.canonicalName,
                             ),
@@ -234,7 +239,7 @@ class LabelAnalyzer {
                 worthNoting.add(
                     FlaggedItem(
                         title = ing.canonicalName,
-                        detail = "${ing.plainExplanation} Used as ${ing.category.lowercase()}.",
+                        detail = AnalysisStrings.additiveUsedAs(language, ing.plainExplanation, ing.category),
                         severity = FlagSeverity.WORTH_NOTING,
                         relatedIngredient = ing.canonicalName,
                     ),
@@ -296,10 +301,10 @@ class LabelAnalyzer {
                     IngredientBreakdown(
                         rawName = token,
                         canonicalName = token.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
-                        category = "Standard ingredient",
-                        plainExplanation = "Recognised label component. No specific flags noted.",
-                        whyUsed = "Common recipe or processing component.",
-                        doseContextNote = "Standard culinary ingredient.",
+                        category = AnalysisStrings.fallbackCategory(language),
+                        plainExplanation = AnalysisStrings.fallbackPlainExplanation(language),
+                        whyUsed = AnalysisStrings.fallbackWhyUsed(language),
+                        doseContextNote = AnalysisStrings.fallbackDoseContextNote(language),
                         isKnown = false,
                     ),
                 )
@@ -315,9 +320,10 @@ class LabelAnalyzer {
             goodToKnowCount = goodToKnow.size,
             matchedIngredients = matchedIngredients.map { it.ingredient },
             nutritionFacts = nutritionFacts,
+            language = language,
         )
 
-        val quickGlance = "${fullBreakdown.size} ingredients parsed • ${if (watchOutForYou.isNotEmpty()) "${watchOutForYou.size} personal note${if (watchOutForYou.size > 1) "s" else ""}" else "No personal flags"}"
+        val quickGlance = AnalysisStrings.quickGlance(language, fullBreakdown.size, watchOutForYou.size)
 
         return LabelAnalysisResult(
             productName = productName,
@@ -348,6 +354,7 @@ class LabelAnalyzer {
             lower.contains("原材料名:") -> text.substring(lower.indexOf("原材料名:") + 5)
             lower.contains("配料:") -> text.substring(lower.indexOf("配料:") + 3)
             lower.contains("配料表:") -> text.substring(lower.indexOf("配料表:") + 4)
+            lower.contains("thành phần:") -> text.substring(lower.indexOf("thành phần:") + 11)
             else -> text
         }
 
@@ -356,6 +363,7 @@ class LabelAnalyzer {
             .substringBefore("영양정보")
             .substringBefore("栄養成分")
             .substringBefore("营养成分")
+            .substringBefore("Thông tin dinh dưỡng")
             .substringBefore("CONTAINS:")
             .substringBefore("알레르기")
             .substringBefore("FREE OF:")
@@ -381,6 +389,11 @@ class LabelAnalyzer {
                     .substringBefore("DISTRIBUTED")
                     .substringBefore("FREE OF")
                     .substringBefore("\n\n")
+            }
+
+            lower.contains("chứa:") -> {
+                val after = text.substring(lower.indexOf("chứa:") + 5)
+                after.substringBefore("\n\n")
             }
 
             lower.contains("알레르기 정보:") -> {
@@ -433,39 +446,47 @@ class LabelAnalyzer {
         }
     }
 
-    private fun extractNutritionFacts(text: String): List<NutritionFact> {
+    private fun extractNutritionFacts(text: String, language: AppLanguage): List<NutritionFact> {
         val facts = mutableListOf<NutritionFact>()
 
         // Patterns to match: Calories, Total Sugar/Sugars, Sodium, Saturated Fat, Protein, Dietary Fiber
-        val caloriesPattern = Regex("(?i)(calories|칼로리|열량|エネルギー|热量)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(?:kcal|cal)?")
+        val caloriesPattern = Regex("(?i)(calories|칼로리|열량|エネルギー|热量|năng lượng)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(?:kcal|cal)?")
         val altCaloriesPattern = Regex("(?i)([0-9]+(?:\\.[0-9]+)?)\\s*(?:kcal)")
-        val sugarPattern = Regex("(?i)(total sugar|sugars|sugar|당류|糖類|糖)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
-        val sodiumPattern = Regex("(?i)(sodium|나트륨|ナトリウム|钠)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(mg|g)?")
-        val satFatPattern = Regex("(?i)(saturated fat|sat fat|포화지방|飽和脂肪酸|饱和脂肪)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
-        val proteinPattern = Regex("(?i)(protein|단백질|たんぱく質|蛋白质)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
-        val fiberPattern = Regex("(?i)(dietary fiber|fiber|fibre|식이섬유|食物繊維|膳食纤维)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
+        val sugarPattern = Regex("(?i)(total sugar|sugars|sugar|당류|糖類|糖|đường)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
+        val sodiumPattern = Regex("(?i)(sodium|나트륨|ナトリウム|钠|natri)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(mg|g)?")
+        val satFatPattern = Regex("(?i)(saturated fat|sat fat|포화지방|飽和脂肪酸|饱和脂肪|chất béo bão hòa)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
+        val proteinPattern = Regex("(?i)(protein|단백질|たんぱく質|蛋白质|đạm|chất đạm)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
+        val fiberPattern = Regex("(?i)(dietary fiber|fiber|fibre|식이섬유|食物繊維|膳食纤维|chất xơ)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
 
         val calMatch = caloriesPattern.find(text) ?: altCaloriesPattern.find(text)
         calMatch?.let {
             val amount = if (it.groupValues.size > 2) it.groupValues[2] else it.groupValues[1]
-            facts.add(NutritionFact(name = "Calories", amount = "$amount kcal", contextIndicator = if (amount.toDoubleOrNull() ?: 0.0 > 300) "Substantial" else "Standard"))
+            val ctxKey = if (amount.toDoubleOrNull() ?: 0.0 > 300) "Substantial" else "Standard"
+            facts.add(
+                NutritionFact(
+                    name = AnalysisStrings.nutritionName(language, "Calories"),
+                    amount = "$amount kcal",
+                    contextIndicator = AnalysisStrings.nutritionContext(language, ctxKey),
+                ),
+            )
         }
 
         sugarPattern.find(text)?.let {
             val amount = it.groupValues[2]
             val unit = it.groupValues[3].ifEmpty { "g" }
             val num = amount.toDoubleOrNull() ?: 0.0
+            val ctxKey = if (num > 15) {
+                "Notable sugar"
+            } else if (num < 2) {
+                "Low sugar"
+            } else {
+                "Moderate"
+            }
             facts.add(
                 NutritionFact(
-                    name = "Sugars",
+                    name = AnalysisStrings.nutritionName(language, "Sugars"),
                     amount = "$amount $unit",
-                    contextIndicator = if (num > 15) {
-                        "Notable sugar"
-                    } else if (num < 2) {
-                        "Low sugar"
-                    } else {
-                        "Moderate"
-                    },
+                    contextIndicator = AnalysisStrings.nutritionContext(language, ctxKey),
                 ),
             )
         }
@@ -475,17 +496,18 @@ class LabelAnalyzer {
             val unit = it.groupValues[3].ifEmpty { "mg" }
             val num = amount.toDoubleOrNull() ?: 0.0
             val mgVal = if (unit.equals("g", ignoreCase = true)) num * 1000 else num
+            val ctxKey = if (mgVal > 800) {
+                "High sodium"
+            } else if (mgVal < 140) {
+                "Low sodium"
+            } else {
+                "Moderate"
+            }
             facts.add(
                 NutritionFact(
-                    name = "Sodium",
+                    name = AnalysisStrings.nutritionName(language, "Sodium"),
                     amount = "${mgVal.toInt()} mg",
-                    contextIndicator = if (mgVal > 800) {
-                        "High sodium"
-                    } else if (mgVal < 140) {
-                        "Low sodium"
-                    } else {
-                        "Moderate"
-                    },
+                    contextIndicator = AnalysisStrings.nutritionContext(language, ctxKey),
                 ),
             )
         }
@@ -493,32 +515,54 @@ class LabelAnalyzer {
         satFatPattern.find(text)?.let {
             val amount = it.groupValues[2]
             val unit = it.groupValues[3].ifEmpty { "g" }
-            facts.add(NutritionFact(name = "Saturated Fat", amount = "$amount $unit", contextIndicator = if ((amount.toDoubleOrNull() ?: 0.0) > 5) "Notable" else "Standard"))
+            val ctxKey = if ((amount.toDoubleOrNull() ?: 0.0) > 5) "Notable" else "Standard"
+            facts.add(
+                NutritionFact(
+                    name = AnalysisStrings.nutritionName(language, "Saturated Fat"),
+                    amount = "$amount $unit",
+                    contextIndicator = AnalysisStrings.nutritionContext(language, ctxKey),
+                ),
+            )
         }
 
         proteinPattern.find(text)?.let {
             val amount = it.groupValues[2]
             val unit = it.groupValues[3].ifEmpty { "g" }
-            facts.add(NutritionFact(name = "Protein", amount = "$amount $unit", contextIndicator = if ((amount.toDoubleOrNull() ?: 0.0) >= 5) "Protein source" else "Standard"))
+            val ctxKey = if ((amount.toDoubleOrNull() ?: 0.0) >= 5) "Protein source" else "Standard"
+            facts.add(
+                NutritionFact(
+                    name = AnalysisStrings.nutritionName(language, "Protein"),
+                    amount = "$amount $unit",
+                    contextIndicator = AnalysisStrings.nutritionContext(language, ctxKey),
+                ),
+            )
         }
 
         fiberPattern.find(text)?.let {
             val amount = it.groupValues[2]
             val unit = it.groupValues[3].ifEmpty { "g" }
-            facts.add(NutritionFact(name = "Dietary Fiber", amount = "$amount $unit", contextIndicator = if ((amount.toDoubleOrNull() ?: 0.0) >= 3) "Good fiber source" else "Standard"))
+            val ctxKey = if ((amount.toDoubleOrNull() ?: 0.0) >= 3) "Good fiber source" else "Standard"
+            facts.add(
+                NutritionFact(
+                    name = AnalysisStrings.nutritionName(language, "Dietary Fiber"),
+                    amount = "$amount $unit",
+                    contextIndicator = AnalysisStrings.nutritionContext(language, ctxKey),
+                ),
+            )
         }
 
         return facts
     }
 
-    private fun isHighSodium(facts: List<NutritionFact>, text: String): Boolean {
-        val sodiumFact = facts.firstOrNull { it.name == "Sodium" }
+    private fun isHighSodium(facts: List<NutritionFact>, text: String, language: AppLanguage): Boolean {
+        val sodiumName = AnalysisStrings.nutritionName(language, "Sodium")
+        val sodiumFact = facts.firstOrNull { it.name == sodiumName || it.name == "Sodium" }
         if (sodiumFact != null) {
             val num = sodiumFact.amount.substringBefore(" ").toDoubleOrNull() ?: 0.0
             if (num >= 800) return true
         }
         // Fallback check in text
-        val match = Regex("(?i)sodium\\s*([0-9]{3,})\\s*mg").find(text)
+        val match = Regex("(?i)(?:sodium|natri)\\s*([0-9]{3,})\\s*mg").find(text)
         if (match != null) {
             val mg = match.groupValues[1].toIntOrNull() ?: 0
             return mg >= 800
@@ -526,8 +570,9 @@ class LabelAnalyzer {
         return false
     }
 
-    private fun isHighSugar(facts: List<NutritionFact>, text: String): Boolean {
-        val sugarFact = facts.firstOrNull { it.name == "Sugars" }
+    private fun isHighSugar(facts: List<NutritionFact>, text: String, language: AppLanguage): Boolean {
+        val sugarName = AnalysisStrings.nutritionName(language, "Sugars")
+        val sugarFact = facts.firstOrNull { it.name == sugarName || it.name == "Sugars" }
         if (sugarFact != null) {
             val num = sugarFact.amount.substringBefore(" ").toDoubleOrNull() ?: 0.0
             if (num >= 15) return true
@@ -543,32 +588,33 @@ class LabelAnalyzer {
         goodToKnowCount: Int,
         matchedIngredients: List<KnowledgeIngredient>,
         nutritionFacts: List<NutritionFact>,
+        language: AppLanguage,
     ): String {
         val baseVerdict = when {
             category == ProductCategory.SUPPLEMENT -> {
-                "Standard dietary supplement formula providing active vitamins with common binding agents."
+                AnalysisStrings.verdictSupplement(language)
             }
 
             watchOutCount > 0 -> {
-                "Review the personal flags above that match your specific dietary preferences or allergen warnings."
+                AnalysisStrings.verdictWatchOut(language)
             }
 
             worthNotingCount > 2 -> {
-                "Convenient formulated product with balanced taste, incorporating common additives and seasonings."
+                AnalysisStrings.verdictWorthNoting(language)
             }
 
             goodToKnowCount >= 2 && worthNotingCount <= 1 -> {
-                "Wholesome formulation centered on straightforward whole ingredients and minimal processing."
+                AnalysisStrings.verdictGoodToKnow(language)
             }
 
             else -> {
-                "Standard packaged food formulation with familiar ingredients and balanced recipe composition."
+                AnalysisStrings.verdictBaseFood(language)
             }
         }
 
         // Hard guardrail: supplement results append exactly the required disclaimer
         return if (category == ProductCategory.SUPPLEMENT) {
-            "$baseVerdict Education only - this is not medical advice."
+            "$baseVerdict ${AnalysisStrings.verdictDisclaimer(language)}"
         } else {
             baseVerdict
         }
