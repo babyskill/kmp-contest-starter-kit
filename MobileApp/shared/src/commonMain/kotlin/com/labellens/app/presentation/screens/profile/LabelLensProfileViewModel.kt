@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.labellens.app.data.repository.UserProfileRepository
 import com.labellens.app.domain.model.Allergen
+import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.AvoidPreference
 import com.labellens.app.domain.model.DietaryGoal
 import com.labellens.app.domain.model.UserProfile
@@ -16,6 +17,7 @@ data class LabelLensProfileUiState(
     val userProfile: UserProfile = UserProfile(),
     val isSaved: Boolean = false,
     val anonymousConsent: Boolean = false,
+    val selectedLanguage: AppLanguage = AppLanguage.DEFAULT,
 )
 
 class LabelLensProfileViewModel(
@@ -27,13 +29,34 @@ class LabelLensProfileViewModel(
 
     init {
         loadProfile()
+        observeLanguage()
     }
 
     private fun loadProfile() {
         viewModelScope.launch {
             val p = userProfileRepository.getProfile()
             val consent = userProfileRepository.isConsentGiven()
-            _uiState.value = _uiState.value.copy(userProfile = p, anonymousConsent = consent)
+            val lang = userProfileRepository.getLanguage()
+            _uiState.value = _uiState.value.copy(
+                userProfile = p,
+                anonymousConsent = consent,
+                selectedLanguage = lang,
+            )
+        }
+    }
+
+    private fun observeLanguage() {
+        viewModelScope.launch {
+            userProfileRepository.languageFlow.collect { lang ->
+                _uiState.value = _uiState.value.copy(selectedLanguage = lang)
+            }
+        }
+    }
+
+    fun selectLanguage(language: AppLanguage) {
+        viewModelScope.launch {
+            userProfileRepository.setLanguage(language)
+            _uiState.value = _uiState.value.copy(selectedLanguage = language)
         }
     }
 

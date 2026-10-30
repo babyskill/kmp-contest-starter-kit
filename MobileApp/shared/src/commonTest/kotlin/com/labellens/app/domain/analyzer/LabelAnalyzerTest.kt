@@ -1,6 +1,7 @@
 package com.labellens.app.domain.analyzer
 
 import com.labellens.app.domain.model.Allergen
+import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.AvoidPreference
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.DietaryGoal
@@ -51,6 +52,7 @@ class LabelAnalyzerTest {
             userProfile = UserProfile(),
             category = sample.category,
             scanSource = ScanSource.SAMPLE,
+            language = AppLanguage.ENGLISH,
         )
 
         assertEquals("Honey Oat Cereal", result.productName)
@@ -71,6 +73,7 @@ class LabelAnalyzerTest {
             userProfile = profile,
             category = sample.category,
             scanSource = ScanSource.SAMPLE,
+            language = AppLanguage.ENGLISH,
         )
 
         assertEquals("Roasted Seaweed Snack", result.productName)
@@ -92,6 +95,7 @@ class LabelAnalyzerTest {
             userProfile = profile,
             category = sample.category,
             scanSource = ScanSource.SAMPLE,
+            language = AppLanguage.ENGLISH,
         )
 
         assertTrue(result.watchOutForYou.any { it.title.contains("Milk") })
@@ -108,6 +112,7 @@ class LabelAnalyzerTest {
             userProfile = UserProfile(),
             category = sample.category,
             scanSource = ScanSource.SAMPLE,
+            language = AppLanguage.ENGLISH,
         )
 
         val expectedDisclaimer = "Education only - this is not medical advice."
@@ -127,6 +132,7 @@ class LabelAnalyzerTest {
             userProfile = profile,
             category = sample.category,
             scanSource = ScanSource.SAMPLE,
+            language = AppLanguage.ENGLISH,
         )
 
         assertTrue(result.watchOutForYou.any { it.title.contains("Artificial Sweetener") })
@@ -147,6 +153,7 @@ class LabelAnalyzerTest {
             userProfile = profile,
             category = sample.category,
             scanSource = ScanSource.SAMPLE,
+            language = AppLanguage.ENGLISH,
         )
 
         assertTrue(result.watchOutForYou.any { it.title.contains("Shellfish") })
@@ -162,6 +169,7 @@ class LabelAnalyzerTest {
             productName = sample.name,
             rawLabelText = sample.fullLabelText,
             userProfile = profileWithoutSesame,
+            language = AppLanguage.ENGLISH,
         )
         assertTrue(result1.watchOutForYou.none { it.title.contains("Sesame") })
 
@@ -170,7 +178,128 @@ class LabelAnalyzerTest {
             productName = sample.name,
             rawLabelText = sample.fullLabelText,
             userProfile = profileWithSesame,
+            language = AppLanguage.ENGLISH,
         )
         assertTrue(result2.watchOutForYou.any { it.title.contains("Sesame") })
+    }
+
+    @Test
+    fun testVietnameseModeFlagsAndSummaries() {
+        val sample = BuiltInSamples.sample6
+        val profile = UserProfile(
+            allergies = setOf(Allergen.SHELLFISH),
+            goals = setOf(DietaryGoal.LOW_SODIUM),
+            avoidList = setOf(AvoidPreference.MSG, AvoidPreference.HIGH_SODIUM),
+        )
+        val result = analyzer.analyze(
+            productName = sample.name,
+            rawLabelText = sample.fullLabelText,
+            userProfile = profile,
+            category = sample.category,
+            scanSource = ScanSource.SAMPLE,
+            language = AppLanguage.VIETNAMESE,
+        )
+
+        // (a) Flag titles in Vietnamese
+        assertTrue(result.watchOutForYou.any { it.title.contains("Chứa") && it.title.contains("Giáp xác") })
+        assertTrue(result.watchOutForYou.any { it.title.contains("Bột ngọt") && it.title.contains("MSG") })
+        assertTrue(result.watchOutForYou.any { it.title.contains("Hàm lượng natri cao") })
+
+        // Check quick glance
+        assertNotNull(result.quickGlance)
+        assertTrue(result.quickGlance!!.contains("lưu ý cá nhân"))
+
+        // Check disclaimer
+        val expectedVnDisclaimer = "Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế."
+        val sample4Result = analyzer.analyze(
+            productName = BuiltInSamples.sample4.name,
+            rawLabelText = BuiltInSamples.sample4.fullLabelText,
+            userProfile = UserProfile(),
+            category = BuiltInSamples.sample4.category,
+            scanSource = ScanSource.SAMPLE,
+            language = AppLanguage.VIETNAMESE,
+        )
+        assertTrue(sample4Result.verdict.endsWith(expectedVnDisclaimer))
+
+        // Ensure NO English template leftovers in result flags, summary, or glance
+        val allTitles = (result.watchOutForYou + result.worthNoting + result.goodToKnow).map { it.title }
+        assertTrue(allTitles.none { it.startsWith("Contains ") })
+        assertTrue(allTitles.none { it.startsWith("Avoid: ") })
+        assertTrue(allTitles.none { it.contains("High Sodium Level") })
+        assertFalse(result.quickGlance!!.contains("ingredients parsed"))
+        assertFalse(result.quickGlance!!.contains("personal note"))
+    }
+
+    @Test
+    fun testEnglishModeFlagsAndSemantics() {
+        val sample = BuiltInSamples.sample6
+        val profile = UserProfile(
+            allergies = setOf(Allergen.SHELLFISH),
+            goals = setOf(DietaryGoal.LOW_SODIUM),
+            avoidList = setOf(AvoidPreference.MSG, AvoidPreference.HIGH_SODIUM),
+        )
+        val result = analyzer.analyze(
+            productName = sample.name,
+            rawLabelText = sample.fullLabelText,
+            userProfile = profile,
+            category = sample.category,
+            scanSource = ScanSource.SAMPLE,
+            language = AppLanguage.ENGLISH,
+        )
+
+        // (b) English mode semantics
+        assertTrue(result.watchOutForYou.any { it.title.contains("Contains") && it.title.contains("Shellfish") })
+        assertTrue(result.watchOutForYou.any { it.title.contains("MSG") })
+        assertTrue(result.watchOutForYou.any { it.title.contains("High Sodium Level") })
+
+        assertNotNull(result.quickGlance)
+        assertTrue(result.quickGlance!!.contains("ingredients parsed"))
+        assertTrue(result.quickGlance!!.contains("personal notes"))
+    }
+
+    @Test
+    fun testFirstLaunchDefaultLanguageIsVietnamese() {
+        // (c) App default language is Vietnamese
+        assertEquals(AppLanguage.VIETNAMESE, AppLanguage.DEFAULT)
+        assertEquals("vi", AppLanguage.DEFAULT.code)
+        assertEquals("Tiếng Việt", AppLanguage.DEFAULT.displayName)
+
+        // Also test UserProfileRepository returns Vietnamese by default on fresh install
+        val fakePrefs = object : com.labellens.app.data.source.preferences.UserPreferences {
+            private val store = mutableMapOf<String, Any>()
+            override suspend fun getString(key: String, defaultValue: String?): String? = store[key] as? String ?: defaultValue
+            override suspend fun getInt(key: String, defaultValue: Int?): Int? = store[key] as? Int ?: defaultValue
+            override suspend fun getLong(key: String, defaultValue: Long?): Long? = store[key] as? Long ?: defaultValue
+            override suspend fun getBoolean(key: String, defaultValue: Boolean): Boolean = store[key] as? Boolean ?: defaultValue
+            override suspend fun putString(key: String, value: String) {
+                store[key] = value
+            }
+            override suspend fun putInt(key: String, value: Int) {
+                store[key] = value
+            }
+            override suspend fun putLong(key: String, value: Long) {
+                store[key] = value
+            }
+            override suspend fun putBoolean(key: String, value: Boolean) {
+                store[key] = value
+            }
+            override suspend fun remove(key: String) {
+                store.remove(key)
+            }
+            override suspend fun clear() {
+                store.clear()
+            }
+            override suspend fun hasSeenExitDownsell(): Boolean = false
+            override suspend fun setExitDownsellSeen(seen: Boolean) {}
+            override suspend fun getDownsellStartTimeMillis(): Long? = null
+            override suspend fun setDownsellStartTimeMillis(timeMillis: Long) {}
+        }
+
+        val repo = com.labellens.app.data.repository.UserProfileRepositoryImpl(fakePrefs)
+        kotlinx.coroutines.test.runTest {
+            val initialLang = repo.getLanguage()
+            assertEquals(AppLanguage.VIETNAMESE, initialLang)
+            assertEquals(AppLanguage.VIETNAMESE, repo.languageFlow.value)
+        }
     }
 }

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -30,6 +29,20 @@ import androidx.compose.ui.unit.sp
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.analyzer.KnowledgeBase
 import com.labellens.app.domain.model.KnowledgeIngredient
+import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.btn_back
+import com.labellens.app.generated.resources.ingredient_avoid_flagged
+import com.labellens.app.generated.resources.ingredient_avoid_safe
+import com.labellens.app.generated.resources.ingredient_detail_title
+import com.labellens.app.generated.resources.ingredient_fallback_standard
+import com.labellens.app.generated.resources.ingredient_section_aliases
+import com.labellens.app.generated.resources.ingredient_section_dose_context
+import com.labellens.app.generated.resources.ingredient_section_sources
+import com.labellens.app.generated.resources.ingredient_section_what_is_it
+import com.labellens.app.generated.resources.ingredient_section_who_avoid
+import com.labellens.app.generated.resources.ingredient_section_why_used
+import com.labellens.app.generated.resources.ingredient_sources_description
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun IngredientDetailScreen(
@@ -58,12 +71,12 @@ fun IngredientDetailScreen(
                 IconButton(onClick = onNavigateBack) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(Res.string.btn_back),
                         tint = AppTheme.colors.text.primary,
                     )
                 }
                 Text(
-                    text = "Ingredient Detail",
+                    text = stringResource(Res.string.ingredient_detail_title),
                     style = AppTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.text.primary,
@@ -89,7 +102,7 @@ fun IngredientDetailScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = ingredient?.category ?: "Food Ingredient",
+                        text = ingredient?.category ?: stringResource(Res.string.ingredient_fallback_standard),
                         style = AppTheme.typography.bodyMedium.copy(
                             color = AppTheme.colors.primary,
                             fontWeight = FontWeight.SemiBold,
@@ -102,39 +115,37 @@ fun IngredientDetailScreen(
         // Section: What it is
         item {
             InfoSectionCard(
-                title = "What it is",
+                title = stringResource(Res.string.ingredient_section_what_is_it),
                 description = ingredient?.plainExplanation
-                    ?: "Standard culinary ingredient commonly present on packaged food and beverage labels.",
+                    ?: stringResource(Res.string.ingredient_avoid_safe),
             )
         }
 
         // Section: Why it is used
         item {
             InfoSectionCard(
-                title = "Why it is used",
-                description = ingredient?.whyUsed
-                    ?: "Contributes to structure, shelf freshness, or standard culinary flavoring.",
+                title = stringResource(Res.string.ingredient_section_why_used),
+                description = ingredient?.whyUsed ?: "",
             )
         }
 
         // Section: Dose / Context note
         item {
             InfoSectionCard(
-                title = "Dose / Context note",
-                description = ingredient?.doseContextNote
-                    ?: "Standard food-grade usage in accordance with dietary regulatory codex.",
+                title = stringResource(Res.string.ingredient_section_dose_context),
+                description = ingredient?.doseContextNote ?: "",
             )
         }
 
         // Section: Who may want to avoid it
         item {
             val avoidText = if (ingredient?.avoidForTags?.isNotEmpty() == true) {
-                "Flagged for: ${ingredient.avoidForTags.joinToString(", ")}. Check your personal allergens and goals."
+                stringResource(Res.string.ingredient_avoid_flagged, ingredient.avoidForTags.joinToString(", "))
             } else {
-                "Generally recognized as safe with no common restricted dietary flags."
+                stringResource(Res.string.ingredient_avoid_safe)
             }
             InfoSectionCard(
-                title = "Who may want to avoid it",
+                title = stringResource(Res.string.ingredient_section_who_avoid),
                 description = avoidText,
             )
         }
@@ -143,7 +154,7 @@ fun IngredientDetailScreen(
         if (ingredient != null && ingredient.aliases.isNotEmpty()) {
             item {
                 InfoSectionCard(
-                    title = "Label Aliases & Multilingual Names",
+                    title = stringResource(Res.string.ingredient_section_aliases),
                     description = ingredient.aliases.joinToString(" • "),
                 )
             }
@@ -152,8 +163,8 @@ fun IngredientDetailScreen(
         // Section: Sources Note
         item {
             InfoSectionCard(
-                title = "Sources & Standards",
-                description = "Knowledge synthesized from Codex Alimentarius, US FDA GRAS notices, European Food Safety Authority (EFSA), and regional food standards agencies.",
+                title = stringResource(Res.string.ingredient_section_sources),
+                description = stringResource(Res.string.ingredient_sources_description),
             )
         }
     }
@@ -161,6 +172,7 @@ fun IngredientDetailScreen(
 
 @Composable
 private fun InfoSectionCard(title: String, description: String) {
+    if (description.isBlank()) return
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),

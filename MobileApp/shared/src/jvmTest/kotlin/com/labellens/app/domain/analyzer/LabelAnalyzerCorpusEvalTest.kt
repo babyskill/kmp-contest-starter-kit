@@ -89,6 +89,7 @@ class LabelAnalyzerCorpusEvalTest {
                 productName = gt.productName,
                 rawLabelText = labelText,
                 userProfile = allAllergensProfile,
+                language = com.labellens.app.domain.model.AppLanguage.ENGLISH,
             )
 
             val criticalErrors = mutableListOf<String>()

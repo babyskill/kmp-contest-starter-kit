@@ -19,12 +19,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -46,12 +46,42 @@ import androidx.compose.ui.unit.sp
 import com.labellens.app.designsystem.components.AppButton
 import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
+import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.FlagSeverity
 import com.labellens.app.domain.model.FlaggedItem
 import com.labellens.app.domain.model.IngredientBreakdown
 import com.labellens.app.domain.model.LabelAnalysisResult
-import com.labellens.app.domain.model.NutritionFact
+import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.action_details
+import com.labellens.app.generated.resources.action_favorite
+import com.labellens.app.generated.resources.btn_back
+import com.labellens.app.generated.resources.result_action_collapse
+import com.labellens.app.generated.resources.result_action_expand
+import com.labellens.app.generated.resources.result_btn_accurate
+import com.labellens.app.generated.resources.result_btn_compare
+import com.labellens.app.generated.resources.result_btn_needs_fix
+import com.labellens.app.generated.resources.result_btn_save_history
+import com.labellens.app.generated.resources.result_btn_saved_history
+import com.labellens.app.generated.resources.result_feedback_prompt
+import com.labellens.app.generated.resources.result_feedback_thanks
+import com.labellens.app.generated.resources.result_header_title
+import com.labellens.app.generated.resources.result_loading
+import com.labellens.app.generated.resources.result_personal_summary_contains
+import com.labellens.app.generated.resources.result_personal_summary_nothing
+import com.labellens.app.generated.resources.result_personal_summary_prefix
+import com.labellens.app.generated.resources.result_section_breakdown_subtitle
+import com.labellens.app.generated.resources.result_section_breakdown_title
+import com.labellens.app.generated.resources.result_section_good_to_know_subtitle
+import com.labellens.app.generated.resources.result_section_good_to_know_title
+import com.labellens.app.generated.resources.result_section_nutrition_subtitle
+import com.labellens.app.generated.resources.result_section_nutrition_title
+import com.labellens.app.generated.resources.result_section_watch_out_subtitle
+import com.labellens.app.generated.resources.result_section_watch_out_title
+import com.labellens.app.generated.resources.result_section_worth_noting_subtitle
+import com.labellens.app.generated.resources.result_section_worth_noting_title
+import com.labellens.app.generated.resources.result_see_label_text
 import com.labellens.app.presentation.navigation.ResultScreenRoute
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ResultScreen(
@@ -79,9 +109,22 @@ fun ResultScreen(
     if (result == null) {
         Box(
             modifier = modifier.fillMaxSize().background(AppTheme.colors.background),
-            contentAlignment = Alignment.Center,
         ) {
-            Text("Loading label analysis...", style = AppTheme.typography.bodyLarge)
+            IconButton(
+                onClick = onNavigateBack,
+                modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = stringResource(Res.string.btn_back),
+                    tint = AppTheme.colors.text.primary,
+                )
+            }
+            Text(
+                text = stringResource(Res.string.result_loading),
+                style = AppTheme.typography.bodyLarge,
+                modifier = Modifier.align(Alignment.Center),
+            )
         }
         return
     }
@@ -91,30 +134,68 @@ fun ResultScreen(
             .fillMaxSize()
             .background(AppTheme.colors.background)
             .padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(top = 24.dp, bottom = 140.dp),
+        contentPadding = PaddingValues(top = 16.dp, bottom = 140.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
+        // Top Header Bar with Back Button & Favorite Toggle
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = stringResource(Res.string.btn_back),
+                        tint = AppTheme.colors.text.primary,
+                    )
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = stringResource(Res.string.result_header_title),
+                    style = AppTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.text.primary,
+                    ),
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(onClick = { viewModel.toggleFavorite() }) {
+                    Icon(
+                        imageVector = if (state.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = stringResource(Res.string.action_favorite),
+                        tint = if (state.isFavorite) Color(0xFFB3261E) else AppTheme.colors.text.secondary,
+                    )
+                }
+            }
+        }
+
         // At-a-glance one-line personal summary banner
         item {
-            val personalSummaryText = remember(result.watchOutForYou) {
+            val personalSummaryNothing = stringResource(Res.string.result_personal_summary_nothing)
+            val personalSummaryPrefix = stringResource(Res.string.result_personal_summary_prefix)
+            val personalSummaryContainsTemplate = stringResource(Res.string.result_personal_summary_contains)
+
+            val personalSummaryText = remember(result.watchOutForYou, state.language, personalSummaryNothing, personalSummaryPrefix, personalSummaryContainsTemplate) {
                 if (result.watchOutForYou.isEmpty()) {
-                    "For your profile: nothing flagged"
+                    personalSummaryNothing
                 } else {
                     val flags = result.watchOutForYou.map { item ->
                         when (item.severity) {
                             FlagSeverity.PERSONAL_ALLERGEN -> {
-                                val allergenName = item.title.removePrefix("Contains ").lowercase()
-                                "contains $allergenName (your allergen)"
+                                val allergenName = if (state.language == AppLanguage.VIETNAMESE) {
+                                    item.title.removePrefix("Chứa ").lowercase()
+                                } else {
+                                    item.title.removePrefix("Contains ").lowercase()
+                                }
+                                personalSummaryContainsTemplate.replace("%1\$s", allergenName)
                             }
 
-                            FlagSeverity.PERSONAL_AVOID -> {
-                                item.title.lowercase()
-                            }
+                            FlagSeverity.PERSONAL_AVOID -> item.title.lowercase()
 
                             else -> item.title.lowercase()
                         }
                     }
-                    "For your profile: " + flags.joinToString(" · ")
+                    personalSummaryPrefix + flags.joinToString(" · ")
                 }
             }
 
@@ -155,28 +236,14 @@ fun ResultScreen(
                 colors = CardDefaults.cardColors(containerColor = Color.White),
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = result.productName,
-                            style = AppTheme.typography.headlineMedium.copy(
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = AppTheme.colors.text.primary,
-                            ),
-                            modifier = Modifier.weight(1f),
-                        )
-                        IconButton(onClick = { viewModel.toggleFavorite() }) {
-                            Icon(
-                                imageVector = if (state.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = "Favorite",
-                                tint = if (state.isFavorite) Color(0xFFB3261E) else AppTheme.colors.text.secondary,
-                            )
-                        }
-                    }
+                    Text(
+                        text = result.productName,
+                        style = AppTheme.typography.headlineMedium.copy(
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.colors.text.primary,
+                        ),
+                    )
 
                     result.sourceAttribution?.let { source ->
                         Spacer(modifier = Modifier.height(4.dp))
@@ -216,8 +283,8 @@ fun ResultScreen(
         if (result.watchOutForYou.isNotEmpty()) {
             item {
                 SectionHeader(
-                    title = "Watch out for you",
-                    subtitle = "Matches against your personal profile",
+                    title = stringResource(Res.string.result_section_watch_out_title),
+                    subtitle = stringResource(Res.string.result_section_watch_out_subtitle),
                 )
             }
             items(result.watchOutForYou) { item ->
@@ -229,8 +296,8 @@ fun ResultScreen(
         if (result.worthNoting.isNotEmpty()) {
             item {
                 SectionHeader(
-                    title = "Worth noting",
-                    subtitle = "Notable additives, flavorings, or preservatives",
+                    title = stringResource(Res.string.result_section_worth_noting_title),
+                    subtitle = stringResource(Res.string.result_section_worth_noting_subtitle),
                 )
             }
             items(result.worthNoting) { item ->
@@ -242,8 +309,8 @@ fun ResultScreen(
         if (result.goodToKnow.isNotEmpty()) {
             item {
                 SectionHeader(
-                    title = "Good to know",
-                    subtitle = "Positive attributes and wholesome ingredients",
+                    title = stringResource(Res.string.result_section_good_to_know_title),
+                    subtitle = stringResource(Res.string.result_section_good_to_know_subtitle),
                 )
             }
             items(result.goodToKnow) { item ->
@@ -254,8 +321,8 @@ fun ResultScreen(
         // Section 4: Full breakdown (Expandable rows leading to Ingredient Detail)
         item {
             SectionHeader(
-                title = "Full breakdown",
-                subtitle = "Tap any ingredient for its culinary purpose & dose context",
+                title = stringResource(Res.string.result_section_breakdown_title),
+                subtitle = stringResource(Res.string.result_section_breakdown_subtitle),
             )
         }
         items(result.fullBreakdown) { ingredient ->
@@ -269,8 +336,8 @@ fun ResultScreen(
         if (result.nutritionHighlights.isNotEmpty()) {
             item {
                 SectionHeader(
-                    title = "Nutrition highlights",
-                    subtitle = "Key nutritional values parsed from label",
+                    title = stringResource(Res.string.result_section_nutrition_title),
+                    subtitle = stringResource(Res.string.result_section_nutrition_subtitle),
                 )
             }
             item {
@@ -334,12 +401,12 @@ fun ResultScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "See the label text",
+                            text = stringResource(Res.string.result_see_label_text),
                             style = AppTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                             color = AppTheme.colors.text.primary,
                         )
                         Text(
-                            text = if (state.isLabelTextExpanded) "Collapse" else "Expand",
+                            text = stringResource(if (state.isLabelTextExpanded) Res.string.result_action_collapse else Res.string.result_action_expand),
                             style = AppTheme.typography.bodySmall.copy(color = AppTheme.colors.primary, fontWeight = FontWeight.SemiBold),
                         )
                     }
@@ -369,7 +436,7 @@ fun ResultScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        text = if (state.feedbackSubmitted) "Thank you for your feedback!" else "Was this label analysis helpful?",
+                        text = stringResource(if (state.feedbackSubmitted) Res.string.result_feedback_thanks else Res.string.result_feedback_prompt),
                         style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                         color = AppTheme.colors.text.primary,
                     )
@@ -379,13 +446,13 @@ fun ResultScreen(
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
                             AppButton(
-                                text = "Accurate",
+                                text = stringResource(Res.string.result_btn_accurate),
                                 size = com.labellens.app.designsystem.components.ButtonSize.SMALL,
                                 style = ButtonStyle.PRIMARY,
                                 onClick = { viewModel.submitFeedback(true) },
                             )
                             AppButton(
-                                text = "Needs Fix",
+                                text = stringResource(Res.string.result_btn_needs_fix),
                                 size = com.labellens.app.designsystem.components.ButtonSize.SMALL,
                                 style = ButtonStyle.ALTERNATIVE,
                                 onClick = { viewModel.submitFeedback(false) },
@@ -403,13 +470,13 @@ fun ResultScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 AppButton(
-                    text = if (state.isSaved) "Saved to History" else "Save to History",
+                    text = stringResource(if (state.isSaved) Res.string.result_btn_saved_history else Res.string.result_btn_save_history),
                     enabled = !state.isSaved,
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.saveToHistory() },
                 )
                 AppButton(
-                    text = "Compare",
+                    text = stringResource(Res.string.result_btn_compare),
                     style = ButtonStyle.ALTERNATIVE,
                     modifier = Modifier.weight(1f),
                     onClick = { onNavigateToCompare(result) },
@@ -525,7 +592,7 @@ private fun IngredientRow(
             }
             Icon(
                 imageVector = Icons.Default.ArrowForward,
-                contentDescription = "Details",
+                contentDescription = stringResource(Res.string.action_details),
                 tint = AppTheme.colors.outline,
                 modifier = Modifier.size(16.dp),
             )

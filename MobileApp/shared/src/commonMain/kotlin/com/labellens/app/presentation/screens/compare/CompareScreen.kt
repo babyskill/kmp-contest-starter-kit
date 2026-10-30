@@ -32,6 +32,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.model.LabelAnalysisResult
+import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.compare_available_products
+import com.labellens.app.generated.resources.compare_badge_product_a
+import com.labellens.app.generated.resources.compare_badge_product_b
+import com.labellens.app.generated.resources.compare_flagged_items_title
+import com.labellens.app.generated.resources.compare_no_flags
+import com.labellens.app.generated.resources.compare_nutrition_metrics_title
+import com.labellens.app.generated.resources.compare_subtitle
+import com.labellens.app.generated.resources.compare_title
+import com.labellens.app.generated.resources.compare_verdicts_title
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CompareScreen(
@@ -52,7 +63,7 @@ fun CompareScreen(
     ) {
         item {
             Text(
-                text = "Compare Products",
+                text = stringResource(Res.string.compare_title),
                 style = AppTheme.typography.headlineLarge.copy(
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
@@ -61,7 +72,7 @@ fun CompareScreen(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Pick any two scanned or sample products for a calm side-by-side view.",
+                text = stringResource(Res.string.compare_subtitle),
                 style = AppTheme.typography.bodyMedium,
                 color = AppTheme.colors.text.secondary,
             )
@@ -70,7 +81,7 @@ fun CompareScreen(
         // Product Selector Carousel
         item {
             Text(
-                text = "Available Products",
+                text = stringResource(Res.string.compare_available_products),
                 style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = AppTheme.colors.text.primary,
             )
@@ -119,8 +130,8 @@ fun CompareScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    ProductHeaderCard(item = itemA, badge = "Product A", badgeColor = AppTheme.colors.primary, modifier = Modifier.weight(1f))
-                    ProductHeaderCard(item = itemB, badge = "Product B", badgeColor = Color(0xFFB7791F), modifier = Modifier.weight(1f))
+                    ProductHeaderCard(item = itemA, badge = stringResource(Res.string.compare_badge_product_a), badgeColor = AppTheme.colors.primary, modifier = Modifier.weight(1f))
+                    ProductHeaderCard(item = itemB, badge = stringResource(Res.string.compare_badge_product_b), badgeColor = Color(0xFFB7791F), modifier = Modifier.weight(1f))
                 }
             }
 
@@ -132,7 +143,7 @@ fun CompareScreen(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Verdicts", style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                        Text(stringResource(Res.string.compare_verdicts_title), style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text(itemA.verdict, style = AppTheme.typography.bodySmall, modifier = Modifier.weight(1f))
@@ -150,7 +161,7 @@ fun CompareScreen(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Nutrition Metrics", style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                        Text(stringResource(Res.string.compare_nutrition_metrics_title), style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                         Spacer(modifier = Modifier.height(12.dp))
                         val metrics = listOf("Calories", "Sugars", "Sodium", "Saturated Fat", "Protein", "Dietary Fiber")
                         metrics.forEach { metric ->
@@ -177,12 +188,12 @@ fun CompareScreen(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Flagged & Notable Items", style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                        Text(stringResource(Res.string.compare_flagged_items_title), style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 if (itemA.watchOutForYou.isEmpty() && itemA.worthNoting.isEmpty()) {
-                                    Text("No flags", style = AppTheme.typography.bodySmall, color = AppTheme.colors.text.secondary)
+                                    Text(stringResource(Res.string.compare_no_flags), style = AppTheme.typography.bodySmall, color = AppTheme.colors.text.secondary)
                                 } else {
                                     (itemA.watchOutForYou + itemA.worthNoting).take(4).forEach {
                                         Text("• ${it.title}", style = AppTheme.typography.bodySmall)
@@ -191,7 +202,7 @@ fun CompareScreen(
                             }
                             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 if (itemB.watchOutForYou.isEmpty() && itemB.worthNoting.isEmpty()) {
-                                    Text("No flags", style = AppTheme.typography.bodySmall, color = AppTheme.colors.text.secondary)
+                                    Text(stringResource(Res.string.compare_no_flags), style = AppTheme.typography.bodySmall, color = AppTheme.colors.text.secondary)
                                 } else {
                                     (itemB.watchOutForYou + itemB.worthNoting).take(4).forEach {
                                         Text("• ${it.title}", style = AppTheme.typography.bodySmall)

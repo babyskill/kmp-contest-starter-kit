@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -37,11 +36,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.labellens.app.designsystem.components.AppButton
-import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.model.Allergen
 import com.labellens.app.domain.model.AvoidPreference
 import com.labellens.app.domain.model.DietaryGoal
+import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.profile_allergies_subtitle
+import com.labellens.app.generated.resources.profile_allergies_title
+import com.labellens.app.generated.resources.profile_avoid_subtitle
+import com.labellens.app.generated.resources.profile_avoid_title
+import com.labellens.app.generated.resources.profile_btn_settings
+import com.labellens.app.generated.resources.profile_goals_subtitle
+import com.labellens.app.generated.resources.profile_goals_title
+import com.labellens.app.generated.resources.profile_subtitle
+import com.labellens.app.generated.resources.profile_title
+import com.labellens.app.generated.resources.settings_privacy_description
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -64,7 +74,7 @@ fun ProfileScreen(
     ) {
         item {
             Text(
-                text = "My Profile & Context",
+                text = stringResource(Res.string.profile_title),
                 style = AppTheme.typography.headlineLarge.copy(
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
@@ -73,7 +83,7 @@ fun ProfileScreen(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Personalize your safety alerts. All saved scans immediately re-flag when you update your settings.",
+                text = stringResource(Res.string.profile_subtitle),
                 style = AppTheme.typography.bodyMedium,
                 color = AppTheme.colors.text.secondary,
             )
@@ -92,7 +102,7 @@ fun ProfileScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "LabelLens Plus (Demo)",
+                            text = "LabelLens Plus",
                             style = AppTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = AppTheme.colors.primary,
@@ -100,7 +110,7 @@ fun ProfileScreen(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Safety warnings are always free. Upgrade for unlimited photo OCR analysis.",
+                            text = "Upgrade for unlimited photo OCR analysis.",
                             style = AppTheme.typography.bodySmall,
                             color = AppTheme.colors.text.secondary,
                         )
@@ -123,13 +133,13 @@ fun ProfileScreen(
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
                     Text(
-                        text = "My Allergies",
+                        text = stringResource(Res.string.profile_allergies_title),
                         style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = Color(0xFFB3261E),
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Strict personal alerts. Highlights in red whenever detected on a label.",
+                        text = stringResource(Res.string.profile_allergies_subtitle),
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.text.secondary,
                     )
@@ -142,7 +152,7 @@ fun ProfileScreen(
                         Allergen.entries.forEach { allergen ->
                             val isSelected = profile.allergies.contains(allergen)
                             FilterToggleChip(
-                                label = allergen.displayName,
+                                label = allergen.localizedName(state.selectedLanguage),
                                 isSelected = isSelected,
                                 activeColor = Color(0xFFB3261E),
                                 activeBg = Color(0xFFFDECEA),
@@ -163,13 +173,13 @@ fun ProfileScreen(
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
                     Text(
-                        text = "Ingredients to Avoid",
+                        text = stringResource(Res.string.profile_avoid_title),
                         style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = Color(0xFFB7791F),
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Flagged under 'Watch out for you' with clear context.",
+                        text = stringResource(Res.string.profile_avoid_subtitle),
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.text.secondary,
                     )
@@ -182,7 +192,7 @@ fun ProfileScreen(
                         AvoidPreference.entries.forEach { avoid ->
                             val isSelected = profile.avoidList.contains(avoid)
                             FilterToggleChip(
-                                label = avoid.displayName,
+                                label = avoid.localizedName(state.selectedLanguage),
                                 isSelected = isSelected,
                                 activeColor = Color(0xFFB7791F),
                                 activeBg = Color(0xFFFBF3DF),
@@ -203,13 +213,13 @@ fun ProfileScreen(
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
                     Text(
-                        text = "Dietary Goals & Cautions",
+                        text = stringResource(Res.string.profile_goals_title),
                         style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = AppTheme.colors.primary,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Tailors the verdict and nutrition breakdown to your health focus.",
+                        text = stringResource(Res.string.profile_goals_subtitle),
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.text.secondary,
                     )
@@ -222,7 +232,7 @@ fun ProfileScreen(
                         DietaryGoal.entries.forEach { goal ->
                             val isSelected = profile.goals.contains(goal)
                             FilterToggleChip(
-                                label = goal.displayName,
+                                label = goal.localizedName(state.selectedLanguage),
                                 isSelected = isSelected,
                                 activeColor = AppTheme.colors.primary,
                                 activeBg = Color(0xFFEDF2ED),
@@ -248,19 +258,20 @@ fun ProfileScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Settings, Privacy & Disclaimers",
+                            text = stringResource(Res.string.profile_btn_settings),
                             style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                             color = AppTheme.colors.text.primary,
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "On-device processing details, telemetry toggle, and medical disclaimer.",
+                            text = stringResource(Res.string.settings_privacy_description),
                             style = AppTheme.typography.bodySmall,
                             color = AppTheme.colors.text.secondary,
+                            maxLines = 2,
                         )
                     }
                     Text(
-                        text = "Open ->",
+                        text = "->",
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.primary,
                         style = AppTheme.typography.bodySmall,
@@ -299,14 +310,14 @@ private fun FilterToggleChip(
                         imageVector = Icons.Default.Check,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(12.dp),
+                        modifier = Modifier.size(10.dp),
                     )
                 }
                 Spacer(modifier = Modifier.width(6.dp))
             }
             Text(
                 text = label,
-                style = AppTheme.typography.bodyMedium.copy(
+                style = AppTheme.typography.bodySmall.copy(
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                     color = if (isSelected) activeColor else AppTheme.colors.text.primary,
                 ),

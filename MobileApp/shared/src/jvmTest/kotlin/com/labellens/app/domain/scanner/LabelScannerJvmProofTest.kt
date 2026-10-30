@@ -33,6 +33,7 @@ class LabelScannerJvmProofTest {
             rawLabelText = rawOcrText,
             userProfile = profile,
             scanSource = com.labellens.app.domain.model.ScanSource.PHOTO,
+            language = com.labellens.app.domain.model.AppLanguage.ENGLISH,
         )
 
         // Verifications
