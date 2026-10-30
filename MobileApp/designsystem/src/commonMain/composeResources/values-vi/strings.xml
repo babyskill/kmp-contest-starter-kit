@@ -1,0 +1,67 @@
+<resources>
+    <string name="bottom_nav_label_home">Trang chủ</string>
+    <string name="bottom_nav_label_profile">Hồ sơ</string>
+    <string name="bottom_nav_label_favorites">Yêu thích</string>
+    <string name="title_error_dialog">Lỗi</string>
+    <string name="btn_ok">OK</string>
+    <string name="btn_logout">Đăng xuất</string>
+    <string name="btn_delete_account">Xóa tài khoản</string>
+    <string name="title_delete_user_dialog">Xóa tài khoản?</string>
+    <string name="subtitle_delete_user_dialog">Bạn có chắc chắn muốn xóa tài khoản của mình không?</string>
+    <string name="description_delete_user_dialog">Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn người dùng cùng toàn bộ dữ liệu liên quan. Vì lý do bảo mật, bạn sẽ cần đăng nhập hoặc xác thực lại để tiếp tục. Bạn có chắc chắn không?</string>
+    <string name="btn_delete">Xóa</string>
+    <string name="btn_cancel">Hủy</string>
+    <string name="privacy_policy">Chính sách quyền riêng tư</string>
+    <string name="terms_conditions">Điều khoản &amp; Điều kiện</string>
+    <string name="and">và</string>
+    <string name="txt_agree_privacy_policy_and_terms">Bằng việc tiếp tục, tôi đồng ý với </string>
+    <string name="title_info">Thông tin</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="help_and_support">Trợ giúp &amp; Hỗ trợ</string>
+    <string name="btn_logout_confirm">Có, Đăng xuất</string>
+    <string name="text_logout_confirmation">Bạn có chắc chắn muốn đăng xuất không?</string>
+    <string name="current_plan">Gói hiện tại của bạn</string>
+    <string name="free">Miễn phí</string>
+    <string name="lifetime_premium_subscription_renewal_text">Cảm ơn bạn đã mua gói một lần. Bạn có quyền truy cập vào tất cả các tính năng cao cấp với giấy phép trọn đời — không cần gia hạn!</string>
+    <string name="premium_subscription_renewal_text">Gói đăng ký của bạn là định kỳ và ngày thanh toán tiếp theo là %1$s. Bạn có thể hủy hoặc gia hạn gói đăng ký bất kỳ lúc nào tại đây.</string>
+    <string name="premium_subscription_non_recurring_text">Gói đăng ký của bạn không định kỳ và sẽ hết hạn vào %1$s. Bạn có thể gia hạn gói đăng ký bất kỳ lúc nào tại đây.</string>
+    <string name="text_here">tại đây</string>
+    <string name="title_successful_purchase">Xin chúc mừng!</string>
+    <string name="subtitle_successful_purchase">Bạn hiện đã có quyền truy cập cao cấp. Hãy tận hưởng tất cả các tính năng độc quyền!</string>
+    <string name="btn_action_successful_purchase">Khám phá quyền lợi cao cấp</string>
+    <string name="benefits">Quyền lợi</string>
+    <string name="banner_title_upgrade_premium">Nâng cấp Premium</string>
+    <string name="banner_subtitle_upgrade_premium">Tận hưởng toàn bộ quyền lợi cao cấp.</string>
+    <string name="btn_action_upgrade_premium">Nâng cấp</string>
+    <string name="btn_sign_in_with_google">Đăng nhập bằng Google</string>
+    <string name="btn_sign_in_with_apple">Đăng nhập bằng Apple</string>
+    <string name="btn_continue_with_google">Tiếp tục với Google</string>
+    <string name="btn_continue_with_apple">Tiếp tục với Apple</string>
+
+    <!--    AddOrChooseFileContainer Strings -->
+    <string name="btn_choose_from_gallery">Chọn từ thư viện</string>
+
+    <!--    AddOrChooseFileContainer Photo Source Modal Strings -->
+    <string name="select_photo_source_modal_title">Chọn nguồn ảnh</string>
+    <string name="btn_take_photo">Chụp ảnh</string>
+    <string name="btn_add_image">Thêm ảnh</string>
+    <string name="btn_change_image">Đổi ảnh</string>
+    <string name="btn_add_more_images">Thêm ảnh khác (%1$d/%2$d)</string>
+    <string name="add_image_title">Thêm ảnh</string>
+    <string name="add_image_description">Chạm để thêm ảnh</string>
+    <string name="image_selected_title">Đã chọn ảnh</string>
+    <string name="image_selected_description">Bạn đã chọn ảnh của mình</string>
+
+    <!--    AddOrChooseFileContainer Video Source Modal Strings -->
+    <string name="select_video_source_modal_title">Chọn nguồn video</string>
+    <string name="btn_record_video">Quay video</string>
+    <string name="btn_add_video">Thêm video</string>
+    <string name="btn_change_video">Đổi video</string>
+    <string name="btn_add_more_videos">Thêm video khác (%1$d/%2$d)</string>
+    <string name="add_video_title">Thêm video</string>
+    <string name="add_video_description">Chạm để thêm video</string>
+    <string name="video_selected_title">Đã chọn video</string>
+    <string name="video_selected_description">Bạn đã chọn video của mình</string>
+
+    <string name="tip_text_for_better_result">Mẹo: Căn giữa đối tượng, dùng đủ ánh sáng và giữ hậu cảnh đơn giản để có kết quả tốt nhất!</string>
+</resources>

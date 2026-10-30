@@ -17,6 +17,7 @@ interface UserPreferences {
         const val KEY_DOWNSELL_START_TIME_MILLIS = "KEY_DOWNSELL_START_TIME_MILLIS"
         const val KEY_ANONYMOUS_ID = "KEY_ANONYMOUS_ID"
         const val KEY_IS_DEV_MODE_ENABLED = "KEY_IS_DEV_MODE_ENABLED"
+        const val KEY_APP_LANGUAGE = "KEY_APP_LANGUAGE"
     }
 
     suspend fun getString(key: String, defaultValue: String? = null): String?
