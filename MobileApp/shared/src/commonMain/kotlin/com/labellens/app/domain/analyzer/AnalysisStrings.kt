@@ -117,8 +117,207 @@ object AnalysisStrings {
         AppLanguage.ENGLISH -> "Found in $canonicalName; moderate intake during pregnancy."
     }
 
+    fun categoryName(language: AppLanguage, category: String): String = when (language) {
+        AppLanguage.VIETNAMESE -> when (category.trim()) {
+            "Acidity Regulator / Antioxidant" -> "Chất điều chỉnh độ acid / Chất chống oxy hóa"
+
+            "Acidulant" -> "Chất điều chỉnh độ acid"
+
+            "Acidulant / Preservative" -> "Chất điều chỉnh độ acid / Chất bảo quản"
+
+            "Alkaline Agent / Leavener" -> "Chất tạo kiềm / Chất tạo xốp"
+
+            "Alkaline Salt" -> "Muối kiềm"
+
+            "Allium / Spice" -> "Hành tỏi / Gia vị"
+
+            "Animal Fat" -> "Mỡ động vật"
+
+            "Animal Protein" -> "Đạm động vật"
+
+            "Animal Protein / Gelling Agent" -> "Đạm động vật / Chất tạo gel"
+
+            "Anti-Caking Agent" -> "Chất chống đông vón"
+
+            "Antioxidant" -> "Chất chống oxy hóa"
+
+            "Antioxidant / Nutrient" -> "Chất chống oxy hóa / Dưỡng chất"
+
+            "Aromatic Rhizome" -> "Củ gia vị thơm"
+
+            "Base Liquid" -> "Dung dịch nền"
+
+            "Botanical Extract" -> "Chiết xuất thực vật"
+
+            "Carbohydrate / Carrier" -> "Carbohydrate / Chất mang"
+
+            "Citrus Herb" -> "Thảo mộc họ cam chanh"
+
+            "Condiment / Fermented Food" -> "Gia vị / Thực phẩm lên men"
+
+            "Curing Agent / Preservative" -> "Chất ủ muối / Chất bảo quản"
+
+            "Dairy" -> "Chế phẩm từ sữa"
+
+            "Dairy Fat" -> "Chất béo từ sữa"
+
+            "Emulsifier" -> "Chất nhũ hóa"
+
+            "Emulsifier / Protein Source" -> "Chất nhũ hóa / Nguồn đạm"
+
+            "Fermented Chili Paste" -> "Tương ớt lên men"
+
+            "Fermented Seasoning" -> "Gia vị lên men"
+
+            "Fermented Vinegar" -> "Giấm lên men"
+
+            "Firming Agent / Electrolyte" -> "Chất làm rắn / Chất điện giải"
+
+            "Fish / Seafood" -> "Cá / Hải sản"
+
+            "Flavor Enhancer" -> "Chất điều vị"
+
+            "Flavoring" -> "Hương liệu"
+
+            "Flavoring / Mold Inhibitor" -> "Hương liệu / Chất ức chế nấm mốc"
+
+            "Flow Agent / Lubricant" -> "Chất chống dính / Chất trợ chảy"
+
+            "Food Coloring" -> "Phẩm màu thực phẩm"
+
+            "Gelling Agent" -> "Chất tạo gel"
+
+            "Grain / Carbohydrate" -> "Ngũ cốc / Carbohydrate"
+
+            "Herb" -> "Thảo mộc"
+
+            "Herb / Seed" -> "Thảo mộc / Hạt giống"
+
+            "Humectant" -> "Chất giữ ẩm"
+
+            "Leavening Agent" -> "Chất tạo xốp"
+
+            "Marine Botanical" -> "Thực vật biển"
+
+            "Marine Botanical / Umami" -> "Rong biển / Vị Umami"
+
+            "Marine Protein" -> "Đạm hải sản"
+
+            "Mineral" -> "Khoáng chất"
+
+            "Mineral / Anti-Caking Agent" -> "Khoáng chất / Chất chống đông vón"
+
+            "Mineral / Color / Antacid" -> "Khoáng chất / Phẩm màu / Kháng acid"
+
+            "Mineral / Seasoning" -> "Khoáng chất / Gia vị"
+
+            "Mineral Compound" -> "Hợp chất khoáng"
+
+            "Mineral Pigment" -> "Sắc tố khoáng"
+
+            "Moisture Retention / Phosphate" -> "Chất giữ ẩm / Phosphat"
+
+            "Mold Inhibitor" -> "Chất ức chế nấm mốc"
+
+            "Mushroom Botanical / Umami" -> "Chiết xuất nấm / Vị Umami"
+
+            "Natural Antioxidant" -> "Chất chống oxy hóa tự nhiên"
+
+            "Natural Color" -> "Phẩm màu tự nhiên"
+
+            "Natural Plant Pigment" -> "Sắc tố thực vật tự nhiên"
+
+            "Natural Spice / Color" -> "Gia vị tự nhiên / Màu thực phẩm"
+
+            "Natural Sweetener" -> "Chất tạo ngọt tự nhiên"
+
+            "Non-Nutritive Sweetener" -> "Chất tạo ngọt không calo"
+
+            "Nut / Legume" -> "Hạt dinh dưỡng / Đậu"
+
+            "Nut / Seed Butter" -> "Bơ hạt dinh dưỡng"
+
+            "Plant / Botanical" -> "Thực vật / Thảo mộc"
+
+            "Plant Botanical" -> "Chiết xuất thực vật"
+
+            "Plant Emulsifier" -> "Chất nhũ hóa thực vật"
+
+            "Plant Fat" -> "Chất béo thực vật"
+
+            "Plant Gelling Agent" -> "Chất tạo gel thực vật"
+
+            "Plant Oil" -> "Dầu thực vật"
+
+            "Plant-Based Sweetener" -> "Chất tạo ngọt từ thực vật"
+
+            "Preservative" -> "Chất bảo quản"
+
+            "Protein / Binding Agent" -> "Chất đạm / Chất kết dính"
+
+            "Salt Substitute" -> "Chất thay thế muối"
+
+            "Savory Flavoring" -> "Gia vị đậm đà"
+
+            "Seed / Oil" -> "Hạt lấy dầu"
+
+            "Shellfish" -> "Hải sản giáp xác"
+
+            "Simple Sugar" -> "Đường đơn"
+
+            "Spice" -> "Gia vị"
+
+            "Spice / Herb" -> "Gia vị / Thảo mộc"
+
+            "Starch" -> "Tinh bột"
+
+            "Sugar Alcohol" -> "Đường rượu (Polyol)"
+
+            "Sweetener" -> "Chất tạo ngọt"
+
+            "Synthetic Antioxidant" -> "Chất chống oxy hóa tổng hợp"
+
+            "Synthetic Dye" -> "Phẩm màu tổng hợp"
+
+            "Synthetic Emulsifier" -> "Chất nhũ hóa tổng hợp"
+
+            "Thickener / Stabilizer" -> "Chất làm dày / Chất ổn định"
+
+            "Tree Nut" -> "Hạt cây dinh dưỡng"
+
+            "Vegetable Fat" -> "Chất béo thực vật"
+
+            "Vegetable Oil" -> "Dầu thực vật"
+
+            "Vitamin" -> "Vitamin"
+
+            "Vitamin / Color" -> "Vitamin / Phẩm màu"
+
+            "Vitamin / Supplement Active" -> "Vitamin / Hoạt chất bổ sung"
+
+            "Whole Grain" -> "Ngũ cốc nguyên hạt"
+
+            else -> when (category.lowercase().trim()) {
+                "sweetener" -> "chất tạo ngọt"
+                "preservative" -> "chất bảo quản"
+                "seasoning" -> "gia vị"
+                "emulsifier" -> "chất nhũ hóa"
+                "antioxidant" -> "chất chống oxy hóa"
+                "acidulant" -> "chất điều chỉnh độ acid"
+                "thickener" -> "chất làm dày"
+                "stabilizer" -> "chất ổn định"
+                "color" -> "phẩm màu"
+                "flavor" -> "hương liệu"
+                "flavor enhancer" -> "chất điều vị"
+                else -> category
+            }
+        }
+
+        AppLanguage.ENGLISH -> category
+    }
+
     fun additiveUsedAs(language: AppLanguage, plainExplanation: String, category: String): String = when (language) {
-        AppLanguage.VIETNAMESE -> "$plainExplanation Dùng làm ${category.lowercase()}."
+        AppLanguage.VIETNAMESE -> "$plainExplanation Dùng làm ${categoryName(language, category).lowercase()}."
         AppLanguage.ENGLISH -> "$plainExplanation Used as ${category.lowercase()}."
     }
 
@@ -143,13 +342,26 @@ object AnalysisStrings {
     }
 
     fun nutritionName(language: AppLanguage, standardName: String): String = when (language) {
-        AppLanguage.VIETNAMESE -> when (standardName) {
+        AppLanguage.VIETNAMESE -> when (standardName.trim()) {
             "Calories" -> "Năng lượng (Calories)"
             "Sugars" -> "Đường (Sugars)"
+            "Total Sugar", "Total Sugars" -> "Tổng lượng đường (Total Sugars)"
+            "Added Sugar", "Added Sugars" -> "Đường bổ sung (Added Sugars)"
             "Sodium" -> "Natri (Sodium)"
-            "Saturated Fat" -> "Chất béo bão hòa"
+            "Saturated Fat", "Sat Fat" -> "Chất béo bão hòa"
+            "Trans Fat" -> "Chất béo chuyển hóa"
+            "Total Fat", "Fat" -> "Tổng chất béo (Total Fat)"
+            "Cholesterol" -> "Cholesterol"
+            "Total Carbohydrate", "Carbohydrate", "Carbohydrates", "Carbs" -> "Tổng Carbohydrate (Carbs)"
             "Protein" -> "Chất đạm (Protein)"
-            "Dietary Fiber" -> "Chất xơ (Fiber)"
+            "Dietary Fiber", "Fiber", "Fibre" -> "Chất xơ (Fiber)"
+            "Calcium" -> "Canxi (Calcium)"
+            "Iron" -> "Sắt (Iron)"
+            "Potassium" -> "Kali (Potassium)"
+            "Vitamin A" -> "Vitamin A"
+            "Vitamin C" -> "Vitamin C"
+            "Vitamin D", "Vitamin D3" -> "Vitamin D"
+            "Vitamin E" -> "Vitamin E"
             else -> standardName
         }
 

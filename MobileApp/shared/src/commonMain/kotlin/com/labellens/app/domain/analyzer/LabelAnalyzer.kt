@@ -79,12 +79,13 @@ class LabelAnalyzer {
         for (allergen in userProfile.allergies) {
             val match = matchedIngredients.firstOrNull { it.ingredient.allergenMatch == allergen }
             if (match != null) {
+                val ingDisplayName = match.ingredient.displayName(language)
                 watchOutForYou.add(
                     FlaggedItem(
                         title = AnalysisStrings.allergenTitle(language, allergen),
-                        detail = AnalysisStrings.allergenDetail(language, match.ingredient.canonicalName),
+                        detail = AnalysisStrings.allergenDetail(language, ingDisplayName),
                         severity = FlagSeverity.PERSONAL_ALLERGEN,
-                        relatedIngredient = match.ingredient.canonicalName,
+                        relatedIngredient = ingDisplayName,
                     ),
                 )
             }
@@ -110,14 +111,14 @@ class LabelAnalyzer {
                         it.ingredient.avoidMatch == AvoidPreference.ADDED_SUGAR
                     }
                     if (sugarMatch != null || highSugarDetected) {
-                        val sugarSource = sugarMatch?.ingredient?.canonicalName
+                        val sugarSource = sugarMatch?.ingredient?.displayName(language)
                             ?: if (language == AppLanguage.VIETNAMESE) "thành phần dinh dưỡng" else "identified in nutrition facts"
                         watchOutForYou.add(
                             FlaggedItem(
                                 title = AnalysisStrings.addedSugarTitle(language),
                                 detail = AnalysisStrings.addedSugarDetail(language, sugarSource),
                                 severity = FlagSeverity.PERSONAL_AVOID,
-                                relatedIngredient = sugarMatch?.ingredient?.canonicalName,
+                                relatedIngredient = sugarMatch?.ingredient?.displayName(language),
                             ),
                         )
                     }
@@ -126,12 +127,13 @@ class LabelAnalyzer {
                 else -> {
                     val match = matchedIngredients.firstOrNull { it.ingredient.avoidMatch == avoid }
                     if (match != null) {
+                        val ingDisplayName = match.ingredient.displayName(language)
                         watchOutForYou.add(
                             FlaggedItem(
                                 title = AnalysisStrings.avoidTitle(language, avoid),
-                                detail = AnalysisStrings.avoidDetail(language, match.ingredient.canonicalName),
+                                detail = AnalysisStrings.avoidDetail(language, ingDisplayName),
                                 severity = FlagSeverity.PERSONAL_AVOID,
-                                relatedIngredient = match.ingredient.canonicalName,
+                                relatedIngredient = ingDisplayName,
                             ),
                         )
                     }
@@ -174,12 +176,13 @@ class LabelAnalyzer {
                             it.ingredient.allergenMatch in listOf(Allergen.MILK, Allergen.EGG, Allergen.FISH, Allergen.SHELLFISH)
                     }
                     if (nonVegan != null) {
+                        val ingDisplayName = nonVegan.ingredient.displayName(language)
                         watchOutForYou.add(
                             FlaggedItem(
                                 title = AnalysisStrings.goalNotVeganTitle(language),
-                                detail = AnalysisStrings.goalNotVeganDetail(language, nonVegan.ingredient.canonicalName),
+                                detail = AnalysisStrings.goalNotVeganDetail(language, ingDisplayName),
                                 severity = FlagSeverity.PERSONAL_AVOID,
-                                relatedIngredient = nonVegan.ingredient.canonicalName,
+                                relatedIngredient = ingDisplayName,
                             ),
                         )
                     }
@@ -191,12 +194,13 @@ class LabelAnalyzer {
                             it.ingredient.allergenMatch in listOf(Allergen.FISH, Allergen.SHELLFISH)
                     }
                     if (nonVeg != null) {
+                        val ingDisplayName = nonVeg.ingredient.displayName(language)
                         watchOutForYou.add(
                             FlaggedItem(
                                 title = AnalysisStrings.goalNotVegetarianTitle(language),
-                                detail = AnalysisStrings.goalNotVegetarianDetail(language, nonVeg.ingredient.canonicalName),
+                                detail = AnalysisStrings.goalNotVegetarianDetail(language, ingDisplayName),
                                 severity = FlagSeverity.PERSONAL_AVOID,
-                                relatedIngredient = nonVeg.ingredient.canonicalName,
+                                relatedIngredient = ingDisplayName,
                             ),
                         )
                     }
@@ -205,12 +209,13 @@ class LabelAnalyzer {
                 DietaryGoal.HALAL_CONSCIOUS -> {
                     val porkItem = matchedIngredients.firstOrNull { it.ingredient.avoidForTags.contains("pork") || it.ingredient.avoidForTags.contains("non-halal") }
                     if (porkItem != null) {
+                        val ingDisplayName = porkItem.ingredient.displayName(language)
                         watchOutForYou.add(
                             FlaggedItem(
                                 title = AnalysisStrings.goalNonHalalTitle(language),
-                                detail = AnalysisStrings.goalNonHalalDetail(language, porkItem.ingredient.canonicalName),
+                                detail = AnalysisStrings.goalNonHalalDetail(language, ingDisplayName),
                                 severity = FlagSeverity.PERSONAL_AVOID,
-                                relatedIngredient = porkItem.ingredient.canonicalName,
+                                relatedIngredient = ingDisplayName,
                             ),
                         )
                     }
@@ -219,12 +224,13 @@ class LabelAnalyzer {
                 DietaryGoal.PREGNANCY_SAFE -> {
                     val caffeine = matchedIngredients.firstOrNull { it.ingredient.avoidForTags.contains("caffeine") }
                     if (caffeine != null) {
+                        val ingDisplayName = caffeine.ingredient.displayName(language)
                         watchOutForYou.add(
                             FlaggedItem(
                                 title = AnalysisStrings.goalCaffeineTitle(language),
-                                detail = AnalysisStrings.goalCaffeineDetail(language, caffeine.ingredient.canonicalName),
+                                detail = AnalysisStrings.goalCaffeineDetail(language, ingDisplayName),
                                 severity = FlagSeverity.PERSONAL_AVOID,
-                                relatedIngredient = caffeine.ingredient.canonicalName,
+                                relatedIngredient = ingDisplayName,
                             ),
                         )
                     }
@@ -235,13 +241,17 @@ class LabelAnalyzer {
         // Worth Noting (General notes: additives, intense sweeteners, MSG, preservatives, saturated fats)
         for (item in matchedIngredients) {
             val ing = item.ingredient
-            if (ing.avoidMatch != null && watchOutForYou.none { it.relatedIngredient == ing.canonicalName }) {
+            val ingDisplayName = ing.displayName(language)
+            val isAlreadyFlagged = watchOutForYou.any {
+                it.relatedIngredient == ingDisplayName || it.relatedIngredient == ing.canonicalName
+            }
+            if (ing.avoidMatch != null && !isAlreadyFlagged) {
                 worthNoting.add(
                     FlaggedItem(
-                        title = ing.canonicalName,
-                        detail = AnalysisStrings.additiveUsedAs(language, ing.plainExplanation, ing.category),
+                        title = ingDisplayName,
+                        detail = AnalysisStrings.additiveUsedAs(language, ing.plainExplanation(language), ing.category(language)),
                         severity = FlagSeverity.WORTH_NOTING,
-                        relatedIngredient = ing.canonicalName,
+                        relatedIngredient = ingDisplayName,
                     ),
                 )
             } else if (ing.category.contains("Preservative", ignoreCase = true) ||
@@ -249,13 +259,13 @@ class LabelAnalyzer {
                 ing.category.contains("Acidulant", ignoreCase = true) ||
                 ing.avoidForTags.contains("flavor-enhancer")
             ) {
-                if (worthNoting.none { it.title == ing.canonicalName } && watchOutForYou.none { it.relatedIngredient == ing.canonicalName }) {
+                if (worthNoting.none { it.title == ingDisplayName || it.title == ing.canonicalName } && !isAlreadyFlagged) {
                     worthNoting.add(
                         FlaggedItem(
-                            title = ing.canonicalName,
-                            detail = "${ing.whyUsed} (${ing.doseContextNote})",
+                            title = ingDisplayName,
+                            detail = "${ing.whyUsed(language)} (${ing.doseContextNote(language)})",
                             severity = FlagSeverity.WORTH_NOTING,
-                            relatedIngredient = ing.canonicalName,
+                            relatedIngredient = ingDisplayName,
                         ),
                     )
                 }
@@ -266,12 +276,13 @@ class LabelAnalyzer {
         for (item in matchedIngredients) {
             val ing = item.ingredient
             if (ing.isGenerallyPositive) {
+                val ingDisplayName = ing.displayName(language)
                 goodToKnow.add(
                     FlaggedItem(
-                        title = ing.canonicalName,
-                        detail = "${ing.plainExplanation} ${ing.doseContextNote}",
+                        title = ingDisplayName,
+                        detail = "${ing.plainExplanation(language)} ${ing.doseContextNote(language)}",
                         severity = FlagSeverity.GOOD_TO_KNOW,
-                        relatedIngredient = ing.canonicalName,
+                        relatedIngredient = ingDisplayName,
                     ),
                 )
             }
@@ -284,11 +295,11 @@ class LabelAnalyzer {
             fullBreakdown.add(
                 IngredientBreakdown(
                     rawName = item.rawToken,
-                    canonicalName = ing.canonicalName,
-                    category = ing.category,
-                    plainExplanation = ing.plainExplanation,
-                    whyUsed = ing.whyUsed,
-                    doseContextNote = ing.doseContextNote,
+                    canonicalName = ing.displayName(language),
+                    category = ing.category(language),
+                    plainExplanation = ing.plainExplanation(language),
+                    whyUsed = ing.whyUsed(language),
+                    doseContextNote = ing.doseContextNote(language),
                     avoidForTags = ing.avoidForTags,
                     isKnown = true,
                     matchedAliases = ing.aliases.take(5),
@@ -426,6 +437,7 @@ class LabelAnalyzer {
 
         return KnowledgeBase.ingredients.firstOrNull { ing ->
             if (cleanToken == ing.canonicalName.lowercase()) return@firstOrNull true
+            if (cleanToken == ing.displayName(AppLanguage.VIETNAMESE).lowercase()) return@firstOrNull true
             ing.aliases.any { alias ->
                 val cAlias = alias.lowercase().trim()
                 if (cAlias.length <= 2) {

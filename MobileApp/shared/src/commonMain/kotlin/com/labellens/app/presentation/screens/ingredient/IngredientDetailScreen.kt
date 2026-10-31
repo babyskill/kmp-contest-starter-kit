@@ -20,14 +20,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.labellens.app.data.repository.UserProfileRepository
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.analyzer.KnowledgeBase
+import com.labellens.app.domain.analyzer.category
+import com.labellens.app.domain.analyzer.displayName
+import com.labellens.app.domain.analyzer.doseContextNote
+import com.labellens.app.domain.analyzer.plainExplanation
+import com.labellens.app.domain.analyzer.whyUsed
 import com.labellens.app.domain.model.KnowledgeIngredient
 import com.labellens.app.generated.resources.Res
 import com.labellens.app.generated.resources.btn_back
@@ -43,6 +51,7 @@ import com.labellens.app.generated.resources.ingredient_section_who_avoid
 import com.labellens.app.generated.resources.ingredient_section_why_used
 import com.labellens.app.generated.resources.ingredient_sources_description
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 @Composable
 fun IngredientDetailScreen(
@@ -50,10 +59,10 @@ fun IngredientDetailScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val ingredient: KnowledgeIngredient? = KnowledgeBase.ingredients.firstOrNull {
-        it.canonicalName.equals(canonicalName, ignoreCase = true) ||
-            it.aliases.any { alias -> alias.equals(canonicalName, ignoreCase = true) }
-    }
+    val userProfileRepository = koinInject<UserProfileRepository>()
+    val language by userProfileRepository.languageFlow.collectAsStateWithLifecycle()
+
+    val ingredient: KnowledgeIngredient? = KnowledgeBase.findIngredientByAnyName(canonicalName)
 
     LazyColumn(
         modifier = modifier
@@ -93,7 +102,7 @@ fun IngredientDetailScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = ingredient?.canonicalName ?: canonicalName,
+                        text = ingredient?.displayName(language) ?: canonicalName,
                         style = AppTheme.typography.headlineMedium.copy(
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
@@ -102,7 +111,7 @@ fun IngredientDetailScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = ingredient?.category ?: stringResource(Res.string.ingredient_fallback_standard),
+                        text = ingredient?.category(language) ?: stringResource(Res.string.ingredient_fallback_standard),
                         style = AppTheme.typography.bodyMedium.copy(
                             color = AppTheme.colors.primary,
                             fontWeight = FontWeight.SemiBold,
@@ -116,7 +125,7 @@ fun IngredientDetailScreen(
         item {
             InfoSectionCard(
                 title = stringResource(Res.string.ingredient_section_what_is_it),
-                description = ingredient?.plainExplanation
+                description = ingredient?.plainExplanation(language)
                     ?: stringResource(Res.string.ingredient_avoid_safe),
             )
         }
@@ -125,7 +134,7 @@ fun IngredientDetailScreen(
         item {
             InfoSectionCard(
                 title = stringResource(Res.string.ingredient_section_why_used),
-                description = ingredient?.whyUsed ?: "",
+                description = ingredient?.whyUsed(language) ?: "",
             )
         }
 
@@ -133,7 +142,7 @@ fun IngredientDetailScreen(
         item {
             InfoSectionCard(
                 title = stringResource(Res.string.ingredient_section_dose_context),
-                description = ingredient?.doseContextNote ?: "",
+                description = ingredient?.doseContextNote(language) ?: "",
             )
         }
 

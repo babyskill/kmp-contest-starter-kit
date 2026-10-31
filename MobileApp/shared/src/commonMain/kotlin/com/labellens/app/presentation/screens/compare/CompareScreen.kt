@@ -165,8 +165,9 @@ fun CompareScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                         val metrics = listOf("Calories", "Sugars", "Sodium", "Saturated Fat", "Protein", "Dietary Fiber")
                         metrics.forEach { metric ->
-                            val valA = itemA.nutritionHighlights.firstOrNull { it.name.equals(metric, ignoreCase = true) }?.amount ?: "-"
-                            val valB = itemB.nutritionHighlights.firstOrNull { it.name.equals(metric, ignoreCase = true) }?.amount ?: "-"
+                            val metricVi = com.labellens.app.domain.analyzer.AnalysisStrings.nutritionName(com.labellens.app.domain.model.AppLanguage.VIETNAMESE, metric)
+                            val valA = itemA.nutritionHighlights.firstOrNull { it.name.equals(metric, ignoreCase = true) || it.name.equals(metricVi, ignoreCase = true) }?.amount ?: "-"
+                            val valB = itemB.nutritionHighlights.firstOrNull { it.name.equals(metric, ignoreCase = true) || it.name.equals(metricVi, ignoreCase = true) }?.amount ?: "-"
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,

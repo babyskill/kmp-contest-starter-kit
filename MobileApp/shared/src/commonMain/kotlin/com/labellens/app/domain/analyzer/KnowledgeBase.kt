@@ -1283,4 +1283,14 @@ object KnowledgeBase {
             }
         }
     }
+
+    fun findIngredientByAnyName(name: String): KnowledgeIngredient? {
+        val clean = name.trim()
+        if (clean.isEmpty()) return null
+        return ingredients.firstOrNull {
+            it.canonicalName.equals(clean, ignoreCase = true) ||
+                it.displayName(com.labellens.app.domain.model.AppLanguage.VIETNAMESE).equals(clean, ignoreCase = true) ||
+                it.aliases.any { alias -> alias.equals(clean, ignoreCase = true) }
+        }
+    }
 }

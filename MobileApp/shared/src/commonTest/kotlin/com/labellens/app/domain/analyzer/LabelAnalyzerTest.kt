@@ -302,4 +302,113 @@ class LabelAnalyzerTest {
             assertEquals(AppLanguage.VIETNAMESE, repo.languageFlow.value)
         }
     }
+
+    @Test
+    fun testCaneSugarHoneySeaSaltLocalizationVietnameseAndEnglish() {
+        val labelText = "INGREDIENTS: Cane Sugar, Honey, Sea Salt."
+
+        // 1. Language = VIETNAMESE
+        val resultVi = analyzer.analyze(
+            productName = "Test Product",
+            rawLabelText = labelText,
+            userProfile = UserProfile(),
+            language = AppLanguage.VIETNAMESE,
+        )
+
+        val sugarVi = resultVi.fullBreakdown.firstOrNull { it.canonicalName == "Đường mía" }
+        assertNotNull(sugarVi, "Must find Vietnamese card for Cane Sugar ('Đường mía')")
+        assertEquals("Chất tạo ngọt", sugarVi.category)
+        assertFalse(sugarVi.plainExplanation.contains("Standard carbohydrate extracted from sugar cane"), "Must not contain English explanation")
+        assertFalse(sugarVi.whyUsed.contains("Sweetens, tenderises dough crumb"), "Must not contain English whyUsed")
+        assertFalse(sugarVi.doseContextNote.contains("Standard serving adds fast-digesting carbohydrates"), "Must not contain English doseContextNote")
+        assertTrue(sugarVi.plainExplanation.contains("Carbohydrate tiêu chuẩn chiết xuất từ cây mía"), "Must contain Vietnamese explanation")
+
+        val honeyVi = resultVi.fullBreakdown.firstOrNull { it.canonicalName == "Mật ong" }
+        assertNotNull(honeyVi, "Must find Vietnamese card for Honey ('Mật ong')")
+        assertEquals("Chất tạo ngọt tự nhiên", honeyVi.category)
+        assertFalse(honeyVi.plainExplanation.contains("A sweet fluid produced by honeybees"), "Must not contain English explanation")
+        assertFalse(honeyVi.whyUsed.contains("Imparts warm floral sweetness"), "Must not contain English whyUsed")
+        assertFalse(honeyVi.doseContextNote.contains("Natural sweetener containing trace minerals"), "Must not contain English doseContextNote")
+        assertTrue(honeyVi.plainExplanation.contains("Dịch ngọt tự nhiên do ong mật"), "Must contain Vietnamese explanation")
+
+        val saltVi = resultVi.fullBreakdown.firstOrNull { it.canonicalName == "Muối biển" }
+        assertNotNull(saltVi, "Must find Vietnamese card for Sea Salt ('Muối biển')")
+        assertEquals("Khoáng chất / Gia vị", saltVi.category)
+        assertFalse(saltVi.plainExplanation.contains("Essential dietary mineral composed primarily"), "Must not contain English explanation")
+        assertFalse(saltVi.whyUsed.contains("Essential flavor catalyst that enhances sweetness"), "Must not contain English whyUsed")
+        assertFalse(saltVi.doseContextNote.contains("Major dietary contributor of sodium"), "Must not contain English doseContextNote")
+        assertTrue(saltVi.plainExplanation.contains("Khoáng chất thiết yếu"), "Must contain Vietnamese explanation")
+
+        // Assert no English explanation text anywhere in breakdown
+        for (item in resultVi.fullBreakdown) {
+            assertFalse(item.plainExplanation.contains("Standard carbohydrate"), "Breakdown plainExplanation must not have English")
+            assertFalse(item.plainExplanation.contains("A sweet fluid"), "Breakdown plainExplanation must not have English")
+            assertFalse(item.plainExplanation.contains("Essential dietary mineral"), "Breakdown plainExplanation must not have English")
+        }
+
+        // Check worth noting or good to know titles and details in Vietnamese
+        for (item in resultVi.worthNoting + resultVi.goodToKnow) {
+            assertFalse(item.title.contains("Cane Sugar"), "Title must not be English")
+            assertFalse(item.title.contains("Sea Salt"), "Title must not be English")
+            assertFalse(item.detail.contains("Standard carbohydrate"), "Detail must not contain English")
+            assertFalse(item.detail.contains("Used as"), "Detail must not contain English 'Used as'")
+        }
+
+        // 2. Language = ENGLISH
+        val resultEn = analyzer.analyze(
+            productName = "Test Product",
+            rawLabelText = labelText,
+            userProfile = UserProfile(),
+            language = AppLanguage.ENGLISH,
+        )
+
+        val sugarEn = resultEn.fullBreakdown.firstOrNull { it.canonicalName == "Cane Sugar / Sucrose" }
+        assertNotNull(sugarEn, "Must find English card for Cane Sugar ('Cane Sugar / Sucrose')")
+        assertEquals("Sweetener", sugarEn.category)
+        assertEquals("Standard carbohydrate extracted from sugar cane or sugar beet.", sugarEn.plainExplanation)
+        assertEquals("Sweetens, tenderises dough crumb, and aids golden browning.", sugarEn.whyUsed)
+        assertEquals("Standard serving adds fast-digesting carbohydrates.", sugarEn.doseContextNote)
+
+        val honeyEn = resultEn.fullBreakdown.firstOrNull { it.canonicalName == "Honey" }
+        assertNotNull(honeyEn, "Must find English card for Honey")
+        assertEquals("Natural Sweetener", honeyEn.category)
+        assertEquals("A sweet fluid produced by honeybees from plant nectars.", honeyEn.plainExplanation)
+
+        val saltEn = resultEn.fullBreakdown.firstOrNull { it.canonicalName == "Sea Salt" }
+        assertNotNull(saltEn, "Must find English card for Sea Salt")
+        assertEquals("Mineral / Seasoning", saltEn.category)
+        assertEquals("Essential dietary mineral composed primarily of sodium chloride.", saltEn.plainExplanation)
+    }
+
+    @Test
+    fun testAllKnowledgeBaseEntriesHaveVietnameseTranslations() {
+        val total = KnowledgeBase.ingredients.size
+        assertEquals(127, total)
+        for (ing in KnowledgeBase.ingredients) {
+            val viData = KnowledgeBaseVi.get(ing.canonicalName)
+            assertNotNull(viData, "Missing Vietnamese translation for: ${ing.canonicalName}")
+            assertTrue(viData.displayName.isNotBlank(), "Blank displayName for: ${ing.canonicalName}")
+            assertTrue(viData.category.isNotBlank(), "Blank category for: ${ing.canonicalName}")
+            assertTrue(viData.plainExplanation.isNotBlank(), "Blank plainExplanation for: ${ing.canonicalName}")
+            assertTrue(viData.whyUsed.isNotBlank(), "Blank whyUsed for: ${ing.canonicalName}")
+            assertTrue(viData.doseContextNote.isNotBlank(), "Blank doseContextNote for: ${ing.canonicalName}")
+        }
+    }
+
+    @Test
+    fun testNutritionNameVietnameseCoverage() {
+        val nutrients = listOf(
+            "Calories", "Sugars", "Sodium", "Saturated Fat", "Protein", "Dietary Fiber",
+            "Total Sugar", "Total Sugars", "Added Sugar", "Added Sugars",
+            "Trans Fat", "Total Fat", "Fat", "Cholesterol", "Total Carbohydrate",
+            "Carbohydrate", "Carbohydrates", "Carbs", "Calcium", "Iron", "Potassium",
+            "Vitamin A", "Vitamin C", "Vitamin D", "Vitamin E",
+        )
+        for (nutrient in nutrients) {
+            val vi = AnalysisStrings.nutritionName(AppLanguage.VIETNAMESE, nutrient)
+            assertFalse(vi.isBlank(), "Blank nutrition name for: $nutrient")
+            val en = AnalysisStrings.nutritionName(AppLanguage.ENGLISH, nutrient)
+            assertEquals(nutrient, en, "English nutrition name should match standardName")
+        }
+    }
 }
