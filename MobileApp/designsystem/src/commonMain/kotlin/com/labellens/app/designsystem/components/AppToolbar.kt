@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.labellens.app.designsystem.generated.resources.UiRes
+import com.labellens.app.designsystem.generated.resources.btn_back
 import com.labellens.app.designsystem.generated.resources.ic_back
 import com.labellens.app.designsystem.generated.resources.ic_close
 import com.labellens.app.designsystem.generated.resources.ic_crown
@@ -50,6 +51,7 @@ import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.designsystem.util.PreviewHelper
 import com.labellens.app.designsystem.util.fillWidthOfParent
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -201,7 +203,7 @@ private fun NavigationIcon(
         Icon(
             painter = navigationIcon,
             modifier = Modifier.fillMaxSize(),
-            contentDescription = "Navigation Icon",
+            contentDescription = stringResource(UiRes.string.btn_back),
         )
     }
 }

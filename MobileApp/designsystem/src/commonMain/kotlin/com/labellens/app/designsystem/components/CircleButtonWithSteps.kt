@@ -31,7 +31,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.labellens.app.designsystem.generated.resources.UiRes
+import com.labellens.app.designsystem.generated.resources.btn_next
 import com.labellens.app.designsystem.util.PreviewHelper
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CircleButtonWithSteps(
@@ -85,7 +88,7 @@ fun CircleButtonWithSteps(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = "Next",
+                contentDescription = stringResource(UiRes.string.btn_next),
             )
         }
     }

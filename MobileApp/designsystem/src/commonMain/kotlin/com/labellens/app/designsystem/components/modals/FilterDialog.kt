@@ -21,7 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.labellens.app.designsystem.generated.resources.UiRes
+import com.labellens.app.designsystem.generated.resources.content_desc_selected
 import com.labellens.app.designsystem.theme.AppTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun FilterDialog(
@@ -130,7 +133,7 @@ private fun FilterItem(
         if (isSelected) {
             Icon(
                 imageVector = Icons.Default.Check,
-                contentDescription = "Selected",
+                contentDescription = stringResource(UiRes.string.content_desc_selected),
                 tint = AppTheme.colors.primary,
                 modifier = Modifier.size(16.dp),
             )

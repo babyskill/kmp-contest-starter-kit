@@ -44,6 +44,23 @@ import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.LabelAnalysisResult
 import com.labellens.app.domain.model.SampleProduct
+import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.content_desc_scan
+import com.labellens.app.generated.resources.content_desc_tip
+import com.labellens.app.generated.resources.home_hero_button
+import com.labellens.app.generated.resources.home_hero_subtitle
+import com.labellens.app.generated.resources.home_hero_title
+import com.labellens.app.generated.resources.home_quick_action_barcode
+import com.labellens.app.generated.resources.home_quick_action_paste
+import com.labellens.app.generated.resources.home_quick_action_photo
+import com.labellens.app.generated.resources.home_quick_actions_title
+import com.labellens.app.generated.resources.home_recent_scans_empty
+import com.labellens.app.generated.resources.home_recent_scans_title
+import com.labellens.app.generated.resources.home_sample_tap_to_test
+import com.labellens.app.generated.resources.home_samples_title
+import com.labellens.app.generated.resources.home_tip_body
+import com.labellens.app.generated.resources.home_tip_title
+import com.labellens.app.generated.resources.tagline
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -77,7 +94,7 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Understand the label. In seconds.",
+                    text = stringResource(Res.string.tagline),
                     style = AppTheme.typography.bodyLarge.copy(
                         fontSize = 16.sp,
                         color = AppTheme.colors.text.secondary,
@@ -98,7 +115,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth().padding(12.dp),
                 ) {
                     Text(
-                        text = "Scan Any Label",
+                        text = stringResource(Res.string.home_hero_title),
                         style = AppTheme.typography.headlineMedium.copy(
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
@@ -107,7 +124,7 @@ fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Point camera at food or supplement packaging. Plain-language insights, zero fear.",
+                        text = stringResource(Res.string.home_hero_subtitle),
                         style = AppTheme.typography.bodyMedium.copy(
                             color = Color.White.copy(alpha = 0.9f),
                         ),
@@ -121,7 +138,7 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "Start Scan",
+                            text = stringResource(Res.string.home_hero_button),
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.primary,
                             style = AppTheme.typography.bodyMedium,
@@ -129,7 +146,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Scan",
+                            contentDescription = stringResource(Res.string.content_desc_scan),
                             tint = AppTheme.colors.primary,
                             modifier = Modifier.size(18.dp),
                         )
@@ -141,7 +158,7 @@ fun HomeScreen(
         // Quick Actions Row
         item {
             Text(
-                text = "Quick Actions",
+                text = stringResource(Res.string.home_quick_actions_title),
                 style = AppTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     color = AppTheme.colors.text.primary,
@@ -153,19 +170,19 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 QuickActionChip(
-                    label = "Barcode",
+                    label = stringResource(Res.string.home_quick_action_barcode),
                     iconName = "Barcode",
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToScan,
                 )
                 QuickActionChip(
-                    label = "Photo",
+                    label = stringResource(Res.string.home_quick_action_photo),
                     iconName = "Photo",
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToScan,
                 )
                 QuickActionChip(
-                    label = "Paste Text",
+                    label = stringResource(Res.string.home_quick_action_paste),
                     iconName = "Text",
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToScan,
@@ -176,7 +193,7 @@ fun HomeScreen(
         // Built-in Samples Carousel
         item {
             Text(
-                text = "Try Built-in Samples",
+                text = stringResource(Res.string.home_samples_title),
                 style = AppTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     color = AppTheme.colors.text.primary,
@@ -212,21 +229,21 @@ fun HomeScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Info,
-                        contentDescription = "Tip",
+                        contentDescription = stringResource(Res.string.content_desc_tip),
                         tint = Color(0xFFB7791F),
                         modifier = Modifier.size(22.dp),
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Calm Tip",
+                            text = stringResource(Res.string.home_tip_title),
                             fontWeight = FontWeight.SemiBold,
                             color = Color(0xFFB7791F),
                             style = AppTheme.typography.bodyMedium,
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = state.calmTip,
+                            text = stringResource(Res.string.home_tip_body),
                             style = AppTheme.typography.bodySmall.copy(
                                 color = AppTheme.colors.text.secondary,
                             ),
@@ -239,7 +256,7 @@ fun HomeScreen(
         // Recent Scans
         item {
             Text(
-                text = "Recent Scans",
+                text = stringResource(Res.string.home_recent_scans_title),
                 style = AppTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     color = AppTheme.colors.text.primary,
@@ -248,7 +265,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(8.dp))
             if (state.recentScans.isEmpty()) {
                 Text(
-                    text = "No scans yet. Try a sample or scan a label above!",
+                    text = stringResource(Res.string.home_recent_scans_empty),
                     style = AppTheme.typography.bodyMedium.copy(
                         color = AppTheme.colors.text.secondary,
                     ),
@@ -330,7 +347,7 @@ private fun SampleProductCard(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "Tap to test ->",
+                text = stringResource(Res.string.home_sample_tap_to_test),
                 style = AppTheme.typography.bodyExtraSmall.copy(
                     color = AppTheme.colors.primary,
                     fontWeight = FontWeight.SemiBold,

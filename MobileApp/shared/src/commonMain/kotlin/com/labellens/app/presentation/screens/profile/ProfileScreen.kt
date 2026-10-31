@@ -45,6 +45,9 @@ import com.labellens.app.generated.resources.profile_allergies_subtitle
 import com.labellens.app.generated.resources.profile_allergies_title
 import com.labellens.app.generated.resources.profile_avoid_subtitle
 import com.labellens.app.generated.resources.profile_avoid_title
+import com.labellens.app.generated.resources.profile_banner_btn
+import com.labellens.app.generated.resources.profile_banner_subtitle
+import com.labellens.app.generated.resources.profile_banner_title
 import com.labellens.app.generated.resources.profile_btn_settings
 import com.labellens.app.generated.resources.profile_goals_subtitle
 import com.labellens.app.generated.resources.profile_goals_title
@@ -102,7 +105,7 @@ fun ProfileScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "LabelLens Plus",
+                            text = stringResource(Res.string.profile_banner_title),
                             style = AppTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = AppTheme.colors.primary,
@@ -110,13 +113,13 @@ fun ProfileScreen(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Upgrade for unlimited photo OCR analysis.",
+                            text = stringResource(Res.string.profile_banner_subtitle),
                             style = AppTheme.typography.bodySmall,
                             color = AppTheme.colors.text.secondary,
                         )
                     }
                     AppButton(
-                        text = "View",
+                        text = stringResource(Res.string.profile_banner_btn),
                         size = com.labellens.app.designsystem.components.ButtonSize.EXTRA_SMALL,
                         onClick = onNavigateToPaywall,
                     )

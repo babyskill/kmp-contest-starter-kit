@@ -38,6 +38,7 @@ import com.labellens.app.designsystem.components.Divider
 import com.labellens.app.designsystem.generated.resources.UiRes
 import com.labellens.app.designsystem.generated.resources.btn_cancel
 import com.labellens.app.designsystem.generated.resources.btn_ok
+import com.labellens.app.designsystem.generated.resources.content_desc_close
 import com.labellens.app.designsystem.generated.resources.ic_close
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.designsystem.util.PreviewHelper
@@ -106,7 +107,7 @@ fun AppModalBottomSheet(
 
                     Icon(
                         painter = painterResource(UiRes.drawable.ic_close),
-                        contentDescription = "Close",
+                        contentDescription = stringResource(UiRes.string.content_desc_close),
                         modifier =
                         Modifier
                             .size(32.dp)

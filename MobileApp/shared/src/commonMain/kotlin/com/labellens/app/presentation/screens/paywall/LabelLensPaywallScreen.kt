@@ -35,7 +35,26 @@ import androidx.compose.ui.unit.sp
 import com.labellens.app.designsystem.components.AppButton
 import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
+import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.content_desc_close
+import com.labellens.app.generated.resources.paywall_demo_disclaimer
+import com.labellens.app.generated.resources.paywall_demo_mode
+import com.labellens.app.generated.resources.paywall_family_plan
+import com.labellens.app.generated.resources.paywall_family_plan_btn
+import com.labellens.app.generated.resources.paywall_family_plan_desc
+import com.labellens.app.generated.resources.paywall_family_plan_price
+import com.labellens.app.generated.resources.paywall_feature_barcode
+import com.labellens.app.generated.resources.paywall_feature_photo
+import com.labellens.app.generated.resources.paywall_feature_warnings
+import com.labellens.app.generated.resources.paywall_free_tier
+import com.labellens.app.generated.resources.paywall_plus_annual
+import com.labellens.app.generated.resources.paywall_plus_annual_btn
+import com.labellens.app.generated.resources.paywall_plus_annual_desc
+import com.labellens.app.generated.resources.paywall_plus_annual_price
+import com.labellens.app.generated.resources.paywall_restore_purchases_btn
+import com.labellens.app.generated.resources.paywall_safety_free
 import com.labellens.app.presentation.navigation.PaywallScreenRoute
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun LabelLensPaywallScreen(
@@ -58,7 +77,7 @@ fun LabelLensPaywallScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
+                    Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(Res.string.content_desc_close))
                 }
                 Box(
                     modifier = Modifier
@@ -67,7 +86,7 @@ fun LabelLensPaywallScreen(
                         .padding(horizontal = 10.dp, vertical = 4.dp),
                 ) {
                     Text(
-                        text = "Demo Mode",
+                        text = stringResource(Res.string.paywall_demo_mode),
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFB7791F),
                         style = AppTheme.typography.bodySmall,
@@ -88,7 +107,7 @@ fun LabelLensPaywallScreen(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Safety warnings are always 100% free.\nUpgrade for power features.",
+                    text = stringResource(Res.string.paywall_safety_free),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     style = AppTheme.typography.bodyMedium,
                     color = AppTheme.colors.text.secondary,
@@ -105,16 +124,16 @@ fun LabelLensPaywallScreen(
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
                     Text(
-                        text = "Free Tier (Always Free)",
+                        text = stringResource(Res.string.paywall_free_tier),
                         style = AppTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.primary,
                         ),
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    PlanFeatureRow("Unlimited barcode scans & lookups")
-                    PlanFeatureRow("5 full photo analyses per month")
-                    PlanFeatureRow("All allergen & dietary safety warnings always active")
+                    PlanFeatureRow(stringResource(Res.string.paywall_feature_barcode))
+                    PlanFeatureRow(stringResource(Res.string.paywall_feature_photo))
+                    PlanFeatureRow(stringResource(Res.string.paywall_feature_warnings))
                 }
             }
         }
@@ -133,14 +152,14 @@ fun LabelLensPaywallScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "Plus Annual",
+                            text = stringResource(Res.string.paywall_plus_annual),
                             style = AppTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = AppTheme.colors.text.primary,
                             ),
                         )
                         Text(
-                            text = "$24.99 / year",
+                            text = stringResource(Res.string.paywall_plus_annual_price),
                             style = AppTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = AppTheme.colors.primary,
@@ -149,13 +168,13 @@ fun LabelLensPaywallScreen(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Unlimited photo OCR analyses, unlimited product comparisons, priority offline knowledge base.",
+                        text = stringResource(Res.string.paywall_plus_annual_desc),
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.text.secondary,
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     AppButton(
-                        text = "Upgrade to Plus ($24.99/year)",
+                        text = stringResource(Res.string.paywall_plus_annual_btn),
                         modifier = Modifier.fillMaxWidth(),
                         onClick = onNavigateBack,
                     )
@@ -176,14 +195,14 @@ fun LabelLensPaywallScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "Family Plan",
+                            text = stringResource(Res.string.paywall_family_plan),
                             style = AppTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = AppTheme.colors.text.primary,
                             ),
                         )
                         Text(
-                            text = "$39.99 / year",
+                            text = stringResource(Res.string.paywall_family_plan_price),
                             style = AppTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFB7791F),
@@ -192,13 +211,13 @@ fun LabelLensPaywallScreen(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Coverage for up to 5 family members with individual allergy and dietary preference profiles.",
+                        text = stringResource(Res.string.paywall_family_plan_desc),
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.text.secondary,
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     AppButton(
-                        text = "Select Family ($39.99/year)",
+                        text = stringResource(Res.string.paywall_family_plan_btn),
                         style = ButtonStyle.ALTERNATIVE,
                         modifier = Modifier.fillMaxWidth(),
                         onClick = onNavigateBack,
@@ -214,7 +233,7 @@ fun LabelLensPaywallScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Restore Purchases",
+                    text = stringResource(Res.string.paywall_restore_purchases_btn),
                     style = AppTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold,
                         color = AppTheme.colors.primary,
@@ -223,7 +242,7 @@ fun LabelLensPaywallScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "This is a demonstration build. No real credit cards or in-app payment transactions are triggered.",
+                    text = stringResource(Res.string.paywall_demo_disclaimer),
                     style = AppTheme.typography.bodyExtraSmall,
                     color = AppTheme.colors.text.secondary,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,

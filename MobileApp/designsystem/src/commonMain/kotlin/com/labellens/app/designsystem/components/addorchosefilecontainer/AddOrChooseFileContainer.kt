@@ -59,6 +59,7 @@ import com.labellens.app.designsystem.generated.resources.btn_add_more_videos
 import com.labellens.app.designsystem.generated.resources.btn_add_video
 import com.labellens.app.designsystem.generated.resources.btn_change_image
 import com.labellens.app.designsystem.generated.resources.btn_change_video
+import com.labellens.app.designsystem.generated.resources.btn_delete
 import com.labellens.app.designsystem.generated.resources.ic_close
 import com.labellens.app.designsystem.generated.resources.ic_file_image
 import com.labellens.app.designsystem.generated.resources.ic_file_video
@@ -378,7 +379,7 @@ private fun FileItem(
 
         Icon(
             painter = painterResource(UiRes.drawable.ic_close),
-            contentDescription = "Remove",
+            contentDescription = stringResource(UiRes.string.btn_delete),
             modifier =
             Modifier
                 .align(Alignment.TopEnd)
@@ -465,7 +466,7 @@ private fun AddOrLoadingFileItem(
                 icon = IconSource.of(icon),
                 modifier = Modifier.size(48.dp),
                 tint = AppTheme.colors.outline,
-                contentDescription = "Add new file",
+                contentDescription = stringResource(UiRes.string.btn_add_image),
             )
         }
     }

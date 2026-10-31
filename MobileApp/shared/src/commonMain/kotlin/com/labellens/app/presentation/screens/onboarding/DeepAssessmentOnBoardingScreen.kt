@@ -33,6 +33,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labellens.app.designsystem.generated.resources.UiRes
 import com.labellens.app.designsystem.generated.resources.ic_back
 import com.labellens.app.designsystem.theme.AppTheme
+import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.content_desc_back
 import com.labellens.app.presentation.screens.onboarding.components.BarrierSelectionStep
 import com.labellens.app.presentation.screens.onboarding.components.CommitmentStep
 import com.labellens.app.presentation.screens.onboarding.components.GoalSelectionStep
@@ -41,6 +43,7 @@ import com.labellens.app.presentation.screens.onboarding.components.LossAversion
 import com.labellens.app.presentation.screens.onboarding.components.PaywallHandoffStep
 import com.labellens.app.presentation.screens.onboarding.components.SocialProofStep
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Entry point with ViewModel.
@@ -162,7 +165,7 @@ private fun TopProgressBar(
         ) {
             if (showBackButton) {
                 IconButton(onClick = onBack, modifier = Modifier.size(36.dp)) {
-                    Icon(painter = painterResource(UiRes.drawable.ic_back), contentDescription = "Back", tint = AppTheme.colors.text.primary, modifier = Modifier.size(20.dp))
+                    Icon(painter = painterResource(UiRes.drawable.ic_back), contentDescription = stringResource(Res.string.content_desc_back), tint = AppTheme.colors.text.primary, modifier = Modifier.size(20.dp))
                 }
             } else {
                 Spacer(modifier = Modifier.size(36.dp))

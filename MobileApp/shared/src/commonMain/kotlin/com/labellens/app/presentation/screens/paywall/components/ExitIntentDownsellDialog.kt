@@ -39,6 +39,7 @@ import com.labellens.app.designsystem.generated.resources.ic_close
 import com.labellens.app.designsystem.generated.resources.ic_crown
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.content_desc_close
 import com.labellens.app.generated.resources.downsell_exit_badge
 import com.labellens.app.generated.resources.downsell_exit_cta
 import com.labellens.app.generated.resources.downsell_exit_decline
@@ -141,7 +142,7 @@ fun ExitIntentDownsellCard(
         ) {
             Icon(
                 painter = painterResource(UiRes.drawable.ic_close),
-                contentDescription = "Close",
+                contentDescription = stringResource(Res.string.content_desc_close),
                 tint = AppTheme.colors.text.secondary,
                 modifier = Modifier.size(16.dp),
             )

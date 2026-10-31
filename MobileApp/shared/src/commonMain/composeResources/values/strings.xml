@@ -280,4 +280,97 @@ Education only - this is not medical advice.</string>
     <string name="profile_goals_title">Dietary Goals &amp; Lifestyles</string>
     <string name="profile_goals_subtitle">Dietary preferences, religious certifications, and health goals.</string>
     <string name="profile_btn_settings">Settings &amp; Disclaimers</string>
+
+    <!-- Home Screen -->
+    <string name="home_hero_title">Scan Any Label</string>
+    <string name="home_hero_subtitle">Point camera at food or supplement packaging. Plain-language insights, zero fear.</string>
+    <string name="home_hero_button">Start Scan</string>
+    <string name="home_quick_actions_title">Quick Actions</string>
+    <string name="home_quick_action_barcode">Barcode</string>
+    <string name="home_quick_action_photo">Photo</string>
+    <string name="home_quick_action_paste">Paste Text</string>
+    <string name="home_samples_title">Try Built-in Samples</string>
+    <string name="home_tip_title">Calm Tip</string>
+    <string name="home_tip_body">Imported Asian packaging often groups allergens under \'알레르기\' or \'アレルギー\' at the very bottom.</string>
+    <string name="home_recent_scans_title">Recent Scans</string>
+    <string name="home_recent_scans_empty">No scans yet. Try a sample or scan a label above!</string>
+    <string name="home_sample_tap_to_test">Tap to test -&gt;</string>
+    <string name="content_desc_scan">Scan</string>
+    <string name="content_desc_tip">Tip</string>
+
+    <!-- Scan Screen -->
+    <string name="scan_analyzing_title">Analyzing Label</string>
+    <string name="scan_analyzing_subtitle">Running on-device OCR and matching safe food standards.</string>
+    <string name="scan_notice_title">Notice</string>
+    <string name="scan_notice_dismiss">Dismiss</string>
+    <string name="scan_header_title">Scan or Input Label</string>
+    <string name="scan_header_subtitle">Use camera, enter a barcode, or select a built-in test sample.</string>
+    <string name="scan_photo_title">Photo Capture</string>
+    <string name="scan_photo_subtitle">Snap a photo of the ingredients list or pick an image from gallery.</string>
+    <string name="scan_btn_take_photo">Take Photo</string>
+    <string name="scan_btn_from_gallery">From Gallery</string>
+    <string name="scan_btn_test_sample">Test Held-Out Label</string>
+    <string name="scan_barcode_title">Barcode Scanner &amp; Fallback</string>
+    <string name="scan_barcode_subtitle">Enter or scan a barcode (e.g. 8801043014853, 016000275263).</string>
+    <string name="scan_barcode_placeholder">Enter barcode digits</string>
+    <string name="scan_barcode_lookup_btn">Lookup Barcode</string>
+    <string name="scan_paste_title">Paste Raw Label Text</string>
+    <string name="scan_paste_subtitle">Paste English, Korean, Japanese, or Chinese ingredients text directly.</string>
+    <string name="scan_paste_placeholder">Paste ingredients and nutrition facts here...</string>
+    <string name="scan_paste_analyze_btn">Analyze Pasted Text</string>
+    <string name="scan_samples_section_title">Built-in Test Samples</string>
+    <string name="scan_sample_run_btn">Run -&gt;</string>
+
+    <!-- History Screen -->
+    <string name="history_title">Scan History</string>
+    <string name="history_subtitle_pattern">%1$d %2$s saved locally</string>
+    <string name="history_filter_all">All Scans</string>
+    <string name="history_filter_favorites">Favorites Only</string>
+    <string name="history_empty_favorites">No favorites saved yet</string>
+    <string name="history_empty_scans">No saved scans yet</string>
+    <string name="history_empty_description">Scans you save will appear here for instant reference and side-by-side comparison.</string>
+    <string name="history_alert_pattern">%1$d %2$s</string>
+    <string name="history_alert_single">personal alert</string>
+    <string name="history_alert_plural">personal alerts</string>
+    <string name="history_product_single">product</string>
+    <string name="history_product_plural">products</string>
+    <string name="content_desc_delete">Delete</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_banner_title">LabelLens Plus</string>
+    <string name="profile_banner_subtitle">Upgrade for unlimited photo OCR analysis.</string>
+    <string name="profile_banner_btn">View</string>
+
+    <!-- Paywall Screen (LabelLens) -->
+    <string name="content_desc_close">Close</string>
+    <string name="paywall_demo_mode">Demo Mode</string>
+    <string name="paywall_safety_free">Safety warnings are always 100% free.\nUpgrade for power features.</string>
+    <string name="paywall_free_tier">Free Tier (Always Free)</string>
+    <string name="paywall_feature_barcode">Unlimited barcode scans &amp; lookups</string>
+    <string name="paywall_feature_photo">5 full photo analyses per month</string>
+    <string name="paywall_feature_warnings">All allergen &amp; dietary safety warnings always active</string>
+    <string name="paywall_plus_annual">Plus Annual</string>
+    <string name="paywall_plus_annual_price">$24.99 / year</string>
+    <string name="paywall_plus_annual_desc">Unlimited photo OCR analyses, unlimited product comparisons, priority offline knowledge base.</string>
+    <string name="paywall_plus_annual_btn">Upgrade to Plus ($24.99/year)</string>
+    <string name="paywall_family_plan">Family Plan</string>
+    <string name="paywall_family_plan_price">$39.99 / year</string>
+    <string name="paywall_family_plan_desc">Coverage for up to 5 family members with individual allergy and dietary preference profiles.</string>
+    <string name="paywall_family_plan_btn">Select Family ($39.99/year)</string>
+    <string name="paywall_restore_purchases_btn">Restore Purchases</string>
+    <string name="paywall_demo_disclaimer">This is a demonstration build. No real credit cards or in-app payment transactions are triggered.</string>
+
+    <!-- Onboarding Screen -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_title_1">Understand the label.\nIn seconds.</string>
+    <string name="onboarding_desc_1">Photograph any food or supplement label, including imported Asian packaging, and get an honest, plain-language explanation.</string>
+    <string name="onboarding_badge_1">Honest Breakdown</string>
+    <string name="onboarding_title_2">Personal context,\nnot a scary single-score.</string>
+    <string name="onboarding_desc_2">We never label foods \'toxic\' or \'dirty\'. We highlight wholesome ingredients, note additives plainly, and alert you to your allergens.</string>
+    <string name="onboarding_badge_2">Calm &amp; Science-Backed</string>
+    <string name="onboarding_title_3">100% on-device.\nYour health stays private.</string>
+    <string name="onboarding_desc_3">Everything runs locally on your phone. No logins required, no tracking profiles sold, and all warnings remain completely free.</string>
+    <string name="onboarding_badge_3">Private &amp; Free Safety</string>
+    <string name="onboarding_demo_scan_btn">Try a demo scan</string>
+    <string name="content_desc_back">Back</string>
 </resources>

@@ -47,11 +47,34 @@ import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.SampleProduct
+import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.scan_analyzing_subtitle
+import com.labellens.app.generated.resources.scan_analyzing_title
+import com.labellens.app.generated.resources.scan_barcode_lookup_btn
+import com.labellens.app.generated.resources.scan_barcode_placeholder
+import com.labellens.app.generated.resources.scan_barcode_subtitle
+import com.labellens.app.generated.resources.scan_barcode_title
+import com.labellens.app.generated.resources.scan_btn_from_gallery
+import com.labellens.app.generated.resources.scan_btn_take_photo
+import com.labellens.app.generated.resources.scan_btn_test_sample
+import com.labellens.app.generated.resources.scan_header_subtitle
+import com.labellens.app.generated.resources.scan_header_title
+import com.labellens.app.generated.resources.scan_notice_dismiss
+import com.labellens.app.generated.resources.scan_notice_title
+import com.labellens.app.generated.resources.scan_paste_analyze_btn
+import com.labellens.app.generated.resources.scan_paste_placeholder
+import com.labellens.app.generated.resources.scan_paste_subtitle
+import com.labellens.app.generated.resources.scan_paste_title
+import com.labellens.app.generated.resources.scan_photo_subtitle
+import com.labellens.app.generated.resources.scan_photo_title
+import com.labellens.app.generated.resources.scan_sample_run_btn
+import com.labellens.app.generated.resources.scan_samples_section_title
 import com.labellens.app.util.file.openCameraPicker
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ScanScreen(
@@ -97,7 +120,7 @@ fun ScanScreen(
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     Text(
-                        text = "Analyzing Label",
+                        text = stringResource(Res.string.scan_analyzing_title),
                         style = AppTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.text.primary,
@@ -105,7 +128,7 @@ fun ScanScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Running on-device OCR and matching safe food standards.",
+                        text = stringResource(Res.string.scan_analyzing_subtitle),
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.text.secondary,
                     )
@@ -187,7 +210,7 @@ fun ScanScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Notice",
+                                text = stringResource(Res.string.scan_notice_title),
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFB7791F),
                                 style = AppTheme.typography.bodyMedium,
@@ -202,7 +225,7 @@ fun ScanScreen(
                         IconButton(onClick = { viewModel.dismissError() }) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Dismiss",
+                                contentDescription = stringResource(Res.string.scan_notice_dismiss),
                                 tint = Color(0xFFB7791F),
                             )
                         }
@@ -213,7 +236,7 @@ fun ScanScreen(
 
         item {
             Text(
-                text = "Scan or Input Label",
+                text = stringResource(Res.string.scan_header_title),
                 style = AppTheme.typography.headlineLarge.copy(
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
@@ -222,7 +245,7 @@ fun ScanScreen(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Use camera, enter a barcode, or select a built-in test sample.",
+                text = stringResource(Res.string.scan_header_subtitle),
                 style = AppTheme.typography.bodyMedium,
                 color = AppTheme.colors.text.secondary,
             )
@@ -237,7 +260,7 @@ fun ScanScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "Photo Capture",
+                        text = stringResource(Res.string.scan_photo_title),
                         style = AppTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.text.primary,
@@ -245,7 +268,7 @@ fun ScanScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Snap a photo of the ingredients list or pick an image from gallery.",
+                        text = stringResource(Res.string.scan_photo_subtitle),
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.text.secondary,
                     )
@@ -255,7 +278,7 @@ fun ScanScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         AppButton(
-                            text = "Take Photo",
+                            text = stringResource(Res.string.scan_btn_take_photo),
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 coroutineScope.launch {
@@ -269,7 +292,7 @@ fun ScanScreen(
                             },
                         )
                         AppButton(
-                            text = "From Gallery",
+                            text = stringResource(Res.string.scan_btn_from_gallery),
                             style = ButtonStyle.ALTERNATIVE,
                             modifier = Modifier.weight(1f),
                             onClick = {
@@ -279,7 +302,7 @@ fun ScanScreen(
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     AppButton(
-                        text = "Test Held-Out Label",
+                        text = stringResource(Res.string.scan_btn_test_sample),
                         style = ButtonStyle.ALTERNATIVE,
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
@@ -301,7 +324,7 @@ fun ScanScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "Barcode Scanner & Fallback",
+                        text = stringResource(Res.string.scan_barcode_title),
                         style = AppTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.text.primary,
@@ -309,7 +332,7 @@ fun ScanScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Enter or scan a barcode (e.g. 8801043014853, 016000275263).",
+                        text = stringResource(Res.string.scan_barcode_subtitle),
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.text.secondary,
                     )
@@ -317,13 +340,13 @@ fun ScanScreen(
                     OutlinedTextField(
                         value = enteredBarcode,
                         onValueChange = { enteredBarcode = it },
-                        placeholder = { Text("Enter barcode digits") },
+                        placeholder = { Text(stringResource(Res.string.scan_barcode_placeholder)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     AppButton(
-                        text = "Lookup Barcode",
+                        text = stringResource(Res.string.scan_barcode_lookup_btn),
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             if (enteredBarcode.isNotBlank()) {
@@ -346,7 +369,7 @@ fun ScanScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "Paste Raw Label Text",
+                        text = stringResource(Res.string.scan_paste_title),
                         style = AppTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.text.primary,
@@ -354,7 +377,7 @@ fun ScanScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Paste English, Korean, Japanese, or Chinese ingredients text directly.",
+                        text = stringResource(Res.string.scan_paste_subtitle),
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.text.secondary,
                     )
@@ -362,13 +385,13 @@ fun ScanScreen(
                     OutlinedTextField(
                         value = pastedText,
                         onValueChange = { pastedText = it },
-                        placeholder = { Text("Paste ingredients and nutrition facts here...") },
+                        placeholder = { Text(stringResource(Res.string.scan_paste_placeholder)) },
                         modifier = Modifier.fillMaxWidth().height(120.dp),
                         shape = RoundedCornerShape(12.dp),
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     AppButton(
-                        text = "Analyze Pasted Text",
+                        text = stringResource(Res.string.scan_paste_analyze_btn),
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             if (pastedText.isNotBlank()) {
@@ -383,7 +406,7 @@ fun ScanScreen(
         // Quick Test with Built-in Samples
         item {
             Text(
-                text = "Built-in Test Samples",
+                text = stringResource(Res.string.scan_samples_section_title),
                 style = AppTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     color = AppTheme.colors.text.primary,
@@ -427,7 +450,7 @@ fun ScanScreen(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Run ->",
+                        text = stringResource(Res.string.scan_sample_run_btn),
                         fontWeight = FontWeight.SemiBold,
                         color = AppTheme.colors.primary,
                         style = AppTheme.typography.bodySmall,

@@ -11,6 +11,10 @@
     <string name="description_delete_user_dialog">This irreversible action will permanently delete the user and associated data. For security, you will need to log in or reauthenticate to proceed. Are you sure?</string>
     <string name="btn_delete">Delete</string>
     <string name="btn_cancel">Cancel</string>
+    <string name="btn_next">Next</string>
+    <string name="btn_back">Back</string>
+    <string name="content_desc_close">Close</string>
+    <string name="content_desc_selected">Selected</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="terms_conditions">Terms &amp; Conditions</string>
     <string name="and">and</string>

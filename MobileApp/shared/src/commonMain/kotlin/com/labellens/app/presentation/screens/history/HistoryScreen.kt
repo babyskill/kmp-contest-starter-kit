@@ -39,6 +39,21 @@ import com.labellens.app.designsystem.components.AppButton
 import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.model.LabelAnalysisResult
+import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.content_desc_delete
+import com.labellens.app.generated.resources.history_alert_pattern
+import com.labellens.app.generated.resources.history_alert_plural
+import com.labellens.app.generated.resources.history_alert_single
+import com.labellens.app.generated.resources.history_empty_description
+import com.labellens.app.generated.resources.history_empty_favorites
+import com.labellens.app.generated.resources.history_empty_scans
+import com.labellens.app.generated.resources.history_filter_all
+import com.labellens.app.generated.resources.history_filter_favorites
+import com.labellens.app.generated.resources.history_product_plural
+import com.labellens.app.generated.resources.history_product_single
+import com.labellens.app.generated.resources.history_subtitle_pattern
+import com.labellens.app.generated.resources.history_title
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun HistoryScreen(
@@ -65,7 +80,7 @@ fun HistoryScreen(
             ) {
                 Column {
                     Text(
-                        text = "Scan History",
+                        text = stringResource(Res.string.history_title),
                         style = AppTheme.typography.headlineLarge.copy(
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Bold,
@@ -73,15 +88,16 @@ fun HistoryScreen(
                         ),
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+                    val productWord = if (scans.size != 1) stringResource(Res.string.history_product_plural) else stringResource(Res.string.history_product_single)
                     Text(
-                        text = "${scans.size} product${if (scans.size != 1) "s" else ""} saved locally",
+                        text = stringResource(Res.string.history_subtitle_pattern, scans.size, productWord),
                         style = AppTheme.typography.bodySmall,
                         color = AppTheme.colors.text.secondary,
                     )
                 }
 
                 AppButton(
-                    text = if (state.filterFavoritesOnly) "All Scans" else "Favorites Only",
+                    text = if (state.filterFavoritesOnly) stringResource(Res.string.history_filter_all) else stringResource(Res.string.history_filter_favorites),
                     size = com.labellens.app.designsystem.components.ButtonSize.EXTRA_SMALL,
                     style = ButtonStyle.ALTERNATIVE,
                     onClick = { viewModel.toggleFavoritesFilter() },
@@ -101,13 +117,13 @@ fun HistoryScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
-                            text = if (state.filterFavoritesOnly) "No favorites saved yet" else "No saved scans yet",
+                            text = if (state.filterFavoritesOnly) stringResource(Res.string.history_empty_favorites) else stringResource(Res.string.history_empty_scans),
                             style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                             color = AppTheme.colors.text.primary,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Scans you save will appear here for instant reference and side-by-side comparison.",
+                            text = stringResource(Res.string.history_empty_description),
                             style = AppTheme.typography.bodySmall,
                             color = AppTheme.colors.text.secondary,
                         )
@@ -142,8 +158,9 @@ fun HistoryScreen(
                             )
                             if (scan.watchOutForYou.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(4.dp))
+                                val alertWord = if (scan.watchOutForYou.size > 1) stringResource(Res.string.history_alert_plural) else stringResource(Res.string.history_alert_single)
                                 Text(
-                                    text = "${scan.watchOutForYou.size} personal alert${if (scan.watchOutForYou.size > 1) "s" else ""}",
+                                    text = stringResource(Res.string.history_alert_pattern, scan.watchOutForYou.size, alertWord),
                                     style = AppTheme.typography.bodyExtraSmall.copy(
                                         color = Color(0xFFB3261E),
                                         fontWeight = FontWeight.SemiBold,
@@ -155,7 +172,7 @@ fun HistoryScreen(
                         IconButton(onClick = { viewModel.deleteItem(scan.barcode ?: scan.productName) }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete",
+                                contentDescription = stringResource(Res.string.content_desc_delete),
                                 tint = AppTheme.colors.outline,
                                 modifier = Modifier.size(20.dp),
                             )

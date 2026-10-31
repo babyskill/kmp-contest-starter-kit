@@ -37,6 +37,21 @@ import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.SampleProduct
+import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.btn_get_started
+import com.labellens.app.generated.resources.btn_next
+import com.labellens.app.generated.resources.onboarding_badge_1
+import com.labellens.app.generated.resources.onboarding_badge_2
+import com.labellens.app.generated.resources.onboarding_badge_3
+import com.labellens.app.generated.resources.onboarding_demo_scan_btn
+import com.labellens.app.generated.resources.onboarding_desc_1
+import com.labellens.app.generated.resources.onboarding_desc_2
+import com.labellens.app.generated.resources.onboarding_desc_3
+import com.labellens.app.generated.resources.onboarding_skip
+import com.labellens.app.generated.resources.onboarding_title_1
+import com.labellens.app.generated.resources.onboarding_title_2
+import com.labellens.app.generated.resources.onboarding_title_3
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun LabelLensOnBoardingScreen(
@@ -61,7 +76,7 @@ fun LabelLensOnBoardingScreen(
         ) {
             TextButton(onClick = onFinished) {
                 Text(
-                    text = "Skip",
+                    text = stringResource(Res.string.onboarding_skip),
                     style = AppTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold,
                         color = AppTheme.colors.text.secondary,
@@ -79,9 +94,9 @@ fun LabelLensOnBoardingScreen(
             when (currentStep) {
                 0 -> {
                     OnboardingCard(
-                        title = "Understand the label.\nIn seconds.",
-                        description = "Photograph any food or supplement label, including imported Asian packaging, and get an honest, plain-language explanation.",
-                        badgeText = "Honest Breakdown",
+                        title = stringResource(Res.string.onboarding_title_1),
+                        description = stringResource(Res.string.onboarding_desc_1),
+                        badgeText = stringResource(Res.string.onboarding_badge_1),
                         showDemoButton = true,
                         onDemoClick = {
                             onTryDemoScan(BuiltInSamples.sample1)
@@ -91,18 +106,18 @@ fun LabelLensOnBoardingScreen(
 
                 1 -> {
                     OnboardingCard(
-                        title = "Personal context,\nnot a scary single-score.",
-                        description = "We never label foods 'toxic' or 'dirty'. We highlight wholesome ingredients, note additives plainly, and alert you to your allergens.",
-                        badgeText = "Calm & Science-Backed",
+                        title = stringResource(Res.string.onboarding_title_2),
+                        description = stringResource(Res.string.onboarding_desc_2),
+                        badgeText = stringResource(Res.string.onboarding_badge_2),
                         showDemoButton = false,
                     )
                 }
 
                 2 -> {
                     OnboardingCard(
-                        title = "100% on-device.\nYour health stays private.",
-                        description = "Everything runs locally on your phone. No logins required, no tracking profiles sold, and all warnings remain completely free.",
-                        badgeText = "Private & Free Safety",
+                        title = stringResource(Res.string.onboarding_title_3),
+                        description = stringResource(Res.string.onboarding_desc_3),
+                        badgeText = stringResource(Res.string.onboarding_badge_3),
                         showDemoButton = false,
                     )
                 }
@@ -132,13 +147,13 @@ fun LabelLensOnBoardingScreen(
 
             if (currentStep < 2) {
                 AppButton(
-                    text = "Next",
+                    text = stringResource(Res.string.btn_next),
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { currentStep++ },
                 )
             } else {
                 AppButton(
-                    text = "Get Started",
+                    text = stringResource(Res.string.btn_get_started),
                     modifier = Modifier.fillMaxWidth(),
                     onClick = onFinished,
                 )
@@ -200,7 +215,7 @@ private fun OnboardingCard(
             if (showDemoButton) {
                 Spacer(modifier = Modifier.height(24.dp))
                 AppButton(
-                    text = "Try a demo scan",
+                    text = stringResource(Res.string.onboarding_demo_scan_btn),
                     style = ButtonStyle.ALTERNATIVE,
                     onClick = onDemoClick,
                 )

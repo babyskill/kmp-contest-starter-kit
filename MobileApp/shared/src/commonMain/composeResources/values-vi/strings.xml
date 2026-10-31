@@ -280,4 +280,97 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="profile_goals_title">Mục tiêu dinh dưỡng &amp; Lối sống</string>
     <string name="profile_goals_subtitle">Chế độ ăn, chứng nhận tôn giáo và mục tiêu sức khỏe.</string>
     <string name="profile_btn_settings">Cài đặt &amp; Miễn trừ trách nhiệm</string>
+
+    <!-- Home Screen -->
+    <string name="home_hero_title">Quét nhãn bất kỳ</string>
+    <string name="home_hero_subtitle">Hướng camera vào bao bì thực phẩm hoặc thực phẩm chức năng. Thông tin dễ hiểu, không hoang mang.</string>
+    <string name="home_hero_button">Bắt đầu quét</string>
+    <string name="home_quick_actions_title">Thao tác nhanh</string>
+    <string name="home_quick_action_barcode">Mã vạch</string>
+    <string name="home_quick_action_photo">Chụp ảnh</string>
+    <string name="home_quick_action_paste">Dán văn bản</string>
+    <string name="home_samples_title">Thử mẫu có sẵn</string>
+    <string name="home_tip_title">Mẹo nhỏ</string>
+    <string name="home_tip_body">Bao bì châu Á nhập khẩu thường nhóm các chất gây dị ứng dưới mục \'알레르기\' hoặc \'アレルギー\' ở phía dưới cùng.</string>
+    <string name="home_recent_scans_title">Lần quét gần đây</string>
+    <string name="home_recent_scans_empty">Chưa có lần quét nào. Hãy thử mẫu có sẵn hoặc quét nhãn ở trên!</string>
+    <string name="home_sample_tap_to_test">Chạm để thử -&gt;</string>
+    <string name="content_desc_scan">Quét</string>
+    <string name="content_desc_tip">Mẹo</string>
+
+    <!-- Scan Screen -->
+    <string name="scan_analyzing_title">Đang phân tích nhãn</string>
+    <string name="scan_analyzing_subtitle">Đang nhận diện văn bản OCR và đối chiếu tiêu chuẩn an toàn thực phẩm.</string>
+    <string name="scan_notice_title">Thông báo</string>
+    <string name="scan_notice_dismiss">Bỏ qua</string>
+    <string name="scan_header_title">Quét hoặc nhập nhãn</string>
+    <string name="scan_header_subtitle">Dùng máy ảnh, nhập mã vạch hoặc chọn mẫu thử có sẵn.</string>
+    <string name="scan_photo_title">Chụp ảnh nhãn</string>
+    <string name="scan_photo_subtitle">Chụp ảnh danh sách thành phần hoặc chọn ảnh từ thư viện.</string>
+    <string name="scan_btn_take_photo">Chụp ảnh</string>
+    <string name="scan_btn_from_gallery">Từ thư viện</string>
+    <string name="scan_btn_test_sample">Thử nhãn mẫu</string>
+    <string name="scan_barcode_title">Quét mã vạch &amp; Tra cứu</string>
+    <string name="scan_barcode_subtitle">Nhập hoặc quét mã vạch (ví dụ: 8801043014853, 016000275263).</string>
+    <string name="scan_barcode_placeholder">Nhập các chữ số mã vạch</string>
+    <string name="scan_barcode_lookup_btn">Tra cứu mã vạch</string>
+    <string name="scan_paste_title">Dán văn bản nhãn</string>
+    <string name="scan_paste_subtitle">Dán trực tiếp văn bản thành phần tiếng Anh, Hàn, Nhật hoặc Trung.</string>
+    <string name="scan_paste_placeholder">Dán thành phần và thông tin dinh dưỡng tại đây...</string>
+    <string name="scan_paste_analyze_btn">Phân tích văn bản</string>
+    <string name="scan_samples_section_title">Mẫu thử nghiệm có sẵn</string>
+    <string name="scan_sample_run_btn">Chạy thử -&gt;</string>
+
+    <!-- History Screen -->
+    <string name="history_title">Lịch sử quét</string>
+    <string name="history_subtitle_pattern">Đã lưu cục bộ %1$d %2$s</string>
+    <string name="history_filter_all">Tất cả lần quét</string>
+    <string name="history_filter_favorites">Chỉ mục yêu thích</string>
+    <string name="history_empty_favorites">Chưa có mục yêu thích nào</string>
+    <string name="history_empty_scans">Chưa có lần quét nào được lưu</string>
+    <string name="history_empty_description">Các nhãn bạn lưu sẽ xuất hiện ở đây để tiện tra cứu và so sánh trực tiếp.</string>
+    <string name="history_alert_pattern">%1$d %2$s</string>
+    <string name="history_alert_single">cảnh báo cá nhân</string>
+    <string name="history_alert_plural">cảnh báo cá nhân</string>
+    <string name="history_product_single">sản phẩm</string>
+    <string name="history_product_plural">sản phẩm</string>
+    <string name="content_desc_delete">Xóa</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_banner_title">LabelLens Plus</string>
+    <string name="profile_banner_subtitle">Nâng cấp để phân tích ảnh OCR không giới hạn.</string>
+    <string name="profile_banner_btn">Xem</string>
+
+    <!-- Paywall Screen (LabelLens) -->
+    <string name="content_desc_close">Đóng</string>
+    <string name="paywall_demo_mode">Chế độ thử nghiệm</string>
+    <string name="paywall_safety_free">Cảnh báo an toàn luôn miễn phí 100%.\nNâng cấp để sử dụng các tính năng nâng cao.</string>
+    <string name="paywall_free_tier">Gói miễn phí (Luôn miễn phí)</string>
+    <string name="paywall_feature_barcode">Không giới hạn quét &amp; tra cứu mã vạch</string>
+    <string name="paywall_feature_photo">5 lần phân tích ảnh chụp đầy đủ mỗi tháng</string>
+    <string name="paywall_feature_warnings">Toàn bộ cảnh báo dị ứng &amp; an toàn ăn uống luôn kích hoạt</string>
+    <string name="paywall_plus_annual">Gói Plus năm</string>
+    <string name="paywall_plus_annual_price">$24.99 / năm</string>
+    <string name="paywall_plus_annual_desc">Phân tích OCR không giới hạn, so sánh sản phẩm không giới hạn, cơ sở dữ liệu ngoại tuyến ưu tiên.</string>
+    <string name="paywall_plus_annual_btn">Nâng cấp lên Plus ($24.99/năm)</string>
+    <string name="paywall_family_plan">Gói Gia đình</string>
+    <string name="paywall_family_plan_price">$39.99 / năm</string>
+    <string name="paywall_family_plan_desc">Hỗ trợ tối đa 5 thành viên trong gia đình với hồ sơ dị ứng và chế độ ăn riêng biệt.</string>
+    <string name="paywall_family_plan_btn">Chọn Gói Gia đình ($39.99/năm)</string>
+    <string name="paywall_restore_purchases_btn">Khôi phục gói mua</string>
+    <string name="paywall_demo_disclaimer">Đây là bản thử nghiệm. Không phát sinh giao dịch thanh toán hoặc thẻ tín dụng thật.</string>
+
+    <!-- Onboarding Screen -->
+    <string name="onboarding_skip">Bỏ qua</string>
+    <string name="onboarding_title_1">Hiểu rõ nhãn thực phẩm.\nTrong vài giây.</string>
+    <string name="onboarding_desc_1">Chụp ảnh nhãn thực phẩm hoặc thực phẩm chức năng bất kỳ, kể cả bao bì châu Á nhập khẩu, và nhận giải thích trung thực, dễ hiểu.</string>
+    <string name="onboarding_badge_1">Phân tích trung thực</string>
+    <string name="onboarding_title_2">Ngữ cảnh cá nhân hóa,\nkhông chỉ là một điểm số đáng sợ.</string>
+    <string name="onboarding_desc_2">Chúng tôi không bao giờ gán nhãn thực phẩm là \'độc hại\' hay \'bẩn\'. Chúng tôi nêu bật thành phần lành mạnh, phụ gia rõ ràng và cảnh báo dị ứng cho bạn.</string>
+    <string name="onboarding_badge_2">Khách quan &amp; Dựa trên khoa học</string>
+    <string name="onboarding_title_3">100% trên thiết bị.\nDữ liệu sức khỏe luôn riêng tư.</string>
+    <string name="onboarding_desc_3">Mọi thứ chạy hoàn toàn trên điện thoại của bạn. Không cần đăng nhập, không bán dữ liệu và mọi cảnh báo an toàn luôn miễn phí.</string>
+    <string name="onboarding_badge_3">Riêng tư &amp; An toàn miễn phí</string>
+    <string name="onboarding_demo_scan_btn">Thử quét mẫu</string>
+    <string name="content_desc_back">Quay lại</string>
 </resources>

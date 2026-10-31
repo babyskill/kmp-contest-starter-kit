@@ -11,6 +11,10 @@
     <string name="description_delete_user_dialog">Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn người dùng cùng toàn bộ dữ liệu liên quan. Vì lý do bảo mật, bạn sẽ cần đăng nhập hoặc xác thực lại để tiếp tục. Bạn có chắc chắn không?</string>
     <string name="btn_delete">Xóa</string>
     <string name="btn_cancel">Hủy</string>
+    <string name="btn_next">Tiếp tục</string>
+    <string name="btn_back">Quay lại</string>
+    <string name="content_desc_close">Đóng</string>
+    <string name="content_desc_selected">Đã chọn</string>
     <string name="privacy_policy">Chính sách quyền riêng tư</string>
     <string name="terms_conditions">Điều khoản &amp; Điều kiện</string>
     <string name="and">và</string>
