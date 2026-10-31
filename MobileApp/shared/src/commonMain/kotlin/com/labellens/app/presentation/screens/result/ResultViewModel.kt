@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.labellens.app.data.repository.ScanRepository
 import com.labellens.app.data.repository.UserProfileRepository
 import com.labellens.app.domain.analyzer.LabelAnalyzer
+import com.labellens.app.domain.analyzer.PortionMath
 import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.LabelAnalysisResult
+import com.labellens.app.domain.model.PortionMode
 import com.labellens.app.domain.model.ProductCategory
 import com.labellens.app.domain.model.ScanSource
 import com.labellens.app.domain.model.UserProfile
@@ -24,6 +26,7 @@ data class ResultUiState(
     val isLabelTextExpanded: Boolean = false,
     val userProfile: UserProfile = UserProfile(),
     val language: AppLanguage = AppLanguage.DEFAULT,
+    val portionMode: PortionMode = PortionMode.SINGLE_SERVING,
 )
 
 class ResultViewModel(
@@ -54,6 +57,7 @@ class ResultViewModel(
                     _uiState.value = _uiState.value.copy(
                         analysisResult = reanalyzed,
                         isSaved = true,
+                        portionMode = PortionMath.defaultPortionMode(reanalyzed.portionInfo.servingsPerContainer),
                     )
                     return@launch
                 }
@@ -72,7 +76,10 @@ class ResultViewModel(
                         barcode = sample.barcode,
                         language = lang,
                     )
-                    _uiState.value = _uiState.value.copy(analysisResult = analysis)
+                    _uiState.value = _uiState.value.copy(
+                        analysisResult = analysis,
+                        portionMode = PortionMath.defaultPortionMode(analysis.portionInfo.servingsPerContainer),
+                    )
                     return@launch
                 }
             }
@@ -107,8 +114,15 @@ class ResultViewModel(
                 sourceAttribution = sourceAttr,
                 language = lang,
             )
-            _uiState.value = _uiState.value.copy(analysisResult = analysis)
+            _uiState.value = _uiState.value.copy(
+                analysisResult = analysis,
+                portionMode = PortionMath.defaultPortionMode(analysis.portionInfo.servingsPerContainer),
+            )
         }
+    }
+
+    fun setPortionMode(mode: PortionMode) {
+        _uiState.value = _uiState.value.copy(portionMode = mode)
     }
 
     fun toggleLabelTextExpansion() {

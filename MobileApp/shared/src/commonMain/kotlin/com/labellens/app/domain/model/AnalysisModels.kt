@@ -35,6 +35,43 @@ data class FlaggedItem(
 )
 
 @Serializable
+data class PortionInfo(
+    val servingSize: String? = null,
+    val servingsPerContainer: Double? = null,
+    val hasMultipleServings: Boolean = false,
+)
+
+@Serializable
+enum class PortionMode {
+    SINGLE_SERVING,
+    WHOLE_PACK,
+}
+
+@Serializable
+enum class ClusterType {
+    SWEETENERS,
+    SODIUM_SOURCES,
+}
+
+@Serializable
+data class ClusterRollUpItem(
+    val rawName: String,
+    val canonicalName: String,
+    val category: String,
+    val plainExplanation: String,
+    val isSweetener: Boolean = false,
+    val isSodiumSource: Boolean = false,
+)
+
+@Serializable
+data class ClusterRollUp(
+    val clusterType: ClusterType,
+    val title: String,
+    val count: Int,
+    val items: List<ClusterRollUpItem> = emptyList(),
+)
+
+@Serializable
 data class IngredientBreakdown(
     val rawName: String,
     val canonicalName: String,
@@ -46,6 +83,9 @@ data class IngredientBreakdown(
     val isKnown: Boolean = true,
     val matchedAliases: List<String> = emptyList(),
     val sourceNote: String = "Seed database & standard food codex",
+    val isAfterCutLine: Boolean = false,
+    val isCatchAll: Boolean = false,
+    val catchAllNote: String? = null,
 )
 
 @Serializable
@@ -54,6 +94,7 @@ data class NutritionFact(
     val amount: String,
     val perServingNote: String? = null,
     val contextIndicator: String? = null, // e.g., "High", "Moderate", "Low"
+    val secondaryDetail: String? = null, // e.g. "6.0 tsp" or "50% DV • 2.9g salt eq"
 )
 
 @Serializable
@@ -72,4 +113,10 @@ data class LabelAnalysisResult(
     val barcode: String? = null,
     val quickGlance: String? = null, // Calm secondary indicator e.g. "Simple recipe • 4 key ingredients"
     val sourceAttribution: String? = null, // e.g. "Source: Open Food Facts"
+    val portionInfo: PortionInfo = PortionInfo(),
+    val sweetenerRollUp: ClusterRollUp? = null,
+    val sodiumRollUp: ClusterRollUp? = null,
+    val cutLineIndex: Int? = null,
+    val cutLineLabel: String? = null,
+    val haloNotes: List<FlaggedItem> = emptyList(),
 )

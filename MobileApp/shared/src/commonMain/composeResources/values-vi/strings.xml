@@ -222,6 +222,24 @@
     <string name="result_btn_save_history">Lưu vào lịch sử</string>
     <string name="result_btn_saved_history">Đã lưu vào lịch sử</string>
     <string name="result_btn_compare">So sánh</string>
+    <!-- Wave 1: Alias Roll-up, Portion Math, 2% Cut-Line, Badges & Halos -->
+    <string name="result_rollup_sweeteners_title">Chất tạo ngọt (phát hiện %1$d loại)</string>
+    <string name="result_rollup_sweeteners_subtitle">Các dạng đường bổ sung khác nhau được ghi trên nhãn này</string>
+    <string name="result_rollup_sodium_title">Nguồn Natri (phát hiện %1$d loại)</string>
+    <string name="result_rollup_sodium_subtitle">Các thành phần đóng góp vào tổng hàm lượng natri của sản phẩm</string>
+    <string name="result_portion_single_serving">1 Khẩu phần</string>
+    <string name="result_portion_whole_pack">Cả hộp</string>
+    <string name="result_portion_servings_count">%1$s khẩu phần mỗi hộp</string>
+    <string name="result_cut_line_divider">Hàm lượng rất nhỏ / Hương liệu (≤ 2%)</string>
+    <string name="result_catch_all_badge">Thuật ngữ chung</string>
+    <string name="result_catch_all_note">Nhãn không tiết lộ các chất cụ thể nào được sử dụng trong danh mục chung này.</string>
+    <string name="result_halo_fibre_title">Chất xơ bổ sung &amp; Chất tạo ngọt</string>
+    <string name="result_halo_fibre_detail">Chất xơ được bổ sung dưới dạng thành phần cô lập (%1$s) trong khi sản phẩm cũng chứa các chất tạo ngọt bổ sung.</string>
+    <string name="result_halo_fruit_title">Trái cây từ nước ép cô đặc</string>
+    <string name="result_halo_fruit_detail">Thành phần trái cây trong sản phẩm này xuất hiện dưới dạng nước ép cô đặc thay vì trái cây nguyên quả.</string>
+    <string name="result_marquee_cutline_note">Được liệt kê trong nhóm thành phần chiếm 2% trở xuống (%1$s).</string>
+    <string name="result_marquee_salt_note">Được liệt kê sau muối trong danh sách thành phần (%1$s).</string>
+    <string name="result_position_title">Vị trí trên nhãn thành phần</string>
     <string name="action_favorite">Yêu thích</string>
     <string name="btn_back">Quay lại</string>
     <string name="action_details">Chi tiết</string>

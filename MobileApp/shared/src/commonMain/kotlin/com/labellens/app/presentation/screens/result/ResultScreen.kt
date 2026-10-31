@@ -1,10 +1,13 @@
 package com.labellens.app.presentation.screens.result
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,6 +32,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -46,11 +51,14 @@ import androidx.compose.ui.unit.sp
 import com.labellens.app.designsystem.components.AppButton
 import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
+import com.labellens.app.domain.analyzer.PortionMath
 import com.labellens.app.domain.model.AppLanguage
+import com.labellens.app.domain.model.ClusterRollUp
 import com.labellens.app.domain.model.FlagSeverity
 import com.labellens.app.domain.model.FlaggedItem
 import com.labellens.app.domain.model.IngredientBreakdown
 import com.labellens.app.domain.model.LabelAnalysisResult
+import com.labellens.app.domain.model.PortionMode
 import com.labellens.app.generated.resources.Res
 import com.labellens.app.generated.resources.action_details
 import com.labellens.app.generated.resources.action_favorite
@@ -62,6 +70,9 @@ import com.labellens.app.generated.resources.result_btn_compare
 import com.labellens.app.generated.resources.result_btn_needs_fix
 import com.labellens.app.generated.resources.result_btn_save_history
 import com.labellens.app.generated.resources.result_btn_saved_history
+import com.labellens.app.generated.resources.result_catch_all_badge
+import com.labellens.app.generated.resources.result_catch_all_note
+import com.labellens.app.generated.resources.result_cut_line_divider
 import com.labellens.app.generated.resources.result_feedback_prompt
 import com.labellens.app.generated.resources.result_feedback_thanks
 import com.labellens.app.generated.resources.result_header_title
@@ -69,6 +80,11 @@ import com.labellens.app.generated.resources.result_loading
 import com.labellens.app.generated.resources.result_personal_summary_contains
 import com.labellens.app.generated.resources.result_personal_summary_nothing
 import com.labellens.app.generated.resources.result_personal_summary_prefix
+import com.labellens.app.generated.resources.result_portion_servings_count
+import com.labellens.app.generated.resources.result_portion_single_serving
+import com.labellens.app.generated.resources.result_portion_whole_pack
+import com.labellens.app.generated.resources.result_rollup_sodium_subtitle
+import com.labellens.app.generated.resources.result_rollup_sweeteners_subtitle
 import com.labellens.app.generated.resources.result_section_breakdown_subtitle
 import com.labellens.app.generated.resources.result_section_breakdown_title
 import com.labellens.app.generated.resources.result_section_good_to_know_subtitle
@@ -279,6 +295,166 @@ fun ResultScreen(
             }
         }
 
+        // Alias Roll-Up Card (Sweeteners & Sodium Sources)
+        if (result.sweetenerRollUp != null || result.sodiumRollUp != null) {
+            item {
+                AliasRollUpCard(
+                    sweetenerRollUp = result.sweetenerRollUp,
+                    sodiumRollUp = result.sodiumRollUp,
+                    onNavigateToIngredientDetail = onNavigateToIngredientDetail,
+                )
+            }
+        }
+
+        // Portion Reality & Nutrition Highlights (when present)
+        if (result.nutritionHighlights.isNotEmpty()) {
+            item {
+                SectionHeader(
+                    title = stringResource(Res.string.result_section_nutrition_title),
+                    subtitle = stringResource(Res.string.result_section_nutrition_subtitle),
+                )
+            }
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        // Serving size & Servings per container info
+                        result.portionInfo.servingSize?.let { size ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = size,
+                                    style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                    color = AppTheme.colors.text.secondary,
+                                )
+                                result.portionInfo.servingsPerContainer?.let { s ->
+                                    val countStr = if (s % 1.0 == 0.0) s.toInt().toString() else s.toString()
+                                    Text(
+                                        text = stringResource(Res.string.result_portion_servings_count, countStr),
+                                        style = AppTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                                        color = AppTheme.colors.primary,
+                                    )
+                                }
+                            }
+                        }
+
+                        // [1 Serving] / [Whole Pack] Segmented Toggle (Shown only when servingsPerContainer > 1)
+                        if (PortionMath.shouldShowToggle(result.portionInfo.servingsPerContainer)) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFF2F4EF))
+                                    .padding(4.dp),
+                            ) {
+                                val isSingle = state.portionMode == PortionMode.SINGLE_SERVING
+                                val isWhole = state.portionMode == PortionMode.WHOLE_PACK
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (isSingle) Color.White else Color.Transparent)
+                                        .clickable { viewModel.setPortionMode(PortionMode.SINGLE_SERVING) }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.result_portion_single_serving),
+                                        style = AppTheme.typography.bodyMedium.copy(
+                                            fontWeight = if (isSingle) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isSingle) AppTheme.colors.primary else AppTheme.colors.text.secondary,
+                                        ),
+                                    )
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (isWhole) Color.White else Color.Transparent)
+                                        .clickable { viewModel.setPortionMode(PortionMode.WHOLE_PACK) }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.result_portion_whole_pack),
+                                        style = AppTheme.typography.bodyMedium.copy(
+                                            fontWeight = if (isWhole) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isWhole) AppTheme.colors.primary else AppTheme.colors.text.secondary,
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+
+                        val currentFacts = remember(result.nutritionHighlights, state.portionMode, result.portionInfo.servingsPerContainer, state.language) {
+                            PortionMath.scaleNutritionFacts(
+                                facts = result.nutritionHighlights,
+                                mode = state.portionMode,
+                                servingsPerContainer = result.portionInfo.servingsPerContainer,
+                                language = state.language,
+                            )
+                        }
+
+                        currentFacts.forEach { fact ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column {
+                                    Text(
+                                        text = fact.name,
+                                        style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                        color = AppTheme.colors.text.primary,
+                                    )
+                                    fact.secondaryDetail?.let { sec ->
+                                        Text(
+                                            text = sec,
+                                            style = AppTheme.typography.bodyExtraSmall.copy(fontWeight = FontWeight.Medium),
+                                            color = AppTheme.colors.text.secondary,
+                                        )
+                                    }
+                                }
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = fact.amount,
+                                        style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                        color = AppTheme.colors.text.primary,
+                                    )
+                                    fact.contextIndicator?.let { ctx ->
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(AppTheme.colors.alternative)
+                                                .padding(horizontal = 8.dp, vertical = 2.dp),
+                                        ) {
+                                            Text(
+                                                text = ctx,
+                                                style = AppTheme.typography.bodyExtraSmall.copy(fontWeight = FontWeight.Medium),
+                                                color = AppTheme.colors.primary,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Section 1: Watch out for you (Personal flags only)
         if (result.watchOutForYou.isNotEmpty()) {
             item {
@@ -325,69 +501,19 @@ fun ResultScreen(
                 subtitle = stringResource(Res.string.result_section_breakdown_subtitle),
             )
         }
-        items(result.fullBreakdown) { ingredient ->
+        itemsIndexed(result.fullBreakdown) { index, ingredient ->
+            if (result.cutLineIndex != null && index == result.cutLineIndex) {
+                CutLineDivider(
+                    label = result.cutLineLabel ?: stringResource(Res.string.result_cut_line_divider),
+                )
+            }
             IngredientRow(
                 ingredient = ingredient,
                 onClick = { onNavigateToIngredientDetail(ingredient.canonicalName) },
             )
         }
 
-        // Section 5: Nutrition highlights (when present)
-        if (result.nutritionHighlights.isNotEmpty()) {
-            item {
-                SectionHeader(
-                    title = stringResource(Res.string.result_section_nutrition_title),
-                    subtitle = stringResource(Res.string.result_section_nutrition_subtitle),
-                )
-            }
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        result.nutritionHighlights.forEach { fact ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = fact.name,
-                                    style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                                    color = AppTheme.colors.text.primary,
-                                )
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = fact.amount,
-                                        style = AppTheme.typography.bodyMedium,
-                                        color = AppTheme.colors.text.primary,
-                                    )
-                                    fact.contextIndicator?.let { ctx ->
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(AppTheme.colors.alternative)
-                                                .padding(horizontal = 8.dp, vertical = 2.dp),
-                                        ) {
-                                            Text(
-                                                text = ctx,
-                                                style = AppTheme.typography.bodyExtraSmall.copy(fontWeight = FontWeight.Medium),
-                                                color = AppTheme.colors.primary,
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Section 6: See the label text expandable
+        // Section 5: See the label text expandable
         item {
             Card(
                 modifier = Modifier.fillMaxWidth().clickable { viewModel.toggleLabelTextExpansion() },
@@ -578,17 +704,47 @@ private fun IngredientRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = ingredient.canonicalName,
-                    style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = AppTheme.colors.text.primary,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = ingredient.canonicalName,
+                        style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = AppTheme.colors.text.primary,
+                    )
+                    if (ingredient.isCatchAll) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFFFBF3DF))
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.result_catch_all_badge),
+                                style = AppTheme.typography.bodyExtraSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp,
+                                    color = Color(0xFFB7791F),
+                                ),
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = ingredient.category,
                     style = AppTheme.typography.bodyExtraSmall,
                     color = AppTheme.colors.text.secondary,
                 )
+                if (ingredient.isCatchAll && ingredient.catchAllNote != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = ingredient.catchAllNote,
+                        style = AppTheme.typography.bodyExtraSmall.copy(
+                            color = Color(0xFF8A6D3B),
+                            lineHeight = 14.sp,
+                        ),
+                    )
+                }
             }
             Icon(
                 imageVector = Icons.Default.ArrowForward,
@@ -596,6 +752,159 @@ private fun IngredientRow(
                 tint = AppTheme.colors.outline,
                 modifier = Modifier.size(16.dp),
             )
+        }
+    }
+}
+
+@Composable
+private fun CutLineDivider(label: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            color = Color(0xFFE2E4DE),
+            thickness = 1.dp,
+        )
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF0F2ED))
+                .padding(horizontal = 12.dp, vertical = 4.dp),
+        ) {
+            Text(
+                text = label,
+                style = AppTheme.typography.bodyExtraSmall.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppTheme.colors.text.secondary,
+                ),
+            )
+        }
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            color = Color(0xFFE2E4DE),
+            thickness = 1.dp,
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AliasRollUpCard(
+    sweetenerRollUp: ClusterRollUp?,
+    sodiumRollUp: ClusterRollUp?,
+    onNavigateToIngredientDetail: (String) -> Unit,
+) {
+    if (sweetenerRollUp == null && sodiumRollUp == null) return
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            // Sweeteners roll-up
+            sweetenerRollUp?.let { rollUp ->
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            text = rollUp.title,
+                            style = AppTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFB7791F),
+                            ),
+                        )
+                        Text(
+                            text = stringResource(Res.string.result_rollup_sweeteners_subtitle),
+                            style = AppTheme.typography.bodyExtraSmall.copy(
+                                fontWeight = FontWeight.Normal,
+                                color = AppTheme.colors.text.secondary,
+                            ),
+                        )
+                    }
+
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        rollUp.items.forEach { item ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0xFFFDF7E7))
+                                    .border(1.dp, Color(0xFFEEDBB2), RoundedCornerShape(10.dp))
+                                    .clickable { onNavigateToIngredientDetail(item.canonicalName) }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                            ) {
+                                Text(
+                                    text = item.canonicalName,
+                                    style = AppTheme.typography.bodySmall.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF7A4D05),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (sweetenerRollUp != null && sodiumRollUp != null) {
+                HorizontalDivider(color = Color(0xFFF0F0EE), thickness = 1.dp)
+            }
+
+            // Sodium roll-up
+            sodiumRollUp?.let { rollUp ->
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            text = rollUp.title,
+                            style = AppTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = AppTheme.colors.primary,
+                            ),
+                        )
+                        Text(
+                            text = stringResource(Res.string.result_rollup_sodium_subtitle),
+                            style = AppTheme.typography.bodyExtraSmall.copy(
+                                fontWeight = FontWeight.Normal,
+                                color = AppTheme.colors.text.secondary,
+                            ),
+                        )
+                    }
+
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        rollUp.items.forEach { item ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0xFFEDF2ED))
+                                    .border(1.dp, Color(0xFFCCE0D3), RoundedCornerShape(10.dp))
+                                    .clickable { onNavigateToIngredientDetail(item.canonicalName) }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                            ) {
+                                Text(
+                                    text = item.canonicalName,
+                                    style = AppTheme.typography.bodySmall.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF0F5A37),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

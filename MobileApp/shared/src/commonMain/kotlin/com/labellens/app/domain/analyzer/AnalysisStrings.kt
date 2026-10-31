@@ -427,4 +427,65 @@ object AnalysisStrings {
         AppLanguage.VIETNAMESE -> "Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế."
         AppLanguage.ENGLISH -> "Education only - this is not medical advice."
     }
+
+    // Wave 1 Strings: Roll-up, 2% Cut-Line, Badges, Halos & Marquee Notes
+    fun sweetenersRollUpTitle(language: AppLanguage, count: Int): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Chất tạo ngọt (phát hiện $count loại)"
+        AppLanguage.ENGLISH -> "Sweeteners ($count found)"
+    }
+
+    fun sodiumRollUpTitle(language: AppLanguage, count: Int): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Nguồn Natri (phát hiện $count loại)"
+        AppLanguage.ENGLISH -> "Sodium Sources ($count found)"
+    }
+
+    fun cutLineDivider(language: AppLanguage): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Hàm lượng rất nhỏ / Hương liệu (≤ 2%)"
+        AppLanguage.ENGLISH -> "Tiny amounts / Flavourings (≤ 2%)"
+    }
+
+    fun catchAllBadge(language: AppLanguage): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Thuật ngữ chung"
+        AppLanguage.ENGLISH -> "Catch-all term"
+    }
+
+    fun catchAllNote(language: AppLanguage): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Nhãn không tiết lộ các chất cụ thể nào được sử dụng trong danh mục chung này."
+        AppLanguage.ENGLISH -> "The label does not disclose which specific substances are inside this term."
+    }
+
+    fun haloFibreTitle(language: AppLanguage): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Chất xơ bổ sung & Chất tạo ngọt"
+        AppLanguage.ENGLISH -> "Added Fiber & Sweeteners"
+    }
+
+    fun haloFibreDetail(language: AppLanguage, fiberName: String): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Chất xơ được bổ sung dưới dạng thành phần cô lập ($fiberName) trong khi sản phẩm cũng chứa các chất tạo ngọt bổ sung."
+        AppLanguage.ENGLISH -> "Dietary fiber is included as an isolated ingredient ($fiberName) while the product also contains added sweeteners."
+    }
+
+    fun haloFruitTitle(language: AppLanguage): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Trái cây từ nước ép cô đặc"
+        AppLanguage.ENGLISH -> "Fruit from Concentrate"
+    }
+
+    fun haloFruitDetail(language: AppLanguage): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Thành phần trái cây trong sản phẩm này xuất hiện dưới dạng nước ép cô đặc thay vì trái cây nguyên quả."
+        AppLanguage.ENGLISH -> "The fruit content in this product appears in the ingredient list as fruit juice concentrate rather than whole fruit."
+    }
+
+    fun marqueeCutLineNote(language: AppLanguage, ingredientName: String): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Được liệt kê trong nhóm thành phần chiếm 2% trở xuống ($ingredientName)."
+        AppLanguage.ENGLISH -> "Listed in the 2%-or-less section ($ingredientName)."
+    }
+
+    fun marqueeSaltNote(language: AppLanguage, ingredientName: String): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Được liệt kê sau muối trong danh sách thành phần ($ingredientName)."
+        AppLanguage.ENGLISH -> "Listed after salt in the ingredient list ($ingredientName)."
+    }
+
+    fun positionTitle(language: AppLanguage): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Vị trí trên nhãn thành phần"
+        AppLanguage.ENGLISH -> "Position on Label"
+    }
 }

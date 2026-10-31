@@ -97,5 +97,18 @@ object BuiltInSamples {
         barcode = "8850987101051",
     )
 
-    val all: List<SampleProduct> = listOf(sample1, sample2, sample3, sample4, sample5, sample6)
+    val sample7 = SampleProduct(
+        id = "sample_chewy_granola_bars",
+        name = "Chewy Chocolate Chip Granola Bars",
+        category = ProductCategory.FOOD,
+        frontDescription = "Whole grain rolled oat granola bars drizzled with chocolate chips, pure honey, and golden molasses.",
+        fullLabelText = """
+            INGREDIENTS: Whole Grain Rolled Oats, Cane Sugar, Corn Syrup, Semi-Sweet Chocolate Chips (Sugar, Chocolate Liquor, Cocoa Butter, Soy Lecithin), Inulin (Chicory Root Fiber), Brown Rice Flour, Canola Oil. Contains 2% or less of: Honey, Molasses, Salt, Baking Soda, Natural Flavors.
+            CONTAINS: Soy. May contain Peanuts, Tree Nuts, and Milk.
+            Nutrition Facts: 2.5 servings per container. Serving size 1 bar (24g). Calories: 100. Total Fat 3g. Saturated Fat 1g. Sodium: 75mg. Total Carbohydrate 19g. Dietary Fiber 3g. Total Sugars 7g. Includes 6g Added Sugars. Protein 1g.
+        """.trimIndent(),
+        barcode = "016000264625",
+    )
+
+    val all: List<SampleProduct> = listOf(sample1, sample2, sample3, sample4, sample5, sample6, sample7)
 }

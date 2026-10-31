@@ -3,6 +3,9 @@ package com.labellens.app.domain.analyzer
 import com.labellens.app.domain.model.Allergen
 import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.AvoidPreference
+import com.labellens.app.domain.model.ClusterRollUp
+import com.labellens.app.domain.model.ClusterRollUpItem
+import com.labellens.app.domain.model.ClusterType
 import com.labellens.app.domain.model.DietaryGoal
 import com.labellens.app.domain.model.FlagSeverity
 import com.labellens.app.domain.model.FlaggedItem
@@ -10,6 +13,7 @@ import com.labellens.app.domain.model.IngredientBreakdown
 import com.labellens.app.domain.model.KnowledgeIngredient
 import com.labellens.app.domain.model.LabelAnalysisResult
 import com.labellens.app.domain.model.NutritionFact
+import com.labellens.app.domain.model.PortionInfo
 import com.labellens.app.domain.model.ProductCategory
 import com.labellens.app.domain.model.ScanSource
 import com.labellens.app.domain.model.UserProfile
@@ -33,17 +37,19 @@ class LabelAnalyzer {
             uncertaintyNotes.add(AnalysisStrings.uncertaintyShortText(language))
         }
 
-        // 1. Split and parse raw ingredients
-        val rawTokens = extractIngredientTokens(normalizedText)
+        // 1. Split and parse raw ingredients (with 2% cut-line detection)
+        val parsedIngredients = extractIngredientTokensWithPositions(normalizedText)
+        val rawTokens = parsedIngredients.tokens
+        val cutLineIndex = parsedIngredients.cutLineIndex
         val matchedIngredients = mutableListOf<MatchedItem>()
         val unclassifiedTokens = mutableListOf<String>()
 
         for (token in rawTokens) {
-            val match = findBestMatch(token)
+            val match = findBestMatch(token.text)
             if (match != null) {
-                matchedIngredients.add(MatchedItem(rawToken = token, ingredient = match))
+                matchedIngredients.add(MatchedItem(rawToken = token.text, ingredient = match))
             } else {
-                unclassifiedTokens.add(token)
+                unclassifiedTokens.add(token.text)
             }
         }
 
@@ -65,10 +71,13 @@ class LabelAnalyzer {
             uncertaintyNotes.add(AnalysisStrings.uncertaintyUnclassified(language, unclassifiedTokens.take(3).joinToString(", ")))
         }
 
-        // 2. Parse nutrition facts
-        val nutritionFacts = extractNutritionFacts(normalizedText, language)
-        val highSodiumDetected = isHighSodium(nutritionFacts, normalizedText, language)
-        val highSugarDetected = isHighSugar(nutritionFacts, normalizedText, language)
+        // 2. Parse nutrition facts & portion info
+        val portionInfo = PortionMath.parsePortionInfo(normalizedText)
+        val rawNutritionFacts = extractNutritionFacts(normalizedText, language)
+        val defaultMode = PortionMath.defaultPortionMode(portionInfo.servingsPerContainer)
+        val nutritionFacts = PortionMath.scaleNutritionFacts(rawNutritionFacts, defaultMode, portionInfo.servingsPerContainer, language)
+        val highSodiumDetected = isHighSodium(rawNutritionFacts, normalizedText, language)
+        val highSugarDetected = isHighSugar(rawNutritionFacts, normalizedText, language)
 
         // 3. Evaluate Sections: Watch out for you (Personal ONLY), Worth noting, Good to know
         val watchOutForYou = mutableListOf<FlaggedItem>()
@@ -288,41 +297,216 @@ class LabelAnalyzer {
             }
         }
 
-        // 4. Generate Full Breakdown list
-        val fullBreakdown = mutableListOf<IngredientBreakdown>()
-        for (item in matchedIngredients.distinctBy { it.ingredient.canonicalName }) {
-            val ing = item.ingredient
-            fullBreakdown.add(
-                IngredientBreakdown(
-                    rawName = item.rawToken,
-                    canonicalName = ing.displayName(language),
-                    category = ing.category(language),
-                    plainExplanation = ing.plainExplanation(language),
-                    whyUsed = ing.whyUsed(language),
-                    doseContextNote = ing.doseContextNote(language),
-                    avoidForTags = ing.avoidForTags,
-                    isKnown = true,
-                    matchedAliases = ing.aliases.take(5),
-                ),
-            )
-        }
-        for (token in unclassifiedTokens.distinct()) {
-            if (token.isNotBlank() && token.length > 2) {
-                fullBreakdown.add(
-                    IngredientBreakdown(
-                        rawName = token,
-                        canonicalName = token.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
-                        category = AnalysisStrings.fallbackCategory(language),
-                        plainExplanation = AnalysisStrings.fallbackPlainExplanation(language),
-                        whyUsed = AnalysisStrings.fallbackWhyUsed(language),
-                        doseContextNote = AnalysisStrings.fallbackDoseContextNote(language),
-                        isKnown = false,
+        // 4. Wave 1: Alias Clusters (Sweeteners & Sodium Sources) Roll-Up
+        val sweetenerItems = mutableListOf<ClusterRollUpItem>()
+        val sodiumItems = mutableListOf<ClusterRollUpItem>()
+
+        for (token in rawTokens) {
+            val sweetName = KnowledgeClusters.matchSweetener(token.text)
+            if (sweetName != null) {
+                val canonical = KnowledgeClusters.resolveCanonical(sweetName) ?: findBestMatch(token.text)
+                val canonicalName = canonical?.displayName(language) ?: sweetName
+                val category = canonical?.category(language) ?: AnalysisStrings.categoryName(language, "Sweetener")
+                val explanation = canonical?.plainExplanation(language) ?: ""
+                sweetenerItems.add(
+                    ClusterRollUpItem(
+                        rawName = token.text,
+                        canonicalName = canonicalName,
+                        category = category,
+                        plainExplanation = explanation,
+                        isSweetener = true,
+                    ),
+                )
+            }
+
+            val sodiumName = KnowledgeClusters.matchSodiumSource(token.text)
+            if (sodiumName != null) {
+                val canonical = KnowledgeClusters.resolveCanonical(sodiumName) ?: findBestMatch(token.text)
+                val canonicalName = canonical?.displayName(language) ?: sodiumName
+                val category = canonical?.category(language) ?: AnalysisStrings.categoryName(language, "Mineral / Seasoning")
+                val explanation = canonical?.plainExplanation(language) ?: ""
+                sodiumItems.add(
+                    ClusterRollUpItem(
+                        rawName = token.text,
+                        canonicalName = canonicalName,
+                        category = category,
+                        plainExplanation = explanation,
+                        isSodiumSource = true,
                     ),
                 )
             }
         }
 
-        // 5. Construct Plain-Language Verdict
+        val sweetenerRollUp = if (sweetenerItems.isNotEmpty()) {
+            ClusterRollUp(
+                clusterType = ClusterType.SWEETENERS,
+                title = AnalysisStrings.sweetenersRollUpTitle(language, sweetenerItems.size),
+                count = sweetenerItems.size,
+                items = sweetenerItems,
+            )
+        } else {
+            null
+        }
+
+        val sodiumRollUp = if (sodiumItems.isNotEmpty()) {
+            ClusterRollUp(
+                clusterType = ClusterType.SODIUM_SOURCES,
+                title = AnalysisStrings.sodiumRollUpTitle(language, sodiumItems.size),
+                count = sodiumItems.size,
+                items = sodiumItems,
+            )
+        } else {
+            null
+        }
+
+        // 5. Wave 1: Halo Patterns & Marquee Position Notes
+        val haloNotes = mutableListOf<FlaggedItem>()
+
+        // Pattern A: Engineered fibre halo
+        val addedSugarFact = nutritionFacts.firstOrNull {
+            it.name.contains("Added Sugar", ignoreCase = true) || it.name.contains("Đường bổ sung", ignoreCase = true)
+        }
+        val hasAddedSugarGrams = (addedSugarFact?.amount?.substringBefore(" ")?.toDoubleOrNull() ?: 0.0) > 0.0
+        val hasMultipleSweeteners = sweetenerItems.size >= 2
+        val hasAddedSugars = hasAddedSugarGrams || hasMultipleSweeteners
+
+        val isolatedFiberMatch = rawTokens.firstNotNullOfOrNull { token ->
+            KnowledgeClusters.matchIsolatedFiber(token.text)
+        }
+        if (hasAddedSugars && isolatedFiberMatch != null) {
+            val fiberCanonical = KnowledgeClusters.resolveCanonical(isolatedFiberMatch) ?: findBestMatch(isolatedFiberMatch)
+            val fiberName = fiberCanonical?.displayName(language) ?: isolatedFiberMatch
+            val haloA = FlaggedItem(
+                title = AnalysisStrings.haloFibreTitle(language),
+                detail = AnalysisStrings.haloFibreDetail(language, fiberName),
+                severity = FlagSeverity.WORTH_NOTING,
+                relatedIngredient = fiberName,
+            )
+            haloNotes.add(haloA)
+            if (worthNoting.none { it.title == haloA.title }) {
+                worthNoting.add(haloA)
+            }
+        }
+
+        // Pattern B: Fruit in name, concentrate in fact
+        val fruitInName = KnowledgeClusters.FRUIT_NAMES.firstOrNull { fruit ->
+            Regex("\\b${Regex.escape(fruit)}\\b", RegexOption.IGNORE_CASE).containsMatchIn(productName)
+        }
+        if (fruitInName != null) {
+            val fruitTokens = rawTokens.filter { token ->
+                val clean = token.text.lowercase()
+                clean.contains(fruitInName) || clean.contains("fruit") || clean.contains("juice") ||
+                    clean.contains("nước ép") || clean.contains("trái cây") || clean.contains("hoa quả")
+            }
+            if (fruitTokens.isNotEmpty()) {
+                val allAreConcentrates = fruitTokens.all { token ->
+                    val clean = token.text.lowercase()
+                    clean.contains("concentrate") || clean.contains("cô đặc")
+                }
+                val hasWholeFruit = fruitTokens.any { token ->
+                    val clean = token.text.lowercase()
+                    clean.contains("fresh") || clean.contains("whole") || (clean.contains("puree") && !clean.contains("concentrate")) ||
+                        clean.contains("dried") || clean.contains("freeze-dried") || clean.contains("sấy")
+                }
+                if (allAreConcentrates && !hasWholeFruit) {
+                    val haloB = FlaggedItem(
+                        title = AnalysisStrings.haloFruitTitle(language),
+                        detail = AnalysisStrings.haloFruitDetail(language),
+                        severity = FlagSeverity.WORTH_NOTING,
+                    )
+                    haloNotes.add(haloB)
+                    if (worthNoting.none { it.title == haloB.title }) {
+                        worthNoting.add(haloB)
+                    }
+                }
+            }
+        }
+
+        // Marquee ingredient positional note
+        val marqueeNames = (KnowledgeClusters.MARQUEE_INGREDIENTS + productName.split(Regex("[\\s,;\\-_/]+")).filter { it.length >= 4 }).distinct()
+        for (marquee in marqueeNames) {
+            val marqueeRegex = Regex("\\b${Regex.escape(marquee)}\\b", RegexOption.IGNORE_CASE)
+            val tokenIndex = rawTokens.indexOfFirst { token ->
+                marqueeRegex.containsMatchIn(token.text)
+            }
+            if (tokenIndex != -1) {
+                val matchedToken = rawTokens[tokenIndex]
+                val canonical = findBestMatch(matchedToken.text)
+                val displayName = canonical?.displayName(language) ?: matchedToken.text
+
+                if (cutLineIndex != null && tokenIndex >= cutLineIndex) {
+                    val note = FlaggedItem(
+                        title = AnalysisStrings.positionTitle(language),
+                        detail = AnalysisStrings.marqueeCutLineNote(language, displayName),
+                        severity = FlagSeverity.WORTH_NOTING,
+                        relatedIngredient = displayName,
+                    )
+                    if (worthNoting.none { it.detail == note.detail }) {
+                        worthNoting.add(note)
+                    }
+                } else if (cutLineIndex == null) {
+                    val saltIndex = rawTokens.indexOfFirst { token ->
+                        val clean = token.text.lowercase()
+                        (Regex("\\bsalt\\b", RegexOption.IGNORE_CASE).containsMatchIn(clean) || clean.contains("sea salt") || clean.contains("muối")) && !clean.contains("unsalted")
+                    }
+                    if (saltIndex != -1 && tokenIndex > saltIndex) {
+                        val note = FlaggedItem(
+                            title = AnalysisStrings.positionTitle(language),
+                            detail = AnalysisStrings.marqueeSaltNote(language, displayName),
+                            severity = FlagSeverity.WORTH_NOTING,
+                            relatedIngredient = displayName,
+                        )
+                        if (worthNoting.none { it.detail == note.detail }) {
+                            worthNoting.add(note)
+                        }
+                    }
+                }
+            }
+        }
+
+        // 6. Generate Full Breakdown list with Cut-Line & Catch-All Badges
+        val fullBreakdown = mutableListOf<IngredientBreakdown>()
+        for (token in rawTokens) {
+            val match = findBestMatch(token.text)
+            val isCatchAll = KnowledgeClusters.matchCatchAll(token.text) != null
+            val catchAllNote = if (isCatchAll) AnalysisStrings.catchAllNote(language) else null
+
+            if (match != null) {
+                fullBreakdown.add(
+                    IngredientBreakdown(
+                        rawName = token.text,
+                        canonicalName = match.displayName(language),
+                        category = match.category(language),
+                        plainExplanation = match.plainExplanation(language),
+                        whyUsed = match.whyUsed(language),
+                        doseContextNote = match.doseContextNote(language),
+                        avoidForTags = match.avoidForTags,
+                        isKnown = true,
+                        matchedAliases = match.aliases.take(5),
+                        isAfterCutLine = token.isAfterCutLine,
+                        isCatchAll = isCatchAll,
+                        catchAllNote = catchAllNote,
+                    ),
+                )
+            } else {
+                fullBreakdown.add(
+                    IngredientBreakdown(
+                        rawName = token.text,
+                        canonicalName = token.text.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                        category = AnalysisStrings.fallbackCategory(language),
+                        plainExplanation = AnalysisStrings.fallbackPlainExplanation(language),
+                        whyUsed = AnalysisStrings.fallbackWhyUsed(language),
+                        doseContextNote = AnalysisStrings.fallbackDoseContextNote(language),
+                        isKnown = false,
+                        isAfterCutLine = token.isAfterCutLine,
+                        isCatchAll = isCatchAll,
+                        catchAllNote = catchAllNote,
+                    ),
+                )
+            }
+        }
+
+        // 7. Construct Plain-Language Verdict
         val verdict = generateVerdict(
             productName = productName,
             category = category,
@@ -351,12 +535,26 @@ class LabelAnalyzer {
             barcode = barcode,
             quickGlance = quickGlance,
             sourceAttribution = sourceAttribution,
+            portionInfo = portionInfo,
+            sweetenerRollUp = sweetenerRollUp,
+            sodiumRollUp = sodiumRollUp,
+            cutLineIndex = cutLineIndex,
+            cutLineLabel = if (cutLineIndex != null) AnalysisStrings.cutLineDivider(language) else null,
+            haloNotes = haloNotes,
         )
     }
 
-    private data class MatchedItem(val rawToken: String, val ingredient: KnowledgeIngredient)
+    data class ParsedIngredientsResult(
+        val tokens: List<TokenPosition>,
+        val cutLineIndex: Int?,
+    )
 
-    private fun extractIngredientTokens(text: String): List<String> {
+    data class TokenPosition(
+        val text: String,
+        val isAfterCutLine: Boolean,
+    )
+
+    private fun extractIngredientTokensWithPositions(text: String): ParsedIngredientsResult {
         val lower = text.lowercase()
         val ingredientsPart = when {
             lower.contains("ingredients:") -> text.substring(lower.indexOf("ingredients:") + 12)
@@ -381,12 +579,37 @@ class LabelAnalyzer {
             .substringBefore("Made in a facility free from")
             .substringBefore("Manufactured in a facility that also processes")
 
-        // Split by commas, semicolons, Korean/Japanese punctuation, or brackets
+        val cutLineRegex = Regex("(?i)(?:contains\\s*(?:less\\s+than\\s+2\\s*%\\s+of|2\\s*%\\s*or\\s+less\\s+of|2\\s*%\\s*or\\s+less\\b)|chứa\\s*(?:ít\\s+hơn\\s+2\\s*%|2\\s*%\\s*trở\\s+xuống))")
+        val cutMatch = cutLineRegex.find(cleaned)
+
         val splitRegex = Regex("[,;、，\n]")
-        return cleaned.split(splitRegex)
+        fun parseTokenList(chunk: String): List<String> = chunk.split(splitRegex)
             .map { it.replace(Regex("[()\\[\\]{}•.]"), " ").trim() }
             .filter { it.length in 2..60 }
+
+        return if (cutMatch != null) {
+            val beforeText = cleaned.substring(0, cutMatch.range.first)
+            val afterText = cleaned.substring(cutMatch.range.last + 1).removePrefix(":").trim()
+            val beforeTokens = parseTokenList(beforeText)
+            val afterTokens = parseTokenList(afterText)
+            val combined = beforeTokens.map { TokenPosition(it, isAfterCutLine = false) } +
+                afterTokens.map { TokenPosition(it, isAfterCutLine = true) }
+            ParsedIngredientsResult(
+                tokens = combined,
+                cutLineIndex = beforeTokens.size,
+            )
+        } else {
+            val tokens = parseTokenList(cleaned)
+            ParsedIngredientsResult(
+                tokens = tokens.map { TokenPosition(it, isAfterCutLine = false) },
+                cutLineIndex = null,
+            )
+        }
     }
+
+    private fun extractIngredientTokens(text: String): List<String> = extractIngredientTokensWithPositions(text).tokens.map { it.text }
+
+    private data class MatchedItem(val rawToken: String, val ingredient: KnowledgeIngredient)
 
     private fun extractContainsSection(text: String): String {
         val lower = text.lowercase()
@@ -501,6 +724,35 @@ class LabelAnalyzer {
                     contextIndicator = AnalysisStrings.nutritionContext(language, ctxKey),
                 ),
             )
+        }
+
+        // Added Sugars extraction (US Nutrition Facts: e.g. "Includes 10g Added Sugars" or "Added Sugars 10g")
+        val addedSugarPattern = Regex("(?i)(?:includes\\s*)?([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?\\s*(?:added sugars|added sugar|đường bổ sung)")
+        val altAddedSugarPattern = Regex("(?i)(?:added sugars|added sugar|đường bổ sung)\\s*[:\\-]?\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(g|mg)?")
+
+        val addedSugarMatch = addedSugarPattern.find(text)
+        if (addedSugarMatch != null) {
+            val amount = addedSugarMatch.groupValues[1]
+            val unit = addedSugarMatch.groupValues[2].ifEmpty { "g" }
+            facts.add(
+                NutritionFact(
+                    name = AnalysisStrings.nutritionName(language, "Added Sugars"),
+                    amount = "$amount $unit",
+                    contextIndicator = AnalysisStrings.nutritionContext(language, "Notable sugar"),
+                ),
+            )
+        } else {
+            altAddedSugarPattern.find(text)?.let {
+                val amount = it.groupValues[1]
+                val unit = it.groupValues[2].ifEmpty { "g" }
+                facts.add(
+                    NutritionFact(
+                        name = AnalysisStrings.nutritionName(language, "Added Sugars"),
+                        amount = "$amount $unit",
+                        contextIndicator = AnalysisStrings.nutritionContext(language, "Notable sugar"),
+                    ),
+                )
+            }
         }
 
         sodiumPattern.find(text)?.let {

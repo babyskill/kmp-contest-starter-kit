@@ -383,7 +383,7 @@ class LabelAnalyzerTest {
     @Test
     fun testAllKnowledgeBaseEntriesHaveVietnameseTranslations() {
         val total = KnowledgeBase.ingredients.size
-        assertEquals(127, total)
+        assertEquals(157, total)
         for (ing in KnowledgeBase.ingredients) {
             val viData = KnowledgeBaseVi.get(ing.canonicalName)
             assertNotNull(viData, "Missing Vietnamese translation for: ${ing.canonicalName}")

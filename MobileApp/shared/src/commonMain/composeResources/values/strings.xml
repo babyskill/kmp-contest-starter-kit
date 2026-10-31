@@ -222,6 +222,24 @@
     <string name="result_btn_save_history">Save to History</string>
     <string name="result_btn_saved_history">Saved to History</string>
     <string name="result_btn_compare">Compare</string>
+    <!-- Wave 1: Alias Roll-up, Portion Math, 2% Cut-Line, Badges & Halos -->
+    <string name="result_rollup_sweeteners_title">Sweeteners (%1$d found)</string>
+    <string name="result_rollup_sweeteners_subtitle">Aliases contributing to added sugars on this label</string>
+    <string name="result_rollup_sodium_title">Sodium Sources (%1$d found)</string>
+    <string name="result_rollup_sodium_subtitle">Ingredients contributing to total sodium content</string>
+    <string name="result_portion_single_serving">1 Serving</string>
+    <string name="result_portion_whole_pack">Whole Pack</string>
+    <string name="result_portion_servings_count">%1$s servings per container</string>
+    <string name="result_cut_line_divider">Tiny amounts / Flavourings (≤ 2%)</string>
+    <string name="result_catch_all_badge">Catch-all term</string>
+    <string name="result_catch_all_note">The label does not disclose which specific substances are inside this term.</string>
+    <string name="result_halo_fibre_title">Added Fiber &amp; Sweeteners</string>
+    <string name="result_halo_fibre_detail">Dietary fiber is included as an isolated ingredient (%1$s) while the product also contains added sweeteners.</string>
+    <string name="result_halo_fruit_title">Fruit from Concentrate</string>
+    <string name="result_halo_fruit_detail">The fruit content in this product appears in the ingredient list as fruit juice concentrate rather than whole fruit.</string>
+    <string name="result_marquee_cutline_note">Listed in the 2%-or-less section (%1$s).</string>
+    <string name="result_marquee_salt_note">Listed after salt in the ingredient list (%1$s).</string>
+    <string name="result_position_title">Position on Label</string>
     <string name="action_favorite">Favorite</string>
     <string name="btn_back">Back</string>
     <string name="action_details">Details</string>
