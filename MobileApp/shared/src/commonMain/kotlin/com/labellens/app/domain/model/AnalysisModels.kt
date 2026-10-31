@@ -32,6 +32,8 @@ data class FlaggedItem(
     val detail: String,
     val severity: FlagSeverity,
     val relatedIngredient: String? = null,
+    val verbatimSourceLine: String? = null,
+    val isExceptionEligible: Boolean = false,
 )
 
 @Serializable
@@ -119,4 +121,5 @@ data class LabelAnalysisResult(
     val cutLineIndex: Int? = null,
     val cutLineLabel: String? = null,
     val haloNotes: List<FlaggedItem> = emptyList(),
+    val fitHeader: FitHeaderInfo? = null,
 )

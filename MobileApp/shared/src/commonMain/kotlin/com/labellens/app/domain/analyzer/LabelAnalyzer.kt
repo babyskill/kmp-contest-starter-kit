@@ -84,17 +84,48 @@ class LabelAnalyzer {
         val worthNoting = mutableListOf<FlaggedItem>()
         val goodToKnow = mutableListOf<FlaggedItem>()
 
-        // Personal Allergen checks
+        // Personal Allergen checks (using Category & Member terms + Custom Allergens)
+        val activeCategories = com.labellens.app.domain.model.MarketPacks.activeCategories(userProfile.selectedMarket, userProfile.importedFoodMode)
         for (allergen in userProfile.allergies) {
+            val category = allergen.toCategory()
+            if (!activeCategories.contains(category)) continue
+            val directTokenMatch = rawTokens.firstOrNull {
+                ProfileFitEvaluator.matchAllergenCategory(it.text, category) != null
+            }
             val match = matchedIngredients.firstOrNull { it.ingredient.allergenMatch == allergen }
-            if (match != null) {
-                val ingDisplayName = match.ingredient.displayName(language)
+            if (directTokenMatch != null || match != null) {
+                val matchedText = directTokenMatch?.text ?: match?.rawToken ?: allergen.displayName
+                val ingDisplayName = match?.ingredient?.displayName(language) ?: matchedText
+                if (watchOutForYou.none { it.relatedIngredient == ingDisplayName }) {
+                    watchOutForYou.add(
+                        FlaggedItem(
+                            title = AnalysisStrings.allergenTitle(language, allergen),
+                            detail = AnalysisStrings.allergenDetail(language, ingDisplayName),
+                            severity = FlagSeverity.PERSONAL_ALLERGEN,
+                            relatedIngredient = ingDisplayName,
+                            verbatimSourceLine = directTokenMatch?.text ?: match?.rawToken,
+                            isExceptionEligible = false,
+                        ),
+                    )
+                }
+            }
+        }
+
+        // Custom Allergens
+        for (custom in userProfile.customAllergens) {
+            if (custom.isBlank()) continue
+            val tokenMatch = rawTokens.firstOrNull {
+                ProfileFitEvaluator.matchCustomAllergen(it.text, custom)
+            }
+            if (tokenMatch != null) {
                 watchOutForYou.add(
                     FlaggedItem(
-                        title = AnalysisStrings.allergenTitle(language, allergen),
-                        detail = AnalysisStrings.allergenDetail(language, ingDisplayName),
+                        title = if (language == AppLanguage.VIETNAMESE) "Chứa $custom (Tùy chỉnh)" else "Contains $custom (Custom)",
+                        detail = if (language == AppLanguage.VIETNAMESE) "Tìm thấy trong thành phần (${tokenMatch.text}). Trùng khớp với chất dị ứng tùy chỉnh của bạn." else "Found in ingredients (${tokenMatch.text}). Matched against your custom allergen.",
                         severity = FlagSeverity.PERSONAL_ALLERGEN,
-                        relatedIngredient = ingDisplayName,
+                        relatedIngredient = custom,
+                        verbatimSourceLine = tokenMatch.text,
+                        isExceptionEligible = false,
                     ),
                 )
             }
@@ -254,6 +285,11 @@ class LabelAnalyzer {
             val isAlreadyFlagged = watchOutForYou.any {
                 it.relatedIngredient == ingDisplayName || it.relatedIngredient == ing.canonicalName
             }
+            val isExempt = userProfile.ingredientExceptions.any {
+                it.equals(ingDisplayName, ignoreCase = true) || it.equals(ing.canonicalName, ignoreCase = true) || it.equals(item.rawToken, ignoreCase = true)
+            }
+            if (isExempt) continue
+
             if (ing.avoidMatch != null && !isAlreadyFlagged) {
                 worthNoting.add(
                     FlaggedItem(
@@ -261,6 +297,8 @@ class LabelAnalyzer {
                         detail = AnalysisStrings.additiveUsedAs(language, ing.plainExplanation(language), ing.category(language)),
                         severity = FlagSeverity.WORTH_NOTING,
                         relatedIngredient = ingDisplayName,
+                        verbatimSourceLine = item.rawToken,
+                        isExceptionEligible = true,
                     ),
                 )
             } else if (ing.category.contains("Preservative", ignoreCase = true) ||
@@ -275,6 +313,8 @@ class LabelAnalyzer {
                             detail = "${ing.whyUsed(language)} (${ing.doseContextNote(language)})",
                             severity = FlagSeverity.WORTH_NOTING,
                             relatedIngredient = ingDisplayName,
+                            verbatimSourceLine = item.rawToken,
+                            isExceptionEligible = true,
                         ),
                     )
                 }
@@ -520,6 +560,17 @@ class LabelAnalyzer {
 
         val quickGlance = AnalysisStrings.quickGlance(language, fullBreakdown.size, watchOutForYou.size)
 
+        val fitHeader = ProfileFitEvaluator.evaluate(
+            ProfileFitEvaluator.EvaluationInput(
+                rawLabelText = normalizedText,
+                ingredientTokens = rawTokens.map { it.text },
+                nutritionFacts = rawNutritionFacts,
+                portionInfo = portionInfo,
+                userProfile = userProfile,
+                language = language,
+            ),
+        )
+
         return LabelAnalysisResult(
             productName = productName,
             category = category,
@@ -541,6 +592,7 @@ class LabelAnalyzer {
             cutLineIndex = cutLineIndex,
             cutLineLabel = if (cutLineIndex != null) AnalysisStrings.cutLineDivider(language) else null,
             haloNotes = haloNotes,
+            fitHeader = fitHeader,
         )
     }
 
@@ -578,6 +630,13 @@ class LabelAnalyzer {
             .substringBefore("FREE OF:")
             .substringBefore("Made in a facility free from")
             .substringBefore("Manufactured in a facility that also processes")
+            .substringBefore("manufactured in a facility that also processes")
+            .substringBefore("May contain traces of")
+            .substringBefore("may contain traces of")
+            .substringBefore("May contain")
+            .substringBefore("may contain")
+            .substringBefore("Có thể chứa")
+            .substringBefore("có thể chứa")
 
         val cutLineRegex = Regex("(?i)(?:contains\\s*(?:less\\s+than\\s+2\\s*%\\s+of|2\\s*%\\s*or\\s+less\\s+of|2\\s*%\\s*or\\s+less\\b)|chứa\\s*(?:ít\\s+hơn\\s+2\\s*%|2\\s*%\\s*trở\\s+xuống))")
         val cutMatch = cutLineRegex.find(cleaned)

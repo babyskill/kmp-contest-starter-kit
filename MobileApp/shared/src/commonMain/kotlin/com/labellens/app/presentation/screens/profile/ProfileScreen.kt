@@ -1,6 +1,7 @@
 package com.labellens.app.presentation.screens.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,9 +22,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -36,21 +42,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.labellens.app.designsystem.components.AppButton
+import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.model.Allergen
+import com.labellens.app.domain.model.AttentionFlag
 import com.labellens.app.domain.model.AvoidPreference
 import com.labellens.app.domain.model.DietaryGoal
+import com.labellens.app.domain.model.Market
+import com.labellens.app.domain.model.MarketPacks
 import com.labellens.app.generated.resources.Res
 import com.labellens.app.generated.resources.profile_allergies_subtitle
 import com.labellens.app.generated.resources.profile_allergies_title
+import com.labellens.app.generated.resources.profile_attention_flags_subtitle
+import com.labellens.app.generated.resources.profile_attention_flags_title
 import com.labellens.app.generated.resources.profile_avoid_subtitle
 import com.labellens.app.generated.resources.profile_avoid_title
 import com.labellens.app.generated.resources.profile_banner_btn
 import com.labellens.app.generated.resources.profile_banner_subtitle
 import com.labellens.app.generated.resources.profile_banner_title
 import com.labellens.app.generated.resources.profile_btn_settings
+import com.labellens.app.generated.resources.profile_custom_allergens_add_btn
+import com.labellens.app.generated.resources.profile_custom_allergens_placeholder
+import com.labellens.app.generated.resources.profile_custom_allergens_subtitle
+import com.labellens.app.generated.resources.profile_custom_allergens_title
+import com.labellens.app.generated.resources.profile_exceptions_subtitle
+import com.labellens.app.generated.resources.profile_exceptions_title
 import com.labellens.app.generated.resources.profile_goals_subtitle
 import com.labellens.app.generated.resources.profile_goals_title
+import com.labellens.app.generated.resources.profile_imported_mode_subtitle
+import com.labellens.app.generated.resources.profile_imported_mode_title
+import com.labellens.app.generated.resources.profile_market_pack_subtitle
+import com.labellens.app.generated.resources.profile_market_pack_title
 import com.labellens.app.generated.resources.profile_subtitle
 import com.labellens.app.generated.resources.profile_title
 import com.labellens.app.generated.resources.settings_privacy_description
@@ -127,8 +149,89 @@ fun ProfileScreen(
             }
         }
 
-        // Section 1: Allergies (Red flag alert)
+        // Section 1: Market Allergen Standard & Imported Food Mode (Wave 2 - Scope 1)
         item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+            ) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Text(
+                        text = stringResource(Res.string.profile_market_pack_title),
+                        style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = AppTheme.colors.text.primary,
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(Res.string.profile_market_pack_subtitle),
+                        style = AppTheme.typography.bodySmall,
+                        color = AppTheme.colors.text.secondary,
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Market selector chips
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        listOf(Market.US, Market.EU_UK, Market.AU_NZ).forEach { market ->
+                            val isSelected = profile.selectedMarket == market
+                            val pack = MarketPacks.getPack(market)
+                            val label = "${market.localizedName(state.selectedLanguage)} (${pack?.categories?.size ?: 0})"
+                            FilterToggleChip(
+                                label = label,
+                                isSelected = isSelected,
+                                activeColor = AppTheme.colors.primary,
+                                activeBg = Color(0xFFEDF2ED),
+                                onToggle = { viewModel.selectMarket(market) },
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Imported Food Mode Toggle
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFF7F8F5))
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                            Text(
+                                text = stringResource(Res.string.profile_imported_mode_title),
+                                style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = AppTheme.colors.text.primary,
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = stringResource(Res.string.profile_imported_mode_subtitle),
+                                style = AppTheme.typography.bodyExtraSmall,
+                                color = AppTheme.colors.text.secondary,
+                            )
+                        }
+                        Switch(
+                            checked = profile.importedFoodMode,
+                            onCheckedChange = { viewModel.toggleImportedFoodMode() },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = AppTheme.colors.primary,
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+        // Section 2: Allergies (Red flag alert — active categories from current market pack)
+        item {
+            val activeCategories = MarketPacks.activeCategories(profile.selectedMarket, profile.importedFoodMode)
+            val activeAllergens = activeCategories.map { it.toAllergen() }.distinct()
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -152,7 +255,7 @@ fun ProfileScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Allergen.entries.forEach { allergen ->
+                        activeAllergens.forEach { allergen ->
                             val isSelected = profile.allergies.contains(allergen)
                             FilterToggleChip(
                                 label = allergen.localizedName(state.selectedLanguage),
@@ -167,7 +270,158 @@ fun ProfileScreen(
             }
         }
 
-        // Section 2: Avoid List (Amber alert)
+        // Section 3: Custom Allergens (Free-text with exact phrase boundary matching)
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+            ) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Text(
+                        text = stringResource(Res.string.profile_custom_allergens_title),
+                        style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFFB3261E),
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(Res.string.profile_custom_allergens_subtitle),
+                        style = AppTheme.typography.bodySmall,
+                        color = AppTheme.colors.text.secondary,
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        OutlinedTextField(
+                            value = state.customAllergenInput,
+                            onValueChange = { viewModel.updateCustomAllergenInput(it) },
+                            placeholder = {
+                                Text(
+                                    text = stringResource(Res.string.profile_custom_allergens_placeholder),
+                                    style = AppTheme.typography.bodySmall.copy(color = AppTheme.colors.text.secondary),
+                                )
+                            },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFFB3261E),
+                                unfocusedBorderColor = Color(0xFFE2E4DE),
+                            ),
+                        )
+                        AppButton(
+                            text = stringResource(Res.string.profile_custom_allergens_add_btn),
+                            size = com.labellens.app.designsystem.components.ButtonSize.SMALL,
+                            style = ButtonStyle.PRIMARY,
+                            onClick = { viewModel.addCustomAllergen() },
+                        )
+                    }
+
+                    if (profile.customAllergens.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            profile.customAllergens.forEach { custom ->
+                                RemovableChip(
+                                    label = custom,
+                                    color = Color(0xFFB3261E),
+                                    backgroundColor = Color(0xFFFDECEA),
+                                    onRemove = { viewModel.removeCustomAllergen(custom) },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Section 4: Attention Flags v1 (Wave 2 - Scope 3)
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+            ) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Text(
+                        text = stringResource(Res.string.profile_attention_flags_title),
+                        style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFFB7791F),
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(Res.string.profile_attention_flags_subtitle),
+                        style = AppTheme.typography.bodySmall,
+                        color = AppTheme.colors.text.secondary,
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        AttentionFlag.entries.forEach { flag ->
+                            val isSelected = profile.enabledAttentionFlags.contains(flag)
+                            FilterToggleChip(
+                                label = flag.localizedName(state.selectedLanguage),
+                                isSelected = isSelected,
+                                activeColor = Color(0xFFB7791F),
+                                activeBg = Color(0xFFFBF3DF),
+                                onToggle = { viewModel.toggleAttentionFlag(flag) },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Section 5: Personal Exceptions (Wave 2 - Scope 5)
+        if (profile.ingredientExceptions.isNotEmpty()) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        Text(
+                            text = stringResource(Res.string.profile_exceptions_title),
+                            style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = AppTheme.colors.primary,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(Res.string.profile_exceptions_subtitle),
+                            style = AppTheme.typography.bodySmall,
+                            color = AppTheme.colors.text.secondary,
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            profile.ingredientExceptions.forEach { exc ->
+                                RemovableChip(
+                                    label = exc,
+                                    color = AppTheme.colors.primary,
+                                    backgroundColor = Color(0xFFEDF2ED),
+                                    onRemove = { viewModel.removeException(exc) },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Section 6: Avoid List (Amber alert)
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -207,7 +461,7 @@ fun ProfileScreen(
             }
         }
 
-        // Section 3: Dietary Goals
+        // Section 7: Dietary Goals
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -247,7 +501,7 @@ fun ProfileScreen(
             }
         }
 
-        // Section 4: Privacy & Settings Link
+        // Section 8: Privacy & Settings Link
         item {
             Card(
                 modifier = Modifier.fillMaxWidth().clickable { onNavigateToSettings() },
@@ -325,6 +579,48 @@ private fun FilterToggleChip(
                     color = if (isSelected) activeColor else AppTheme.colors.text.primary,
                 ),
             )
+        }
+    }
+}
+
+@Composable
+private fun RemovableChip(
+    label: String,
+    color: Color,
+    backgroundColor: Color,
+    onRemove: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor)
+            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = label,
+                style = AppTheme.typography.bodySmall.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = color,
+                ),
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Box(
+                modifier = Modifier
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.2f))
+                    .clickable { onRemove() },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(10.dp),
+                )
+            }
         }
     }
 }

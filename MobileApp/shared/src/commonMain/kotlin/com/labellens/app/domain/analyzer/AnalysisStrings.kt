@@ -488,4 +488,75 @@ object AnalysisStrings {
         AppLanguage.VIETNAMESE -> "Vị trí trên nhãn thành phần"
         AppLanguage.ENGLISH -> "Position on Label"
     }
+
+    // Wave 2 Strings: Six-State Result Header & Fit Explanations
+    fun fitStateTitle(language: AppLanguage, state: com.labellens.app.domain.model.ProfileFitState): String = when (language) {
+        AppLanguage.VIETNAMESE -> when (state) {
+            com.labellens.app.domain.model.ProfileFitState.CONTAINS_YOURS -> "Chứa chất gây dị ứng của bạn"
+            com.labellens.app.domain.model.ProfileFitState.CANNOT_RULE_OUT -> "Không thể loại trừ dị ứng"
+            com.labellens.app.domain.model.ProfileFitState.NOT_ENOUGH_INFO -> "Chưa đủ thông tin"
+            com.labellens.app.domain.model.ProfileFitState.DEPENDS_ON_PORTION -> "Tùy thuộc khẩu phần"
+            com.labellens.app.domain.model.ProfileFitState.WORTH_NOTING -> "Đáng lưu ý"
+            com.labellens.app.domain.model.ProfileFitState.NO_MATCHES -> "Không có cảnh báo phù hợp"
+        }
+
+        AppLanguage.ENGLISH -> when (state) {
+            com.labellens.app.domain.model.ProfileFitState.CONTAINS_YOURS -> "Contains Your Allergen"
+            com.labellens.app.domain.model.ProfileFitState.CANNOT_RULE_OUT -> "Cannot Rule Out Allergen"
+            com.labellens.app.domain.model.ProfileFitState.NOT_ENOUGH_INFO -> "Not Enough Info"
+            com.labellens.app.domain.model.ProfileFitState.DEPENDS_ON_PORTION -> "Depends on Portion"
+            com.labellens.app.domain.model.ProfileFitState.WORTH_NOTING -> "Worth Noting"
+            com.labellens.app.domain.model.ProfileFitState.NO_MATCHES -> "No Profile Matches"
+        }
+    }
+
+    fun fitStateSubtitle(language: AppLanguage, state: com.labellens.app.domain.model.ProfileFitState): String = when (language) {
+        AppLanguage.VIETNAMESE -> when (state) {
+            com.labellens.app.domain.model.ProfileFitState.CONTAINS_YOURS -> "Trùng khớp trực tiếp với chất dị ứng được khai báo trong hồ sơ cá nhân."
+            com.labellens.app.domain.model.ProfileFitState.CANNOT_RULE_OUT -> "Cảnh báo phòng ngừa hoặc thuật ngữ chung có thể ẩn chứa chất dị ứng."
+            com.labellens.app.domain.model.ProfileFitState.NOT_ENOUGH_INFO -> "Danh sách thành phần chưa đầy đủ hoặc bị cắt bớt — vui lòng kiểm tra lại nhãn."
+            com.labellens.app.domain.model.ProfileFitState.DEPENDS_ON_PORTION -> "Đạt ngưỡng khi dùng cả hộp, mặc dù một khẩu phần ở mức chấp nhận được."
+            com.labellens.app.domain.model.ProfileFitState.WORTH_NOTING -> "Các mục cần lưu ý vượt ngưỡng khuyến nghị trong mỗi khẩu phần."
+            com.labellens.app.domain.model.ProfileFitState.NO_MATCHES -> "Đã đối chiếu các thành phần; không phát hiện chất dị ứng hay cảnh báo đã chọn."
+        }
+
+        AppLanguage.ENGLISH -> when (state) {
+            com.labellens.app.domain.model.ProfileFitState.CONTAINS_YOURS -> "Direct match with allergens declared in your personal profile."
+            com.labellens.app.domain.model.ProfileFitState.CANNOT_RULE_OUT -> "Precautionary warning or catch-all term may conceal declared allergens."
+            com.labellens.app.domain.model.ProfileFitState.NOT_ENOUGH_INFO -> "Ingredient list appears incomplete or cut off — review label carefully."
+            com.labellens.app.domain.model.ProfileFitState.DEPENDS_ON_PORTION -> "Within threshold per serving, but exceeds when consuming whole container."
+            com.labellens.app.domain.model.ProfileFitState.WORTH_NOTING -> "Enabled attention flags exceed per-serving thresholds on this label."
+            com.labellens.app.domain.model.ProfileFitState.NO_MATCHES -> "All declared ingredients checked; no profile flags or allergens triggered."
+        }
+    }
+
+    fun fitContainsYoursDetail(language: AppLanguage, allergens: String): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Đã phát hiện chất dị ứng được khai báo trên nhãn: $allergens"
+        AppLanguage.ENGLISH -> "Declared allergen identified on label: $allergens"
+    }
+
+    fun fitCannotRuleOutDetail(language: AppLanguage, reasons: String): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Khả năng có mặt chất dị ứng hoặc thành phần mang chưa công bố: $reasons"
+        AppLanguage.ENGLISH -> "Possible allergen presence or undeclared carrier: $reasons"
+    }
+
+    fun fitNotEnoughInfoDetail(language: AppLanguage): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Một phần danh sách thành phần đã bị cắt bớt hoặc chưa ghi nhận đủ. Vui lòng kiểm tra bao bì gốc."
+        AppLanguage.ENGLISH -> "Part of the ingredient list was cut off or not captured. Check the physical package."
+    }
+
+    fun fitDependsOnPortionDetail(language: AppLanguage, flags: String): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Chỉ vượt ngưỡng 20% giá trị hằng ngày khi dùng cả hộp: $flags"
+        AppLanguage.ENGLISH -> "Amount exceeds 20% DV only when consuming the whole package: $flags"
+    }
+
+    fun fitWorthNotingDetail(language: AppLanguage, flags: String): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Vượt ngưỡng lưu ý cho mỗi khẩu phần: $flags"
+        AppLanguage.ENGLISH -> "Exceeds attention flag per-serving threshold: $flags"
+    }
+
+    fun fitNoMatchesDetail(language: AppLanguage): String = when (language) {
+        AppLanguage.VIETNAMESE -> "Không phát hiện thành phần cần tránh hoặc chất dị ứng nào trong hồ sơ của bạn."
+        AppLanguage.ENGLISH -> "No profile-flagged ingredients or allergens were detected."
+    }
 }

@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.labellens.app.data.repository.UserProfileRepository
 import com.labellens.app.domain.model.Allergen
 import com.labellens.app.domain.model.AppLanguage
+import com.labellens.app.domain.model.AttentionFlag
 import com.labellens.app.domain.model.AvoidPreference
 import com.labellens.app.domain.model.DietaryGoal
+import com.labellens.app.domain.model.Market
 import com.labellens.app.domain.model.UserProfile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +20,7 @@ data class LabelLensProfileUiState(
     val isSaved: Boolean = false,
     val anonymousConsent: Boolean = false,
     val selectedLanguage: AppLanguage = AppLanguage.DEFAULT,
+    val customAllergenInput: String = "",
 )
 
 class LabelLensProfileViewModel(
@@ -57,6 +60,84 @@ class LabelLensProfileViewModel(
         viewModelScope.launch {
             userProfileRepository.setLanguage(language)
             _uiState.value = _uiState.value.copy(selectedLanguage = language)
+        }
+    }
+
+    fun selectMarket(market: Market) {
+        viewModelScope.launch {
+            userProfileRepository.updateMarket(market)
+            _uiState.value = _uiState.value.copy(
+                userProfile = _uiState.value.userProfile.copy(selectedMarket = market),
+                isSaved = true,
+            )
+        }
+    }
+
+    fun toggleImportedFoodMode() {
+        val newMode = !_uiState.value.userProfile.importedFoodMode
+        viewModelScope.launch {
+            userProfileRepository.updateImportedFoodMode(newMode)
+            _uiState.value = _uiState.value.copy(
+                userProfile = _uiState.value.userProfile.copy(importedFoodMode = newMode),
+                isSaved = true,
+            )
+        }
+    }
+
+    fun updateCustomAllergenInput(text: String) {
+        _uiState.value = _uiState.value.copy(customAllergenInput = text)
+    }
+
+    fun addCustomAllergen() {
+        val trimmed = _uiState.value.customAllergenInput.trim()
+        if (trimmed.isBlank()) return
+        val current = _uiState.value.userProfile.customAllergens.toMutableList()
+        if (!current.any { it.equals(trimmed, ignoreCase = true) }) {
+            current.add(trimmed)
+            viewModelScope.launch {
+                userProfileRepository.updateCustomAllergens(current)
+                _uiState.value = _uiState.value.copy(
+                    userProfile = _uiState.value.userProfile.copy(customAllergens = current),
+                    customAllergenInput = "",
+                    isSaved = true,
+                )
+            }
+        } else {
+            _uiState.value = _uiState.value.copy(customAllergenInput = "")
+        }
+    }
+
+    fun removeCustomAllergen(custom: String) {
+        val current = _uiState.value.userProfile.customAllergens.filterNot { it.equals(custom, ignoreCase = true) }
+        viewModelScope.launch {
+            userProfileRepository.updateCustomAllergens(current)
+            _uiState.value = _uiState.value.copy(
+                userProfile = _uiState.value.userProfile.copy(customAllergens = current),
+                isSaved = true,
+            )
+        }
+    }
+
+    fun toggleAttentionFlag(flag: AttentionFlag) {
+        val current = _uiState.value.userProfile.enabledAttentionFlags.toMutableSet()
+        if (current.contains(flag)) current.remove(flag) else current.add(flag)
+        viewModelScope.launch {
+            userProfileRepository.updateAttentionFlags(current)
+            _uiState.value = _uiState.value.copy(
+                userProfile = _uiState.value.userProfile.copy(enabledAttentionFlags = current),
+                isSaved = true,
+            )
+        }
+    }
+
+    fun removeException(ingredient: String) {
+        viewModelScope.launch {
+            userProfileRepository.removeIngredientException(ingredient)
+            val updated = _uiState.value.userProfile.ingredientExceptions.filterNot { it.equals(ingredient, ignoreCase = true) }.toSet()
+            _uiState.value = _uiState.value.copy(
+                userProfile = _uiState.value.userProfile.copy(ingredientExceptions = updated),
+                isSaved = true,
+            )
         }
     }
 

@@ -3,8 +3,10 @@ package com.labellens.app.data.repository
 import com.labellens.app.data.source.preferences.UserPreferences
 import com.labellens.app.domain.model.Allergen
 import com.labellens.app.domain.model.AppLanguage
+import com.labellens.app.domain.model.AttentionFlag
 import com.labellens.app.domain.model.AvoidPreference
 import com.labellens.app.domain.model.DietaryGoal
+import com.labellens.app.domain.model.Market
 import com.labellens.app.domain.model.UserProfile
 import com.labellens.app.util.applyPlatformLanguage
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +26,13 @@ interface UserProfileRepository {
     suspend fun updateAllergies(allergies: Set<Allergen>)
     suspend fun updateAvoidList(avoidList: Set<AvoidPreference>)
     suspend fun updateGoals(goals: Set<DietaryGoal>)
+    suspend fun updateMarket(market: Market)
+    suspend fun updateImportedFoodMode(imported: Boolean)
+    suspend fun updateCustomAllergens(customAllergens: List<String>)
+    suspend fun updateAttentionFlags(flags: Set<AttentionFlag>)
+    suspend fun addIngredientException(ingredient: String)
+    suspend fun removeIngredientException(ingredient: String)
+    suspend fun updateProfile(profile: UserProfile)
     suspend fun isConsentGiven(): Boolean
     suspend fun setConsentGiven(consent: Boolean)
 }
@@ -99,6 +108,45 @@ class UserProfileRepositoryImpl(
     override suspend fun updateGoals(goals: Set<DietaryGoal>) {
         val updated = getProfile().copy(goals = goals)
         persist(updated)
+    }
+
+    override suspend fun updateMarket(market: Market) {
+        val updated = getProfile().copy(selectedMarket = market)
+        persist(updated)
+    }
+
+    override suspend fun updateImportedFoodMode(imported: Boolean) {
+        val updated = getProfile().copy(importedFoodMode = imported)
+        persist(updated)
+    }
+
+    override suspend fun updateCustomAllergens(customAllergens: List<String>) {
+        val updated = getProfile().copy(customAllergens = customAllergens)
+        persist(updated)
+    }
+
+    override suspend fun updateAttentionFlags(flags: Set<AttentionFlag>) {
+        val updated = getProfile().copy(enabledAttentionFlags = flags)
+        persist(updated)
+    }
+
+    override suspend fun addIngredientException(ingredient: String) {
+        val clean = ingredient.trim().lowercase()
+        if (clean.isBlank()) return
+        val current = getProfile()
+        val updated = current.copy(ingredientExceptions = current.ingredientExceptions + clean)
+        persist(updated)
+    }
+
+    override suspend fun removeIngredientException(ingredient: String) {
+        val clean = ingredient.trim().lowercase()
+        val current = getProfile()
+        val updated = current.copy(ingredientExceptions = current.ingredientExceptions - clean)
+        persist(updated)
+    }
+
+    override suspend fun updateProfile(profile: UserProfile) {
+        persist(profile)
     }
 
     private suspend fun persist(profile: UserProfile) {

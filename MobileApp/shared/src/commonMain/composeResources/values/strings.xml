@@ -391,4 +391,26 @@ Education only - this is not medical advice.</string>
     <string name="onboarding_badge_3">Private &amp; Free Safety</string>
     <string name="onboarding_demo_scan_btn">Try a demo scan</string>
     <string name="content_desc_back">Back</string>
+
+    <!-- Wave 2: Per-Market Profile-Fit & Correction Loop -->
+    <string name="profile_market_pack_title">Market Allergen Standard</string>
+    <string name="profile_market_pack_subtitle">Select your local regulatory framework (default: US FALCPA/FASTER).</string>
+    <string name="profile_imported_mode_title">Imported Food Mode</string>
+    <string name="profile_imported_mode_subtitle">When ON, allergen checks run against the union of US, EU/UK, and AU/NZ standards.</string>
+    <string name="profile_custom_allergens_title">Custom Allergens</string>
+    <string name="profile_custom_allergens_subtitle">Add free-text ingredients you are sensitive to (exact phrase boundary matching).</string>
+    <string name="profile_custom_allergens_add_btn">Add</string>
+    <string name="profile_custom_allergens_placeholder">e.g. corn, gelatin, red dye</string>
+    <string name="profile_attention_flags_title">Attention Flags (v1)</string>
+    <string name="profile_attention_flags_subtitle">Select key nutritional and additive flags to be notified in scan headers.</string>
+    <string name="profile_exceptions_title">Personal Exceptions</string>
+    <string name="profile_exceptions_subtitle">Ingredients you marked as acceptable. Suppressed from attention flags but never from direct allergen alerts.</string>
+    <string name="result_fix_misread_btn">Misread label? Fix</string>
+    <string name="result_fix_dialog_title">Edit Label Text</string>
+    <string name="result_fix_dialog_confirm">Re-analyze</string>
+    <string name="result_fix_dialog_cancel">Cancel</string>
+    <string name="result_exception_btn">I\'m fine with this ingredient</string>
+    <string name="result_source_verbatim_prefix">Label source line: </string>
+    <string name="result_fit_header_badge">Profile-Fit</string>
+    <string name="result_fit_not_enough_info_badge">Incomplete capture</string>
 </resources>

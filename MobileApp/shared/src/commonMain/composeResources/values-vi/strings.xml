@@ -391,4 +391,26 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="onboarding_badge_3">Riêng tư &amp; An toàn miễn phí</string>
     <string name="onboarding_demo_scan_btn">Thử quét mẫu</string>
     <string name="content_desc_back">Quay lại</string>
+
+    <!-- Wave 2: Per-Market Profile-Fit & Correction Loop -->
+    <string name="profile_market_pack_title">Tiêu chuẩn Dị ứng theo Thị trường</string>
+    <string name="profile_market_pack_subtitle">Chọn khung quy chuẩn dị ứng theo khu vực (mặc định: Hoa Kỳ FALCPA/FASTER).</string>
+    <string name="profile_imported_mode_title">Chế độ Thực phẩm Nhập khẩu</string>
+    <string name="profile_imported_mode_subtitle">Khi BẬT, kiểm tra dị ứng sẽ đối chiếu theo hợp tập tiêu chuẩn Hoa Kỳ, EU/Anh và Úc/NZ.</string>
+    <string name="profile_custom_allergens_title">Chất dị ứng tùy chỉnh</string>
+    <string name="profile_custom_allergens_subtitle">Thêm thành phần tự do bạn nhạy cảm (đối sánh chính xác theo ranh giới từ).</string>
+    <string name="profile_custom_allergens_add_btn">Thêm</string>
+    <string name="profile_custom_allergens_placeholder">ví dụ: bắp/ngô, gelatin, phẩm đỏ</string>
+    <string name="profile_attention_flags_title">Cờ chú ý dinh dưỡng (v1)</string>
+    <string name="profile_attention_flags_subtitle">Chọn các cờ dinh dưỡng và phụ gia cần nhận thông báo trên tiêu đề kết quả.</string>
+    <string name="profile_exceptions_title">Ngoại lệ cá nhân</string>
+    <string name="profile_exceptions_subtitle">Các thành phần bạn đánh dấu chấp nhận được. Ẩn khỏi cờ chú ý nhưng không bao giờ ẩn cảnh báo dị ứng trực tiếp.</string>
+    <string name="result_fix_misread_btn">Nhận diện sai? Sửa lại</string>
+    <string name="result_fix_dialog_title">Chỉnh sửa văn bản nhãn</string>
+    <string name="result_fix_dialog_confirm">Phân tích lại</string>
+    <string name="result_fix_dialog_cancel">Hủy</string>
+    <string name="result_exception_btn">Tôi ổn với thành phần này</string>
+    <string name="result_source_verbatim_prefix">Dòng gốc trên nhãn: </string>
+    <string name="result_fit_header_badge">Phù hợp hồ sơ</string>
+    <string name="result_fit_not_enough_info_badge">Ghi nhận chưa đầy đủ</string>
 </resources>

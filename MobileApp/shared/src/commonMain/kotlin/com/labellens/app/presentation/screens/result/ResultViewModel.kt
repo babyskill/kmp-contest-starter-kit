@@ -27,6 +27,7 @@ data class ResultUiState(
     val userProfile: UserProfile = UserProfile(),
     val language: AppLanguage = AppLanguage.DEFAULT,
     val portionMode: PortionMode = PortionMode.SINGLE_SERVING,
+    val isFixDialogOpen: Boolean = false,
 )
 
 class ResultViewModel(
@@ -117,6 +118,68 @@ class ResultViewModel(
             _uiState.value = _uiState.value.copy(
                 analysisResult = analysis,
                 portionMode = PortionMath.defaultPortionMode(analysis.portionInfo.servingsPerContainer),
+            )
+        }
+    }
+
+    fun openFixDialog() {
+        _uiState.value = _uiState.value.copy(isFixDialogOpen = true)
+    }
+
+    fun dismissFixDialog() {
+        _uiState.value = _uiState.value.copy(isFixDialogOpen = false)
+    }
+
+    /**
+     * Correction loop (Scope 5):
+     * Re-runs the SAME on-device analysis with edited text and updates the header immediately.
+     */
+    fun fixMisreadLabel(editedText: String) {
+        val current = _uiState.value.analysisResult ?: return
+        viewModelScope.launch {
+            val profile = userProfileRepository.getProfile()
+            val lang = userProfileRepository.getLanguage()
+            val reanalyzed = analyzer.analyze(
+                productName = current.productName,
+                rawLabelText = editedText,
+                userProfile = profile,
+                category = current.category,
+                scanSource = current.scanSource,
+                barcode = current.barcode,
+                sourceAttribution = current.sourceAttribution,
+                language = lang,
+            )
+            _uiState.value = _uiState.value.copy(
+                analysisResult = reanalyzed,
+                isFixDialogOpen = false,
+                portionMode = PortionMath.defaultPortionMode(reanalyzed.portionInfo.servingsPerContainer),
+            )
+        }
+    }
+
+    /**
+     * Stores a personal exception for a non-allergen item and re-runs analysis immediately.
+     */
+    fun addPersonalException(ingredient: String) {
+        val current = _uiState.value.analysisResult ?: return
+        viewModelScope.launch {
+            userProfileRepository.addIngredientException(ingredient)
+            val updatedProfile = userProfileRepository.getProfile()
+            val lang = userProfileRepository.getLanguage()
+            val reanalyzed = analyzer.analyze(
+                productName = current.productName,
+                rawLabelText = current.rawInputText,
+                userProfile = updatedProfile,
+                category = current.category,
+                scanSource = current.scanSource,
+                barcode = current.barcode,
+                sourceAttribution = current.sourceAttribution,
+                language = lang,
+            )
+            _uiState.value = _uiState.value.copy(
+                userProfile = updatedProfile,
+                analysisResult = reanalyzed,
+                portionMode = PortionMath.defaultPortionMode(reanalyzed.portionInfo.servingsPerContainer),
             )
         }
     }

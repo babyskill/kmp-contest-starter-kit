@@ -13,6 +13,11 @@ enum class Allergen(val displayName: String) {
     SHELLFISH("Shellfish / Crustaceans"),
     SESAME("Sesame"),
     TREE_NUTS("Tree Nuts"),
+    CELERY("Celery"),
+    MUSTARD("Mustard"),
+    SULPHITES("Sulphites / Sulphur Dioxide"),
+    LUPIN("Lupin"),
+    MOLLUSCS("Molluscs"),
     ;
 
     fun localizedName(language: AppLanguage): String = when (language) {
@@ -26,9 +31,31 @@ enum class Allergen(val displayName: String) {
             SHELLFISH -> "Hải sản / Giáp xác"
             SESAME -> "Vừng / Mè"
             TREE_NUTS -> "Hạt cây"
+            CELERY -> "Cần tây"
+            MUSTARD -> "Mù tạt"
+            SULPHITES -> "Sulphite / Lưu huỳnh"
+            LUPIN -> "Đậu Lupin"
+            MOLLUSCS -> "Thân mềm"
         }
 
         AppLanguage.ENGLISH -> displayName
+    }
+
+    fun toCategory(): AllergenCategory = when (this) {
+        PEANUT -> AllergenCategory.PEANUT
+        MILK -> AllergenCategory.MILK
+        EGG -> AllergenCategory.EGG
+        SOY -> AllergenCategory.SOY
+        WHEAT_GLUTEN -> AllergenCategory.WHEAT_GLUTEN
+        FISH -> AllergenCategory.FISH
+        SHELLFISH -> AllergenCategory.CRUSTACEANS
+        SESAME -> AllergenCategory.SESAME
+        TREE_NUTS -> AllergenCategory.TREE_NUTS
+        CELERY -> AllergenCategory.CELERY
+        MUSTARD -> AllergenCategory.MUSTARD
+        SULPHITES -> AllergenCategory.SULPHITES
+        LUPIN -> AllergenCategory.LUPIN
+        MOLLUSCS -> AllergenCategory.MOLLUSCS
     }
 }
 
@@ -87,4 +114,9 @@ data class UserProfile(
     val allergies: Set<Allergen> = emptySet(),
     val avoidList: Set<AvoidPreference> = emptySet(),
     val goals: Set<DietaryGoal> = emptySet(),
+    val selectedMarket: Market = Market.US,
+    val importedFoodMode: Boolean = false,
+    val customAllergens: List<String> = emptyList(),
+    val enabledAttentionFlags: Set<AttentionFlag> = AttentionFlag.entries.toSet(),
+    val ingredientExceptions: Set<String> = emptySet(),
 )

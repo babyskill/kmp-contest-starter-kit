@@ -29,18 +29,23 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,11 +59,13 @@ import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.analyzer.PortionMath
 import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.ClusterRollUp
+import com.labellens.app.domain.model.FitHeaderInfo
 import com.labellens.app.domain.model.FlagSeverity
 import com.labellens.app.domain.model.FlaggedItem
 import com.labellens.app.domain.model.IngredientBreakdown
 import com.labellens.app.domain.model.LabelAnalysisResult
 import com.labellens.app.domain.model.PortionMode
+import com.labellens.app.domain.model.ProfileFitState
 import com.labellens.app.generated.resources.Res
 import com.labellens.app.generated.resources.action_details
 import com.labellens.app.generated.resources.action_favorite
@@ -73,8 +80,13 @@ import com.labellens.app.generated.resources.result_btn_saved_history
 import com.labellens.app.generated.resources.result_catch_all_badge
 import com.labellens.app.generated.resources.result_catch_all_note
 import com.labellens.app.generated.resources.result_cut_line_divider
+import com.labellens.app.generated.resources.result_exception_btn
 import com.labellens.app.generated.resources.result_feedback_prompt
 import com.labellens.app.generated.resources.result_feedback_thanks
+import com.labellens.app.generated.resources.result_fix_dialog_cancel
+import com.labellens.app.generated.resources.result_fix_dialog_confirm
+import com.labellens.app.generated.resources.result_fix_dialog_title
+import com.labellens.app.generated.resources.result_fix_misread_btn
 import com.labellens.app.generated.resources.result_header_title
 import com.labellens.app.generated.resources.result_loading
 import com.labellens.app.generated.resources.result_personal_summary_contains
@@ -96,6 +108,7 @@ import com.labellens.app.generated.resources.result_section_watch_out_title
 import com.labellens.app.generated.resources.result_section_worth_noting_subtitle
 import com.labellens.app.generated.resources.result_section_worth_noting_title
 import com.labellens.app.generated.resources.result_see_label_text
+import com.labellens.app.generated.resources.result_source_verbatim_prefix
 import com.labellens.app.presentation.navigation.ResultScreenRoute
 import org.jetbrains.compose.resources.stringResource
 
@@ -185,62 +198,13 @@ fun ResultScreen(
             }
         }
 
-        // At-a-glance one-line personal summary banner
-        item {
-            val personalSummaryNothing = stringResource(Res.string.result_personal_summary_nothing)
-            val personalSummaryPrefix = stringResource(Res.string.result_personal_summary_prefix)
-            val personalSummaryContainsTemplate = stringResource(Res.string.result_personal_summary_contains)
-
-            val personalSummaryText = remember(result.watchOutForYou, state.language, personalSummaryNothing, personalSummaryPrefix, personalSummaryContainsTemplate) {
-                if (result.watchOutForYou.isEmpty()) {
-                    personalSummaryNothing
-                } else {
-                    val flags = result.watchOutForYou.map { item ->
-                        when (item.severity) {
-                            FlagSeverity.PERSONAL_ALLERGEN -> {
-                                val allergenName = if (state.language == AppLanguage.VIETNAMESE) {
-                                    item.title.removePrefix("Chứa ").lowercase()
-                                } else {
-                                    item.title.removePrefix("Contains ").lowercase()
-                                }
-                                personalSummaryContainsTemplate.replace("%1\$s", allergenName)
-                            }
-
-                            FlagSeverity.PERSONAL_AVOID -> item.title.lowercase()
-
-                            else -> item.title.lowercase()
-                        }
-                    }
-                    personalSummaryPrefix + flags.joinToString(" · ")
-                }
-            }
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (result.watchOutForYou.isEmpty()) Color(0xFFEDF2ED) else Color(0xFFFDECEA),
-                ),
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        imageVector = if (result.watchOutForYou.isEmpty()) Icons.Default.Check else Icons.Default.Warning,
-                        contentDescription = null,
-                        tint = if (result.watchOutForYou.isEmpty()) Color(0xFF16794C) else Color(0xFFB3261E),
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = personalSummaryText,
-                        style = AppTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = if (result.watchOutForYou.isEmpty()) Color(0xFF16794C) else Color(0xFFB3261E),
-                        ),
-                    )
-                }
+        // Wave 2: Six-State Deterministic Profile-Fit Header Card
+        result.fitHeader?.let { fitHeader ->
+            item {
+                ProfileFitHeaderCard(
+                    fitHeader = fitHeader,
+                    onFixMisreadClick = { viewModel.openFixDialog() },
+                )
             }
         }
 
@@ -464,7 +428,7 @@ fun ResultScreen(
                 )
             }
             items(result.watchOutForYou) { item ->
-                FlagItemCard(item = item)
+                FlagItemCard(item = item, onExceptionClick = { viewModel.addPersonalException(it) })
             }
         }
 
@@ -477,7 +441,7 @@ fun ResultScreen(
                 )
             }
             items(result.worthNoting) { item ->
-                FlagItemCard(item = item)
+                FlagItemCard(item = item, onExceptionClick = { viewModel.addPersonalException(it) })
             }
         }
 
@@ -490,7 +454,7 @@ fun ResultScreen(
                 )
             }
             items(result.goodToKnow) { item ->
-                FlagItemCard(item = item)
+                FlagItemCard(item = item, onExceptionClick = { viewModel.addPersonalException(it) })
             }
         }
 
@@ -610,6 +574,199 @@ fun ResultScreen(
             }
         }
     }
+
+    // Wave 2 - Scope 5: "Misread label? Fix" dialog
+    if (state.isFixDialogOpen) {
+        var editedText by remember(result.rawInputText) { mutableStateOf(result.rawInputText) }
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissFixDialog() },
+            title = {
+                Text(
+                    text = stringResource(Res.string.result_fix_dialog_title),
+                    style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = AppTheme.colors.text.primary,
+                )
+            },
+            text = {
+                OutlinedTextField(
+                    value = editedText,
+                    onValueChange = { editedText = it },
+                    modifier = Modifier.fillMaxWidth().height(160.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    textStyle = AppTheme.typography.bodySmall,
+                )
+            },
+            confirmButton = {
+                AppButton(
+                    text = stringResource(Res.string.result_fix_dialog_confirm),
+                    size = com.labellens.app.designsystem.components.ButtonSize.SMALL,
+                    style = ButtonStyle.PRIMARY,
+                    onClick = { viewModel.fixMisreadLabel(editedText) },
+                )
+            },
+            dismissButton = {
+                AppButton(
+                    text = stringResource(Res.string.result_fix_dialog_cancel),
+                    size = com.labellens.app.designsystem.components.ButtonSize.SMALL,
+                    style = ButtonStyle.ALTERNATIVE,
+                    onClick = { viewModel.dismissFixDialog() },
+                )
+            },
+        )
+    }
+}
+
+@Composable
+private fun ProfileFitHeaderCard(
+    fitHeader: FitHeaderInfo,
+    onFixMisreadClick: () -> Unit,
+) {
+    val state = fitHeader.state
+    val (containerColor, borderColor, accentColor) = when (state) {
+        ProfileFitState.CONTAINS_YOURS -> Triple(Color(0xFFFDECEA), Color(0xFFF5C2C7), Color(0xFFB3261E))
+        ProfileFitState.CANNOT_RULE_OUT -> Triple(Color(0xFFFBF3DF), Color(0xFFF1D38A), Color(0xFFB7791F))
+        ProfileFitState.NOT_ENOUGH_INFO -> Triple(Color(0xFFECEFF1), Color(0xFFCFD8DC), Color(0xFF546E7A))
+        ProfileFitState.DEPENDS_ON_PORTION -> Triple(Color(0xFFFFF3E0), Color(0xFFFFCC80), Color(0xFFE65100))
+        ProfileFitState.WORTH_NOTING -> Triple(Color(0xFFFBF3DF), Color(0xFFF1D38A), Color(0xFFB7791F))
+        ProfileFitState.NO_MATCHES -> Triple(Color(0xFFEDF2ED), Color(0xFFC3DBC8), Color(0xFF16794C))
+    }
+
+    val iconVector = when (state) {
+        ProfileFitState.CONTAINS_YOURS -> Icons.Default.Close
+        ProfileFitState.CANNOT_RULE_OUT -> Icons.Default.Warning
+        ProfileFitState.NOT_ENOUGH_INFO -> Icons.Default.Info
+        ProfileFitState.DEPENDS_ON_PORTION -> Icons.Default.Warning
+        ProfileFitState.WORTH_NOTING -> Icons.Default.Info
+        ProfileFitState.NO_MATCHES -> Icons.Default.Check
+    }
+
+    val shapeModifier = when (state) {
+        ProfileFitState.CONTAINS_YOURS -> RoundedCornerShape(4.dp)
+
+        // Octagonal feel
+        ProfileFitState.CANNOT_RULE_OUT -> RoundedCornerShape(topStart = 0.dp, topEnd = 12.dp, bottomStart = 12.dp, bottomEnd = 12.dp)
+
+        // Triangular feel
+        ProfileFitState.NOT_ENOUGH_INFO -> CircleShape
+
+        ProfileFitState.DEPENDS_ON_PORTION -> RoundedCornerShape(8.dp)
+
+        // Diamond
+        ProfileFitState.WORTH_NOTING -> RoundedCornerShape(2.dp)
+
+        // Square
+        ProfileFitState.NO_MATCHES -> RoundedCornerShape(10.dp) // Shield
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        border = androidx.compose.foundation.BorderStroke(1.5.dp, borderColor),
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // Colour-blind safe badge: distinct shape + icon + label text
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(shapeModifier)
+                            .background(accentColor),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = iconVector,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = state.name.replace("_", " "),
+                        style = AppTheme.typography.bodySmall.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 0.8.sp,
+                            color = accentColor,
+                        ),
+                    )
+                }
+
+                // Correction loop trigger: Misread label? Fix
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White.copy(alpha = 0.8f))
+                        .clickable { onFixMisreadClick() }
+                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                ) {
+                    Text(
+                        text = stringResource(Res.string.result_fix_misread_btn),
+                        style = AppTheme.typography.bodyExtraSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.colors.primary,
+                        ),
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = fitHeader.title,
+                style = AppTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = accentColor,
+                ),
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = fitHeader.subtitle,
+                style = AppTheme.typography.bodyMedium.copy(
+                    color = AppTheme.colors.text.primary,
+                    lineHeight = 20.sp,
+                ),
+            )
+
+            fitHeader.reasonNote?.let { reason ->
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White.copy(alpha = 0.7f))
+                        .padding(10.dp),
+                ) {
+                    Text(
+                        text = reason,
+                        style = AppTheme.typography.bodySmall.copy(
+                            color = AppTheme.colors.text.secondary,
+                            fontWeight = FontWeight.Medium,
+                        ),
+                    )
+                }
+            }
+
+            fitHeader.verbatimSourceLine?.let { line ->
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = stringResource(Res.string.result_source_verbatim_prefix) + line,
+                    style = AppTheme.typography.bodyExtraSmall.copy(
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        color = AppTheme.colors.text.secondary,
+                    ),
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -634,7 +791,10 @@ private fun SectionHeader(title: String, subtitle: String? = null) {
 }
 
 @Composable
-private fun FlagItemCard(item: FlaggedItem) {
+private fun FlagItemCard(
+    item: FlaggedItem,
+    onExceptionClick: ((String) -> Unit)? = null,
+) {
     val (containerColor, accentColor) = when (item.severity) {
         FlagSeverity.PERSONAL_ALLERGEN -> Color(0xFFFDECEA) to Color(0xFFB3261E)
         FlagSeverity.PERSONAL_AVOID -> Color(0xFFFBF3DF) to Color(0xFFB7791F)
@@ -670,7 +830,7 @@ private fun FlagItemCard(item: FlaggedItem) {
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.title,
                     fontWeight = FontWeight.Bold,
@@ -684,6 +844,40 @@ private fun FlagItemCard(item: FlaggedItem) {
                         color = AppTheme.colors.text.primary,
                     ),
                 )
+
+                // Scope 5: Verbatim source line stays visible
+                item.verbatimSourceLine?.let { line ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(Res.string.result_source_verbatim_prefix) + line,
+                        style = AppTheme.typography.bodyExtraSmall.copy(
+                            color = AppTheme.colors.text.secondary,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        ),
+                    )
+                }
+
+                // Scope 5: "I'm fine with this ingredient" action for non-allergen items
+                if (item.isExceptionEligible && item.severity != FlagSeverity.PERSONAL_ALLERGEN && onExceptionClick != null) {
+                    val exemptTarget = item.relatedIngredient ?: item.title
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color.White)
+                            .border(1.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                            .clickable { onExceptionClick(exemptTarget) }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.result_exception_btn),
+                            style = AppTheme.typography.bodyExtraSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = accentColor,
+                            ),
+                        )
+                    }
+                }
             }
         }
     }
