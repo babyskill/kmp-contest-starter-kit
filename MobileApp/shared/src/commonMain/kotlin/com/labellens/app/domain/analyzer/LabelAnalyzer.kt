@@ -606,64 +606,376 @@ class LabelAnalyzer {
         val isAfterCutLine: Boolean,
     )
 
-    private fun extractIngredientTokensWithPositions(text: String): ParsedIngredientsResult {
-        val lower = text.lowercase()
-        val ingredientsPart = when {
-            lower.contains("ingredients:") -> text.substring(lower.indexOf("ingredients:") + 12)
-            lower.contains("원재료명:") -> text.substring(lower.indexOf("원재료명:") + 5)
-            lower.contains("원재료명 및 함량:") -> text.substring(lower.indexOf("원재료명 및 함량:") + 11)
-            lower.contains("原材料名:") -> text.substring(lower.indexOf("原材料名:") + 5)
-            lower.contains("配料:") -> text.substring(lower.indexOf("配料:") + 3)
-            lower.contains("配料表:") -> text.substring(lower.indexOf("配料表:") + 4)
-            lower.contains("thành phần:") -> text.substring(lower.indexOf("thành phần:") + 11)
-            else -> text
+    companion object {
+        const val COMMA_DENSITY_THRESHOLD = 0.25
+
+        private val START_MARKERS = listOf(
+            "ingredients",
+            "thanh phan",
+            "원재료명 및 함량",
+            "원재료명",
+            "原材料名",
+            "配料表",
+            "配料",
+        )
+
+        private val END_CUTTERS = listOf(
+            // Storage
+            "huong dan bao quan",
+            "bao quan",
+            "storage instructions",
+            "storage",
+            "keep in a cool",
+            // Expiry
+            "han su dung",
+            "expiry date",
+            "expiration date",
+            "expiry",
+            "use by",
+            "best before",
+            "exp date",
+            "exp:",
+            "hsd:",
+            "hsd",
+            // Manufacturer & Usage
+            "huong dan su dung",
+            "directions for use",
+            "directions",
+            "how to use",
+            "usage",
+            "san xuat tai",
+            "san xuat boi",
+            "nha san xuat",
+            "noi san xuat",
+            "san xuat",
+            "manufactured by",
+            "manufactured in",
+            "manufactured for",
+            "manufactured",
+            "produced by",
+            "made in",
+            "nsx:",
+            "nsx",
+            // Address
+            "dia chi",
+            "address",
+            // Net weight / volume
+            "the tich thuc",
+            "the tich",
+            "khoi luong tinh",
+            "khoi luong",
+            "net weight",
+            "net wt",
+            "net volume",
+            "net contents",
+            // Nutrition Facts
+            "nutrition facts",
+            "nutrition information",
+            "thong tin dinh duong",
+            "gia tri dinh duong",
+            "영양정보",
+            "栄養成分",
+            "营养成分",
+            // Allergen declarations / Precautionary
+            "contains:",
+            "contains",
+            "di ung:",
+            "chua:",
+            "co the chua",
+            "may contain traces of",
+            "may contain",
+            "free of:",
+            "free of",
+            "made in a facility free from",
+            "manufactured in a facility that also processes",
+            "알레르기",
+            "アレルギー",
+            "过敏",
+            // Customer care & Distribution
+            "cskh",
+            "hotline",
+            "distributed by",
+            "distributed",
+        )
+    }
+
+    private data class NormalizationMapping(
+        val normalizedText: String,
+        val originalIndices: IntArray,
+    )
+
+    private fun normalizeWithIndexMapping(original: String): NormalizationMapping {
+        val normBuilder = StringBuilder(original.length)
+        val origIndices = ArrayList<Int>(original.length)
+        var inWhitespace = false
+
+        for (i in original.indices) {
+            val c = original[i]
+            if (c in '\u0300'..'\u036F') continue
+
+            if (c.isWhitespace()) {
+                if (!inWhitespace) {
+                    normBuilder.append(' ')
+                    origIndices.add(i)
+                    inWhitespace = true
+                }
+            } else {
+                inWhitespace = false
+                val lower = c.lowercaseChar()
+                val stripped = DiacriticUtils.stripDiacritics(lower)
+                normBuilder.append(stripped)
+                origIndices.add(i)
+            }
         }
 
-        val cleaned = ingredientsPart
-            .substringBefore("Nutrition Facts")
-            .substringBefore("영양정보")
-            .substringBefore("栄養成分")
-            .substringBefore("营养成分")
-            .substringBefore("Thông tin dinh dưỡng")
-            .substringBefore("CONTAINS:")
-            .substringBefore("알레르기")
-            .substringBefore("FREE OF:")
-            .substringBefore("Made in a facility free from")
-            .substringBefore("Manufactured in a facility that also processes")
-            .substringBefore("manufactured in a facility that also processes")
-            .substringBefore("May contain traces of")
-            .substringBefore("may contain traces of")
-            .substringBefore("May contain")
-            .substringBefore("may contain")
-            .substringBefore("Có thể chứa")
-            .substringBefore("có thể chứa")
+        return NormalizationMapping(normBuilder.toString(), origIndices.toIntArray())
+    }
+
+    private fun findSectionStart(text: String, mapping: NormalizationMapping): String? {
+        val norm = mapping.normalizedText
+        val indices = mapping.originalIndices
+
+        for (marker in START_MARKERS) {
+            var searchFrom = 0
+            while (searchFrom < norm.length) {
+                val idx = norm.indexOf(marker, searchFrom)
+                if (idx == -1) break
+
+                val beforeOk = idx == 0 || !norm[idx - 1].isLetterOrDigit()
+                val endMarker = idx + marker.length
+                val afterOk = endMarker == norm.length ||
+                    !norm[endMarker].isLetterOrDigit() ||
+                    norm[endMarker] == ':' ||
+                    norm[endMarker] == '：'
+
+                if (beforeOk && afterOk) {
+                    var contentStart = endMarker
+                    while (contentStart < norm.length &&
+                        (
+                            norm[contentStart] == ':' ||
+                                norm[contentStart] == '：' ||
+                                norm[contentStart] == '-' ||
+                                norm[contentStart] == '/' ||
+                                norm[contentStart] == ' '
+                            )
+                    ) {
+                        contentStart++
+                    }
+
+                    for (secondMarker in START_MARKERS) {
+                        if (norm.startsWith(secondMarker, contentStart)) {
+                            contentStart += secondMarker.length
+                            while (contentStart < norm.length &&
+                                (
+                                    norm[contentStart] == ':' ||
+                                        norm[contentStart] == '：' ||
+                                        norm[contentStart] == '-' ||
+                                        norm[contentStart] == '/' ||
+                                        norm[contentStart] == ' '
+                                    )
+                            ) {
+                                contentStart++
+                            }
+                            break
+                        }
+                    }
+
+                    return if (contentStart < indices.size) {
+                        text.substring(indices[contentStart])
+                    } else {
+                        ""
+                    }
+                }
+                searchFrom = idx + 1
+            }
+        }
+        return null
+    }
+
+    private fun applyEndCutters(sectionText: String): String {
+        val mapping = normalizeWithIndexMapping(sectionText)
+        val norm = mapping.normalizedText
+        val indices = mapping.originalIndices
+
+        var earliestCutNormIdx = -1
+
+        for (cutter in END_CUTTERS) {
+            var searchFrom = 0
+            while (searchFrom < norm.length) {
+                val idx = norm.indexOf(cutter, searchFrom)
+                if (idx == -1) break
+
+                val beforeOk = idx == 0 || !norm[idx - 1].isLetterOrDigit()
+                val endCutter = idx + cutter.length
+                val afterOk = endCutter == norm.length ||
+                    !norm[endCutter].isLetterOrDigit() ||
+                    norm[endCutter] == ':' ||
+                    norm[endCutter] == '：'
+
+                if (beforeOk && afterOk) {
+                    if (cutter == "contains" || cutter == "chua") {
+                        val remainder = norm.substring(idx)
+                        if (remainder.contains(Regex("^(?:contains|chua)\\s*(?:less\\s+than\\s+2\\s*%|2\\s*%\\s*or\\s+less|it\\s+hon\\s+2\\s*%|2\\s*%\\s*tro\\s+xuong)"))) {
+                            searchFrom = idx + 1
+                            continue
+                        }
+                    }
+
+                    if (earliestCutNormIdx == -1 || idx < earliestCutNormIdx) {
+                        earliestCutNormIdx = idx
+                    }
+                    break
+                }
+                searchFrom = idx + 1
+            }
+        }
+
+        return if (earliestCutNormIdx != -1 && earliestCutNormIdx < indices.size) {
+            sectionText.substring(0, indices[earliestCutNormIdx]).trim()
+        } else {
+            sectionText.trim()
+        }
+    }
+
+    private fun findCandidateSectionByCommaDensity(text: String): String? {
+        val rawParagraphs = if (text.contains(Regex("(?:\\r?\\n\\s*){2,}"))) {
+            text.split(Regex("(?:\\r?\\n\\s*){2,}"))
+        } else {
+            text.lines()
+        }.map { it.trim() }.filter { it.isNotBlank() }
+
+        val candidateParagraphs = if (rawParagraphs.size <= 1 && text.lines().count { it.isNotBlank() } > 1) {
+            text.lines().map { it.trim() }.filter { it.isNotBlank() }
+        } else {
+            rawParagraphs
+        }
+
+        if (candidateParagraphs.isEmpty()) return null
+        if (candidateParagraphs.size == 1 && candidateParagraphs[0] == text.trim()) {
+            return null
+        }
+
+        var bestParagraph: String? = null
+        var bestDensity = 0.0
+
+        for (para in candidateParagraphs) {
+            val wordCount = para.split(Regex("\\s+")).count { it.isNotBlank() }
+            if (wordCount == 0) continue
+            val delimiterCount = para.count { it == ',' || it == ';' || it == '、' || it == '，' || it == '；' }
+            val density = delimiterCount.toDouble() / wordCount.toDouble()
+            if (density >= COMMA_DENSITY_THRESHOLD && density > bestDensity) {
+                bestDensity = density
+                bestParagraph = para
+            }
+        }
+
+        return bestParagraph
+    }
+
+    private fun tokenizeChunk(chunk: String, isAfterCutLine: Boolean): List<TokenPosition> {
+        val singleLine = chunk.replace(Regex("[\\r\\n]+"), " ").trim()
+        if (singleLine.isEmpty()) return emptyList()
+
+        val rawTokens = mutableListOf<String>()
+        var depth = 0
+        val current = StringBuilder()
+
+        for (c in singleLine) {
+            when (c) {
+                '(', '[', '{' -> {
+                    depth++
+                    current.append(c)
+                }
+
+                ')', ']', '}' -> {
+                    if (depth > 0) depth--
+                    current.append(c)
+                }
+
+                ',', ';', '、', '，', '；' -> {
+                    if (depth == 0) {
+                        val token = current.toString().trim()
+                        if (token.isNotEmpty()) {
+                            rawTokens.add(token)
+                        }
+                        current.clear()
+                    } else {
+                        current.append(c)
+                    }
+                }
+
+                else -> {
+                    current.append(c)
+                }
+            }
+        }
+        val last = current.toString().trim()
+        if (last.isNotEmpty()) {
+            rawTokens.add(last)
+        }
+
+        val result = mutableListOf<TokenPosition>()
+        for (raw in rawTokens) {
+            var cleaned = raw.trim().removePrefix("•").removePrefix("-").removePrefix("*").trim()
+            cleaned = cleaned.trimEnd('.', ';', ':', ',')
+            if (cleaned.length in 2..150) {
+                result.add(TokenPosition(cleaned, isAfterCutLine))
+            }
+        }
+        return result
+    }
+
+    private fun extractIngredientTokensWithPositions(text: String): ParsedIngredientsResult {
+        val mapping = normalizeWithIndexMapping(text)
+        val sectionFromMarker = findSectionStart(text, mapping)
+
+        val candidateSection = if (sectionFromMarker != null) {
+            applyEndCutters(sectionFromMarker)
+        } else {
+            val commaDense = findCandidateSectionByCommaDensity(text)
+            if (commaDense != null) {
+                applyEndCutters(commaDense)
+            } else {
+                null
+            }
+        }
+
+        if (candidateSection.isNullOrBlank()) {
+            return ParsedIngredientsResult(tokens = emptyList(), cutLineIndex = null)
+        }
 
         val cutLineRegex = Regex("(?i)(?:contains\\s*(?:less\\s+than\\s+2\\s*%\\s+of|2\\s*%\\s*or\\s+less\\s+of|2\\s*%\\s*or\\s+less\\b)|chứa\\s*(?:ít\\s+hơn\\s+2\\s*%|2\\s*%\\s*trở\\s+xuống))")
-        val cutMatch = cutLineRegex.find(cleaned)
+        val cutMatch = cutLineRegex.find(candidateSection)
 
-        val splitRegex = Regex("[,;、，\n]")
-        fun parseTokenList(chunk: String): List<String> = chunk.split(splitRegex)
-            .map { it.replace(Regex("[()\\[\\]{}•.]"), " ").trim() }
-            .filter { it.length in 2..60 }
-
-        return if (cutMatch != null) {
-            val beforeText = cleaned.substring(0, cutMatch.range.first)
-            val afterText = cleaned.substring(cutMatch.range.last + 1).removePrefix(":").trim()
-            val beforeTokens = parseTokenList(beforeText)
-            val afterTokens = parseTokenList(afterText)
-            val combined = beforeTokens.map { TokenPosition(it, isAfterCutLine = false) } +
-                afterTokens.map { TokenPosition(it, isAfterCutLine = true) }
-            ParsedIngredientsResult(
-                tokens = combined,
-                cutLineIndex = beforeTokens.size,
-            )
+        val allTokens = if (cutMatch != null) {
+            val beforeText = candidateSection.substring(0, cutMatch.range.first)
+            val afterText = candidateSection.substring(cutMatch.range.last + 1).removePrefix(":").trim()
+            val beforeTokens = tokenizeChunk(beforeText, isAfterCutLine = false)
+            val afterTokens = tokenizeChunk(afterText, isAfterCutLine = true)
+            beforeTokens + afterTokens
         } else {
-            val tokens = parseTokenList(cleaned)
-            ParsedIngredientsResult(
-                tokens = tokens.map { TokenPosition(it, isAfterCutLine = false) },
-                cutLineIndex = null,
-            )
+            tokenizeChunk(candidateSection, isAfterCutLine = false)
         }
+
+        val seen = mutableSetOf<String>()
+        val dedupedTokens = mutableListOf<TokenPosition>()
+        for (token in allTokens) {
+            val key = DiacriticUtils.stripDiacritics(token.text.lowercase().trim())
+            if (seen.add(key)) {
+                dedupedTokens.add(token)
+            }
+        }
+
+        val cutLineIndex = if (cutMatch != null) {
+            dedupedTokens.indexOfFirst { it.isAfterCutLine }.takeIf { it != -1 }
+        } else {
+            null
+        }
+
+        return ParsedIngredientsResult(
+            tokens = dedupedTokens,
+            cutLineIndex = cutLineIndex,
+        )
     }
 
     private fun extractIngredientTokens(text: String): List<String> = extractIngredientTokensWithPositions(text).tokens.map { it.text }
@@ -672,6 +984,7 @@ class LabelAnalyzer {
 
     private fun extractContainsSection(text: String): String {
         val lower = text.lowercase()
+        val stripped = DiacriticUtils.stripDiacritics(lower)
         return when {
             lower.contains("contains:") -> {
                 val after = text.substring(lower.indexOf("contains:") + 9)
@@ -684,8 +997,9 @@ class LabelAnalyzer {
                     .substringBefore("\n\n")
             }
 
-            lower.contains("chứa:") -> {
-                val after = text.substring(lower.indexOf("chứa:") + 5)
+            lower.contains("chứa:") || stripped.contains("chua:") -> {
+                val idx = if (lower.contains("chứa:")) lower.indexOf("chứa:") + 5 else stripped.indexOf("chua:") + 5
+                val after = text.substring(idx)
                 after.substringBefore("\n\n")
             }
 

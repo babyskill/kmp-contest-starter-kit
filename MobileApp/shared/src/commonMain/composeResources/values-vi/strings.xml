@@ -265,7 +265,7 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="ingredient_section_who_avoid">Ai nên hạn chế</string>
     <string name="ingredient_section_aliases">Tên gọi khác &amp; Tên đa ngôn ngữ</string>
     <string name="ingredient_section_sources">Tiêu chuẩn &amp; Nguồn tham chiếu</string>
-    <string name="ingredient_fallback_standard">Thành phần thực phẩm</string>
+    <string name="ingredient_fallback_standard">Chưa có trong cơ sở dữ liệu</string>
     <string name="ingredient_avoid_safe">Thường được công nhận là an toàn, không có cảnh báo kiêng khem phổ biến.</string>
     <string name="ingredient_avoid_flagged">Cảnh báo cho: %1$s. Hãy kiểm tra dị ứng và mục tiêu cá nhân của bạn.</string>
     <string name="ingredient_sources_description">Kiến thức tổng hợp từ Codex Alimentarius, thông báo GRAS của FDA Hoa Kỳ, Cơ quan An toàn Thực phẩm Châu Âu (EFSA) và các cơ quan tiêu chuẩn thực phẩm khu vực.</string>

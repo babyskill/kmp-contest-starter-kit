@@ -383,8 +383,10 @@ object ProfileFitEvaluator {
 
         // Check if no ingredients keyword or token could be isolated
         val lower = trimmed.lowercase()
+        val stripped = DiacriticUtils.stripDiacritics(lower)
         val hasIngredientsHeader = lower.contains("ingredients") ||
             lower.contains("thành phần") ||
+            stripped.contains("thanh phan") ||
             lower.contains("원재료") ||
             lower.contains("原材料") ||
             lower.contains("配料")
@@ -399,10 +401,14 @@ object ProfileFitEvaluator {
                 lower.contains("ingredients") -> trimmed.substring(lower.indexOf("ingredients") + 11)
                 lower.contains("thành phần:") -> trimmed.substring(lower.indexOf("thành phần:") + 11)
                 lower.contains("thành phần") -> trimmed.substring(lower.indexOf("thành phần") + 10)
+                stripped.contains("thanh phan:") -> trimmed.substring(stripped.indexOf("thanh phan:") + 11)
+                stripped.contains("thanh phan") -> trimmed.substring(stripped.indexOf("thanh phan") + 10)
                 else -> trimmed
             }
                 .substringBefore("Nutrition Facts")
                 .substringBefore("Thông tin dinh dưỡng")
+                .substringBefore("Bảo quản")
+                .substringBefore("Bao quan")
                 .trim()
         } else {
             trimmed

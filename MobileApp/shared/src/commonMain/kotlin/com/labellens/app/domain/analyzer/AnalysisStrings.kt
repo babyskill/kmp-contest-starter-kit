@@ -322,23 +322,23 @@ object AnalysisStrings {
     }
 
     fun fallbackCategory(language: AppLanguage): String = when (language) {
-        AppLanguage.VIETNAMESE -> "Thành phần phổ biến"
-        AppLanguage.ENGLISH -> "Standard ingredient"
+        AppLanguage.VIETNAMESE -> "Chưa có trong cơ sở dữ liệu"
+        AppLanguage.ENGLISH -> "Not in the database yet"
     }
 
     fun fallbackPlainExplanation(language: AppLanguage): String = when (language) {
-        AppLanguage.VIETNAMESE -> "Thành phần nhãn đã nhận diện. Không có cảnh báo đặc biệt."
-        AppLanguage.ENGLISH -> "Recognised label component. No specific flags noted."
+        AppLanguage.VIETNAMESE -> "Thành phần chưa có trong cơ sở dữ liệu đối sánh."
+        AppLanguage.ENGLISH -> "Ingredient not yet in standard knowledge base."
     }
 
     fun fallbackWhyUsed(language: AppLanguage): String = when (language) {
-        AppLanguage.VIETNAMESE -> "Thành phần công thức hoặc chế biến thông thường."
-        AppLanguage.ENGLISH -> "Common recipe or processing component."
+        AppLanguage.VIETNAMESE -> "Chưa có thông tin công dụng."
+        AppLanguage.ENGLISH -> "No usage information available."
     }
 
     fun fallbackDoseContextNote(language: AppLanguage): String = when (language) {
-        AppLanguage.VIETNAMESE -> "Thành phần thực phẩm tiêu chuẩn."
-        AppLanguage.ENGLISH -> "Standard culinary ingredient."
+        AppLanguage.VIETNAMESE -> "Chưa có ghi chú liều lượng."
+        AppLanguage.ENGLISH -> "No dosage note available."
     }
 
     fun nutritionName(language: AppLanguage, standardName: String): String = when (language) {

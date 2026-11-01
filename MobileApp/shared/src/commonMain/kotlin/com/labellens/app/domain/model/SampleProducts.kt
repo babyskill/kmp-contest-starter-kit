@@ -110,5 +110,27 @@ object BuiltInSamples {
         barcode = "016000264625",
     )
 
-    val all: List<SampleProduct> = listOf(sample1, sample2, sample3, sample4, sample5, sample6, sample7)
+    val sample8 = SampleProduct(
+        id = "sample_clony_shampoo",
+        name = "Dầu gội Clony",
+        category = ProductCategory.COSMETICS,
+        frontDescription = "Dầu gội mượt tóc thế hệ mới với tinh dầu olive và silicon protein.",
+        fullLabelText = """
+            MƯỢT TÓC
+            KHÔNG CẦN DẦU XẢ
+            Thế hệ mới
+
+            Dầu gội với công thức đột phá chứa tinh dầu olive tự nhiên và hạt silicon protein nuôi dưỡng sâu, giúp tóc óng mượt và chắc khỏe.
+
+            Hướng dẫn sử dụng: Làm ướt tóc, lấy một lượng vừa đủ thoa đều lên tóc, mát xa nhẹ nhàng rồi xả sạch với nước.
+
+            Thành phần: Aqua/Waters, Sodium Lauryl Sulfate, Sodium
+            Laureth Sulfate, CAPB, CDE, Polyquats, Plantacare, EDGS, Cetyl Alcohol, Stearyl Alcohol, PEG-7 Glyceryl Co-coat, Tocopheryl Acetate, Aminodimethicone, Olive oil, Emulsional Silicons, Fragrance, Sodium EDTA, Preservatives, Cosmetic Colors.
+
+            Bảo quản: Tránh nhiệt độ cao và ánh sáng trực tiếp.
+        """.trimIndent(),
+        barcode = "8936036021010",
+    )
+
+    val all: List<SampleProduct> = listOf(sample1, sample2, sample3, sample4, sample5, sample6, sample7, sample8)
 }

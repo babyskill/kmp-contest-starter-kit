@@ -265,7 +265,7 @@ Education only - this is not medical advice.</string>
     <string name="ingredient_section_who_avoid">Who may want to avoid it</string>
     <string name="ingredient_section_aliases">Label Aliases &amp; Multilingual Names</string>
     <string name="ingredient_section_sources">Sources &amp; Standards</string>
-    <string name="ingredient_fallback_standard">Food Ingredient</string>
+    <string name="ingredient_fallback_standard">Not in the database yet</string>
     <string name="ingredient_avoid_safe">Generally recognized as safe with no common restricted dietary flags.</string>
     <string name="ingredient_avoid_flagged">Flagged for: %1$s. Check your personal allergens and goals.</string>
     <string name="ingredient_sources_description">Knowledge synthesized from Codex Alimentarius, US FDA GRAS notices, European Food Safety Authority (EFSA), and regional food standards agencies.</string>
