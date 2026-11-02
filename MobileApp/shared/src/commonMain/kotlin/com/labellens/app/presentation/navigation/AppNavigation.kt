@@ -7,17 +7,26 @@ import androidx.compose.animation.core.snap
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -53,11 +62,16 @@ import com.labellens.app.presentation.screens.profile.ProfileScreen
 import com.labellens.app.presentation.screens.profile.SettingsScreen
 import com.labellens.app.presentation.screens.result.ResultScreen
 import com.labellens.app.presentation.screens.result.ResultViewModel
+import com.labellens.app.presentation.screens.scan.ScanProcessingCard
 import com.labellens.app.presentation.screens.scan.ScanScreen
 import com.labellens.app.presentation.screens.scan.ScanViewModel
 import com.labellens.app.util.analytics.Analytics
 import com.labellens.app.util.analytics.logScreenView
 import com.labellens.app.util.extensions.isKeyboardOpen
+import com.labellens.app.util.file.isCameraCaptureSupported
+import com.labellens.app.util.file.openCameraPicker
+import io.github.vinceglb.filekit.FileKit
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -102,7 +116,10 @@ fun AppNavigation(
         primaryTopLevelRoute = HomeScreenRoute,
     )
     val navigator = remember(navigationState) { Navigator(navigationState) }
-    val entryProvider = remember(navigator) { entryProvider { screens(navigator) } }
+    val scanViewModel = koinViewModel<ScanViewModel>()
+    val scanUiState by scanViewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    val entryProvider = remember(navigator, scanViewModel) { entryProvider { screens(navigator, scanViewModel) } }
 
     val isAtRoot = navigationState.currentBackstack.size <= 1
     val activeTopLevel = navigationState.topLevelRoute
@@ -130,37 +147,76 @@ fun AppNavigation(
     }
 
     CompositionLocalProvider(LocalNavigator provides navigator) {
-        Column(
-            modifier = modifier.fillMaxSize().safeDrawingPadding(),
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                NavDisplay(
-                    entries = navigationState.toDecoratedEntries(entryProvider),
-                    onBack = { navigator.goBack() },
-                )
+        Box(modifier = modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+            ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    NavDisplay(
+                        entries = navigationState.toDecoratedEntries(entryProvider),
+                        onBack = { navigator.goBack() },
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = isBottomNavVisible,
+                    enter = fadeIn(animationSpec = snap()),
+                    exit = fadeOut(animationSpec = snap()),
+                ) {
+                    BottomNavigationBar(
+                        modifier = Modifier.fillMaxWidth(),
+                        items = bottomNavItems,
+                        selectedIndex = selectedTopLevelIndex,
+                        onClickItem = { item ->
+                            val targetRoute = TOP_LEVEL_ROUTES.entries
+                                .firstOrNull { it.value === item }?.key ?: return@BottomNavigationBar
+                            if (targetRoute == ScanTabScreenRoute && isCameraCaptureSupported()) {
+                                coroutineScope.launch {
+                                    val captured = FileKit.openCameraPicker()
+                                    if (captured != null) {
+                                        scanViewModel.processImageSource(captured) { raw, name, barcode, sourceName ->
+                                            navigator.navigate(
+                                                ResultScreenRoute(
+                                                    rawText = raw,
+                                                    productName = name,
+                                                    barcode = barcode,
+                                                    sampleId = null,
+                                                    sourceName = sourceName,
+                                                ),
+                                            )
+                                        }
+                                    }
+                                }
+                            } else {
+                                navigator.navigate(targetRoute)
+                            }
+                        },
+                    )
+                }
             }
 
-            AnimatedVisibility(
-                visible = isBottomNavVisible,
-                enter = fadeIn(animationSpec = snap()),
-                exit = fadeOut(animationSpec = snap()),
-            ) {
-                BottomNavigationBar(
-                    modifier = Modifier.fillMaxWidth(),
-                    items = bottomNavItems,
-                    selectedIndex = selectedTopLevelIndex,
-                    onClickItem = { item ->
-                        val targetRoute = TOP_LEVEL_ROUTES.entries
-                            .firstOrNull { it.value === item }?.key ?: return@BottomNavigationBar
-                        navigator.navigate(targetRoute)
-                    },
-                )
+            if (scanUiState.isProcessing) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .clickable(enabled = false) {},
+                    contentAlignment = Alignment.Center,
+                ) {
+                    ScanProcessingCard(
+                        state = scanUiState,
+                        modifier = Modifier.padding(24.dp),
+                    )
+                }
             }
         }
     }
 }
 
-private fun EntryProviderScope<ScreenRoute>.screens(navigator: Navigator) {
+private fun EntryProviderScope<ScreenRoute>.screens(
+    navigator: Navigator,
+    scanViewModel: ScanViewModel,
+) {
     entry<HomeScreenRoute>(metadata = noAnimationMetadata) {
         val viewModel = koinViewModel<HomeViewModel>()
         HomeScreen(
@@ -174,7 +230,7 @@ private fun EntryProviderScope<ScreenRoute>.screens(navigator: Navigator) {
             onNavigateToHistoryItem = { result ->
                 navigator.navigate(
                     ResultScreenRoute(
-                        scanId = result.barcode ?: result.productName,
+                        scanId = result.id ?: result.barcode ?: result.productName,
                         productName = result.productName,
                         rawText = result.rawInputText,
                     ),
@@ -190,7 +246,7 @@ private fun EntryProviderScope<ScreenRoute>.screens(navigator: Navigator) {
             onNavigateToResult = { scan ->
                 navigator.navigate(
                     ResultScreenRoute(
-                        scanId = scan.barcode ?: scan.productName,
+                        scanId = scan.id ?: scan.barcode ?: scan.productName,
                         productName = scan.productName,
                         rawText = scan.rawInputText,
                     ),
@@ -200,9 +256,8 @@ private fun EntryProviderScope<ScreenRoute>.screens(navigator: Navigator) {
     }
 
     entry<ScanTabScreenRoute>(metadata = noAnimationMetadata) {
-        val viewModel = koinViewModel<ScanViewModel>()
         ScanScreen(
-            viewModel = viewModel,
+            viewModel = scanViewModel,
             onNavigateBack = { navigator.switchToTab(HomeScreenRoute) },
             onNavigateToResult = { rawText, name, barcode, sampleId, sourceName ->
                 navigator.navigate(
@@ -251,9 +306,8 @@ private fun EntryProviderScope<ScreenRoute>.screens(navigator: Navigator) {
     }
 
     entry<ScanScreenRoute> {
-        val viewModel = koinViewModel<ScanViewModel>()
         ScanScreen(
-            viewModel = viewModel,
+            viewModel = scanViewModel,
             onNavigateBack = { navigator.goBack() },
             onNavigateToResult = { rawText, name, barcode, sampleId, sourceName ->
                 navigator.navigate(

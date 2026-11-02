@@ -117,6 +117,7 @@ data class NutritionFact(
 
 @Serializable
 data class LabelAnalysisResult(
+    val id: String? = null,
     val productName: String,
     val category: ProductCategory,
     val scanSource: ScanSource,

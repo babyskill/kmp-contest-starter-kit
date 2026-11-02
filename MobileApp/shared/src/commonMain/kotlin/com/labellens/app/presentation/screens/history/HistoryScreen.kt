@@ -169,7 +169,7 @@ fun HistoryScreen(
                             }
                         }
 
-                        IconButton(onClick = { viewModel.deleteItem(scan.barcode ?: scan.productName) }) {
+                        IconButton(onClick = { viewModel.deleteItem(scan.id ?: scan.barcode ?: scan.productName) }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = stringResource(Res.string.content_desc_delete),

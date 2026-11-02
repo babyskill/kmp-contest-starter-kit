@@ -39,6 +39,8 @@ class ResultViewModel(
     private val _uiState = MutableStateFlow(ResultUiState())
     val uiState: StateFlow<ResultUiState> = _uiState.asStateFlow()
 
+    private var lastLoadedKey: String? = null
+
     fun loadAnalysis(
         scanId: String?,
         sampleId: String?,
@@ -47,6 +49,12 @@ class ResultViewModel(
         barcode: String?,
         sourceName: String?,
     ) {
+        val requestKey = "${scanId.orEmpty()}|${sampleId.orEmpty()}|${barcode.orEmpty()}|${productName.orEmpty()}|${rawText.orEmpty()}"
+        if (lastLoadedKey == requestKey && _uiState.value.isSaved) {
+            return
+        }
+        lastLoadedKey = requestKey
+
         viewModelScope.launch {
             val profile = userProfileRepository.getProfile()
             val lang = userProfileRepository.getLanguage()
@@ -79,6 +87,7 @@ class ResultViewModel(
                     )
                     _uiState.value = _uiState.value.copy(
                         analysisResult = analysis,
+                        isSaved = false,
                         portionMode = PortionMath.defaultPortionMode(analysis.portionInfo.servingsPerContainer),
                     )
                     return@launch
@@ -86,6 +95,7 @@ class ResultViewModel(
             }
 
             // Fallback: analyze rawText
+            val isSampleFallback = rawText == null && sampleId == null && scanId == null
             val text = rawText ?: BuiltInSamples.sample2.fullLabelText
             val name = productName ?: if (lang == AppLanguage.VIETNAMESE) "Sản phẩm quét" else "Scanned Product"
             val category = if (text.contains("SUPPLEMENT", ignoreCase = true)) ProductCategory.SUPPLEMENT else ProductCategory.FOOD
@@ -115,10 +125,23 @@ class ResultViewModel(
                 sourceAttribution = sourceAttr,
                 language = lang,
             )
-            _uiState.value = _uiState.value.copy(
-                analysisResult = analysis,
-                portionMode = PortionMath.defaultPortionMode(analysis.portionInfo.servingsPerContainer),
-            )
+
+            if (isSampleFallback || src == ScanSource.SAMPLE) {
+                _uiState.value = _uiState.value.copy(
+                    analysisResult = analysis,
+                    isSaved = false,
+                    portionMode = PortionMath.defaultPortionMode(analysis.portionInfo.servingsPerContainer),
+                )
+            } else {
+                // Completed user scan result (camera photo, barcode lookup, pasted text) -> Auto-save!
+                val savedId = scanRepository.saveScan(analysis)
+                val persistedResult = analysis.copy(id = savedId)
+                _uiState.value = _uiState.value.copy(
+                    analysisResult = persistedResult,
+                    isSaved = true,
+                    portionMode = PortionMath.defaultPortionMode(persistedResult.portionInfo.servingsPerContainer),
+                )
+            }
         }
     }
 
@@ -149,10 +172,16 @@ class ResultViewModel(
                 sourceAttribution = current.sourceAttribution,
                 language = lang,
             )
+            val finalResult = if (_uiState.value.isSaved) {
+                val savedId = scanRepository.saveScan(reanalyzed.copy(id = current.id))
+                reanalyzed.copy(id = savedId)
+            } else {
+                reanalyzed
+            }
             _uiState.value = _uiState.value.copy(
-                analysisResult = reanalyzed,
+                analysisResult = finalResult,
                 isFixDialogOpen = false,
-                portionMode = PortionMath.defaultPortionMode(reanalyzed.portionInfo.servingsPerContainer),
+                portionMode = PortionMath.defaultPortionMode(finalResult.portionInfo.servingsPerContainer),
             )
         }
     }
@@ -176,10 +205,16 @@ class ResultViewModel(
                 sourceAttribution = current.sourceAttribution,
                 language = lang,
             )
+            val finalResult = if (_uiState.value.isSaved) {
+                val savedId = scanRepository.saveScan(reanalyzed.copy(id = current.id))
+                reanalyzed.copy(id = savedId)
+            } else {
+                reanalyzed
+            }
             _uiState.value = _uiState.value.copy(
                 userProfile = updatedProfile,
-                analysisResult = reanalyzed,
-                portionMode = PortionMath.defaultPortionMode(reanalyzed.portionInfo.servingsPerContainer),
+                analysisResult = finalResult,
+                portionMode = PortionMath.defaultPortionMode(finalResult.portionInfo.servingsPerContainer),
             )
         }
     }
@@ -195,8 +230,11 @@ class ResultViewModel(
     fun saveToHistory() {
         val current = _uiState.value.analysisResult ?: return
         viewModelScope.launch {
-            scanRepository.saveScan(current)
-            _uiState.value = _uiState.value.copy(isSaved = true)
+            val savedId = scanRepository.saveScan(current)
+            _uiState.value = _uiState.value.copy(
+                analysisResult = current.copy(id = savedId),
+                isSaved = true,
+            )
         }
     }
 
@@ -205,7 +243,8 @@ class ResultViewModel(
         val newFav = !_uiState.value.isFavorite
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isFavorite = newFav)
-            current.barcode?.let { scanRepository.toggleFavorite(it, newFav) }
+            val key = current.id ?: current.barcode
+            key?.let { scanRepository.toggleFavorite(it, newFav) }
         }
     }
 
@@ -213,7 +252,8 @@ class ResultViewModel(
         val current = _uiState.value.analysisResult ?: return
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(feedbackSubmitted = true)
-            current.barcode?.let {
+            val key = current.id ?: current.barcode
+            key?.let {
                 scanRepository.setFeedback(it, if (helpful) "helpful" else "needs_fix")
             }
         }

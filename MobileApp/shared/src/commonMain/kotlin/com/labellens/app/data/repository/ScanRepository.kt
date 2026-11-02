@@ -48,15 +48,15 @@ class ScanRepositoryImpl(
 
     override fun getFavoriteScans(): Flow<List<LabelAnalysisResult>> = scanHistoryDao.getFavoritesFlow().map { entities -> entities.map { it.toAnalysisResult() } }
 
-    override suspend fun getScanById(id: String): LabelAnalysisResult? = scanHistoryDao.getById(id)?.toAnalysisResult()
+    override suspend fun getScanById(id: String): LabelAnalysisResult? = (scanHistoryDao.getById(id) ?: scanHistoryDao.getByBarcode(id))?.toAnalysisResult()
 
     override suspend fun getScanByIdReanalyzed(id: String, profile: UserProfile): LabelAnalysisResult? {
-        val entity = scanHistoryDao.getById(id) ?: return null
+        val entity = scanHistoryDao.getById(id) ?: scanHistoryDao.getByBarcode(id) ?: return null
         val current = entity.toAnalysisResult()
         val langCode = userPreferences.getString(com.labellens.app.data.source.preferences.UserPreferences.KEY_APP_LANGUAGE, null)
         val lang = com.labellens.app.domain.model.AppLanguage.fromCode(langCode)
         // Re-analyze with current profile to update personal flags
-        return analyzer.analyze(
+        val reanalyzed = analyzer.analyze(
             productName = current.productName,
             rawLabelText = current.rawInputText,
             userProfile = profile,
@@ -66,36 +66,56 @@ class ScanRepositoryImpl(
             sourceAttribution = current.sourceAttribution,
             language = lang,
         )
+        return reanalyzed.copy(id = entity.id)
     }
 
     override suspend fun saveScan(result: LabelAnalysisResult): String {
-        val id = result.barcode?.takeIf { it.isNotBlank() } ?: Uuid.random().toString()
+        val existing = if (!result.id.isNullOrBlank()) {
+            scanHistoryDao.getById(result.id)
+        } else if (!result.barcode.isNullOrBlank()) {
+            scanHistoryDao.getByBarcode(result.barcode)
+        } else {
+            scanHistoryDao.getByRawText(result.rawInputText)
+        }
+
+        val idToUse = if (!result.id.isNullOrBlank()) {
+            result.id
+        } else {
+            existing?.id ?: result.barcode?.takeIf { it.isNotBlank() } ?: Uuid.random().toString()
+        }
+
+        val finalExisting = existing ?: scanHistoryDao.getById(idToUse)
+
         val entity = ScanHistoryEntity(
-            id = id,
+            id = idToUse,
             productName = result.productName,
             category = result.category.name,
             source = result.scanSource.name,
             verdict = result.verdict,
             rawLabelText = result.rawInputText,
-            analysisJson = json.encodeToString(result),
+            analysisJson = json.encodeToString(result.copy(id = idToUse)),
             barcode = result.barcode,
-            timestamp = nowEpochMillis(),
-            isFavorite = false,
+            timestamp = finalExisting?.timestamp ?: nowEpochMillis(),
+            isFavorite = finalExisting?.isFavorite ?: false,
+            feedbackState = finalExisting?.feedbackState,
         )
         scanHistoryDao.upsert(entity)
-        return id
+        return idToUse
     }
 
     override suspend fun toggleFavorite(id: String, isFavorite: Boolean) {
         scanHistoryDao.setFavorite(id, isFavorite)
+        scanHistoryDao.getByBarcode(id)?.let { scanHistoryDao.setFavorite(it.id, isFavorite) }
     }
 
     override suspend fun setFeedback(id: String, feedback: String) {
         scanHistoryDao.setFeedback(id, feedback)
+        scanHistoryDao.getByBarcode(id)?.let { scanHistoryDao.setFeedback(it.id, feedback) }
     }
 
     override suspend fun deleteScan(id: String) {
         scanHistoryDao.deleteById(id)
+        scanHistoryDao.getByBarcode(id)?.let { scanHistoryDao.delete(it) }
     }
 
     override suspend fun getPhotoAnalysisCount(): Int = userPreferences.getInt("KEY_PHOTO_ANALYSIS_COUNT", 0) ?: 0

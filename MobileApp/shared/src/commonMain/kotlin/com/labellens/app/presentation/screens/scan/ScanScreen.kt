@@ -105,85 +105,7 @@ fun ScanScreen(
                 .padding(24.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    CircularProgressIndicator(
-                        color = AppTheme.colors.primary,
-                        modifier = Modifier.size(48.dp),
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Text(
-                        text = stringResource(Res.string.scan_analyzing_title),
-                        style = AppTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.text.primary,
-                        ),
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(Res.string.scan_analyzing_subtitle),
-                        style = AppTheme.typography.bodySmall,
-                        color = AppTheme.colors.text.secondary,
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Step checklist
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        state.completedSteps.forEach { step ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .clip(CircleShape)
-                                        .background(AppTheme.colors.primary),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(14.dp),
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    text = step,
-                                    style = AppTheme.typography.bodyMedium,
-                                    color = AppTheme.colors.text.primary,
-                                )
-                            }
-                        }
-
-                        if (state.currentStep.isNotBlank()) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    strokeWidth = 2.dp,
-                                    color = AppTheme.colors.primary,
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    text = state.currentStep,
-                                    style = AppTheme.typography.bodyMedium.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                    ),
-                                    color = AppTheme.colors.primary,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            ScanProcessingCard(state = state)
         }
         return
     }
@@ -455,6 +377,92 @@ fun ScanScreen(
                         color = AppTheme.colors.primary,
                         style = AppTheme.typography.bodySmall,
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ScanProcessingCard(
+    state: ScanUiState,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            CircularProgressIndicator(
+                color = AppTheme.colors.primary,
+                modifier = Modifier.size(48.dp),
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = stringResource(Res.string.scan_analyzing_title),
+                style = AppTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.text.primary,
+                ),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(Res.string.scan_analyzing_subtitle),
+                style = AppTheme.typography.bodySmall,
+                color = AppTheme.colors.text.secondary,
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Step checklist
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                state.completedSteps.forEach { step ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clip(CircleShape)
+                                .background(AppTheme.colors.primary),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp),
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = step,
+                            style = AppTheme.typography.bodyMedium,
+                            color = AppTheme.colors.text.primary,
+                        )
+                    }
+                }
+
+                if (state.currentStep.isNotBlank()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = AppTheme.colors.primary,
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = state.currentStep,
+                            style = AppTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                            ),
+                            color = AppTheme.colors.primary,
+                        )
+                    }
                 }
             }
         }

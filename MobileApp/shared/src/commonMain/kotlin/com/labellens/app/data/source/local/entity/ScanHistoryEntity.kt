@@ -38,9 +38,10 @@ data class ScanHistoryEntity(
 private val json = Json { ignoreUnknownKeys = true }
 
 fun ScanHistoryEntity.toAnalysisResult(): LabelAnalysisResult = try {
-    json.decodeFromString<LabelAnalysisResult>(analysisJson)
+    json.decodeFromString<LabelAnalysisResult>(analysisJson).copy(id = id)
 } catch (e: Exception) {
     LabelAnalysisResult(
+        id = id,
         productName = productName,
         category = try {
             ProductCategory.valueOf(category)
