@@ -273,4 +273,113 @@ class ResultViewModelTest {
         assertEquals(1, fakeScanRepository.savedScans.size)
         assertEquals("Custom Label Text", fakeScanRepository.savedScans[0].productName)
     }
+
+    @Test
+    fun `auto-saved user scan is deletable and viewModel exposes isDeletable true`() = runTest {
+        viewModel.loadAnalysis(
+            scanId = null,
+            sampleId = null,
+            rawText = "Ingredients: Almonds, Sea Salt",
+            productName = "Almond Butter",
+            barcode = null,
+            sourceName = "PHOTO",
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isSaved)
+        assertTrue(state.isDeletable, "Auto-saved user scan must have isDeletable=true")
+        assertTrue(viewModel.isDeletable, "viewModel.isDeletable must be true")
+    }
+
+    @Test
+    fun `item opened from history is deletable`() = runTest {
+        val initialResult = analyzer.analyze(
+            productName = "Organic Honey",
+            rawLabelText = "Ingredients: 100% Pure Raw Honey",
+            userProfile = UserProfile(),
+        )
+        val scanId = fakeScanRepository.saveScan(initialResult)
+
+        viewModel.loadAnalysis(
+            scanId = scanId,
+            sampleId = null,
+            rawText = "Ingredients: 100% Pure Raw Honey",
+            productName = "Organic Honey",
+            barcode = null,
+            sourceName = null,
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isSaved)
+        assertTrue(state.isDeletable, "Item opened from history must have isDeletable=true")
+        assertTrue(viewModel.isDeletable)
+    }
+
+    @Test
+    fun `built-in sample preview is not deletable`() = runTest {
+        viewModel.loadAnalysis(
+            scanId = null,
+            sampleId = com.labellens.app.domain.model.BuiltInSamples.sample1.id,
+            rawText = null,
+            productName = null,
+            barcode = null,
+            sourceName = null,
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isSaved)
+        assertFalse(state.isDeletable, "Sample preview must have isDeletable=false")
+        assertFalse(viewModel.isDeletable)
+    }
+
+    @Test
+    fun `deleteResult deletes scan from repository, resets state, and executes callback`() = runTest {
+        viewModel.loadAnalysis(
+            scanId = null,
+            sampleId = null,
+            rawText = "Ingredients: Roasted Peanuts, Salt",
+            productName = "Peanut Butter",
+            barcode = null,
+            sourceName = "PHOTO",
+        )
+        advanceUntilIdle()
+
+        assertEquals(1, fakeScanRepository.savedScans.size)
+        assertTrue(viewModel.isDeletable)
+
+        var callbackCalled = false
+        viewModel.deleteResult(onDeleted = { callbackCalled = true })
+        advanceUntilIdle()
+
+        assertTrue(callbackCalled, "onDeleted callback must be executed after deletion")
+        assertEquals(0, fakeScanRepository.savedScans.size, "Repository scan must be deleted")
+        assertFalse(viewModel.uiState.value.isSaved, "isSaved must be false after deletion")
+        assertFalse(viewModel.uiState.value.isDeletable, "isDeletable must be false after deletion")
+        assertFalse(viewModel.isDeletable)
+    }
+
+    @Test
+    fun `deleteResult resolves barcode key when id is absent`() = runTest {
+        viewModel.loadAnalysis(
+            scanId = null,
+            sampleId = null,
+            rawText = "Ingredients: Whole Milk, Vitamin D3",
+            productName = "Organic Whole Milk",
+            barcode = "012345678901",
+            sourceName = "Open Food Facts",
+        )
+        advanceUntilIdle()
+
+        assertEquals(1, fakeScanRepository.savedScans.size)
+
+        var callbackCalled = false
+        viewModel.deleteResult(onDeleted = { callbackCalled = true })
+        advanceUntilIdle()
+
+        assertTrue(callbackCalled)
+        assertEquals(0, fakeScanRepository.savedScans.size)
+    }
 }

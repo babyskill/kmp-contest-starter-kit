@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
@@ -77,6 +78,7 @@ import com.labellens.app.generated.resources.Res
 import com.labellens.app.generated.resources.action_details
 import com.labellens.app.generated.resources.action_favorite
 import com.labellens.app.generated.resources.btn_back
+import com.labellens.app.generated.resources.content_desc_delete
 import com.labellens.app.generated.resources.result_action_collapse
 import com.labellens.app.generated.resources.result_action_expand
 import com.labellens.app.generated.resources.result_btn_accurate
@@ -87,6 +89,10 @@ import com.labellens.app.generated.resources.result_btn_saved_history
 import com.labellens.app.generated.resources.result_catch_all_badge
 import com.labellens.app.generated.resources.result_catch_all_note
 import com.labellens.app.generated.resources.result_cut_line_divider
+import com.labellens.app.generated.resources.result_delete_dialog_cancel
+import com.labellens.app.generated.resources.result_delete_dialog_confirm
+import com.labellens.app.generated.resources.result_delete_dialog_message
+import com.labellens.app.generated.resources.result_delete_dialog_title
 import com.labellens.app.generated.resources.result_exception_btn
 import com.labellens.app.generated.resources.result_feedback_prompt
 import com.labellens.app.generated.resources.result_feedback_thanks
@@ -132,6 +138,7 @@ fun ResultScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsState()
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(route) {
         viewModel.loadAnalysis(
@@ -168,6 +175,8 @@ fun ResultScreen(
         return
     }
 
+    val groupedIngredients = remember(result) { groupAndOrderIngredients(result) }
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -198,6 +207,15 @@ fun ResultScreen(
                     ),
                     modifier = Modifier.weight(1f),
                 )
+                if (state.isDeletable) {
+                    IconButton(onClick = { showDeleteConfirmDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(Res.string.content_desc_delete),
+                            tint = AppTheme.colors.text.secondary,
+                        )
+                    }
+                }
                 IconButton(onClick = { viewModel.toggleFavorite() }) {
                     Icon(
                         imageVector = if (state.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -443,124 +461,18 @@ fun ResultScreen(
             }
         }
 
-        // Section 1: Watch out for you (Personal flags only)
-        item {
-            SectionHeader(
-                title = stringResource(Res.string.result_section_watch_out_title),
-                subtitle = if (result.watchOutForYou.isNotEmpty()) stringResource(Res.string.result_section_watch_out_subtitle) else null,
-            )
-        }
-        if (result.watchOutForYou.isNotEmpty()) {
-            items(result.watchOutForYou) { item ->
-                FlagItemCard(item = item, onExceptionClick = { viewModel.addPersonalException(it) })
-            }
-        } else {
-            item {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                    color = AppTheme.colors.bannerTint,
-                    border = BorderStroke(1.dp, Color(0xFFD6E5D7)),
-                ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(26.dp)
-                                .clip(CircleShape)
-                                .background(AppTheme.colors.primary),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp),
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = stringResource(Res.string.result_watch_out_clean_title),
-                                fontWeight = FontWeight.Bold,
-                                color = AppTheme.colors.primary,
-                                style = AppTheme.typography.bodyMedium.copy(fontSize = 15.sp),
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = stringResource(Res.string.result_watch_out_clean_subtitle),
-                                style = AppTheme.typography.bodySmall.copy(
-                                    color = AppTheme.colors.text.primary,
-                                    lineHeight = 18.sp,
-                                ),
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Section 2: Worth noting (Two-up amber cards with icon, name, one line)
-        if (result.worthNoting.isNotEmpty()) {
-            item {
-                SectionHeader(
-                    title = stringResource(Res.string.result_section_worth_noting_title),
-                    subtitle = stringResource(Res.string.result_section_worth_noting_subtitle),
-                )
-            }
-            val pairs = result.worthNoting.chunked(2)
-            pairs.forEach { pair ->
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        pair.forEach { item ->
-                            TwoUpAmberCard(
-                                item = item,
-                                modifier = Modifier.weight(1f),
-                                onExceptionClick = { viewModel.addPersonalException(it) },
-                            )
-                        }
-                        if (pair.size == 1) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                }
-            }
-        }
-
-        // Section 3: Good to know (Green tint rows)
-        if (result.goodToKnow.isNotEmpty()) {
-            item {
-                SectionHeader(
-                    title = stringResource(Res.string.result_section_good_to_know_title),
-                    subtitle = stringResource(Res.string.result_section_good_to_know_subtitle),
-                )
-            }
-            items(result.goodToKnow) { item ->
-                FlagItemCard(item = item, onExceptionClick = { viewModel.addPersonalException(it) })
-            }
-        }
-
-        // Section 4: Full breakdown (Expandable rows leading to Ingredient Detail)
+        // Unified Ingredient Detail list
         item {
             SectionHeader(
                 title = stringResource(Res.string.result_section_breakdown_title),
                 subtitle = stringResource(Res.string.result_section_breakdown_subtitle),
             )
         }
-        itemsIndexed(result.fullBreakdown) { index, ingredient ->
-            if (result.cutLineIndex != null && index == result.cutLineIndex) {
-                CutLineDivider(
-                    label = result.cutLineLabel ?: stringResource(Res.string.result_cut_line_divider),
-                )
-            }
+        items(groupedIngredients) { grouped ->
             IngredientRow(
-                ingredient = ingredient,
-                onClick = { onNavigateToIngredientDetail(ingredient.canonicalName) },
+                ingredient = grouped.ingredient,
+                group = grouped.group,
+                onClick = { onNavigateToIngredientDetail(grouped.ingredient.canonicalName) },
             )
         }
 
@@ -697,6 +609,45 @@ fun ResultScreen(
                     size = com.labellens.app.designsystem.components.ButtonSize.SMALL,
                     style = ButtonStyle.ALTERNATIVE,
                     onClick = { viewModel.dismissFixDialog() },
+                )
+            },
+        )
+    }
+
+    if (showDeleteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = {
+                Text(
+                    text = stringResource(Res.string.result_delete_dialog_title),
+                    style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = AppTheme.colors.text.primary,
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(Res.string.result_delete_dialog_message),
+                    style = AppTheme.typography.bodyMedium,
+                    color = AppTheme.colors.text.secondary,
+                )
+            },
+            confirmButton = {
+                AppButton(
+                    text = stringResource(Res.string.result_delete_dialog_confirm),
+                    size = com.labellens.app.designsystem.components.ButtonSize.SMALL,
+                    style = ButtonStyle.PRIMARY,
+                    onClick = {
+                        showDeleteConfirmDialog = false
+                        viewModel.deleteResult(onDeleted = onNavigateBack)
+                    },
+                )
+            },
+            dismissButton = {
+                AppButton(
+                    text = stringResource(Res.string.result_delete_dialog_cancel),
+                    size = com.labellens.app.designsystem.components.ButtonSize.SMALL,
+                    style = ButtonStyle.ALTERNATIVE,
+                    onClick = { showDeleteConfirmDialog = false },
                 )
             },
         )
@@ -1036,6 +987,7 @@ private fun FlagItemCard(
 @Composable
 private fun IngredientRow(
     ingredient: IngredientBreakdown,
+    group: IngredientDetailGroup = IngredientDetailGroup.REMAINING,
     onClick: () -> Unit,
 ) {
     Surface(
@@ -1065,19 +1017,82 @@ private fun IngredientRow(
                         modifier = Modifier.weight(1f, fill = false),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(AppTheme.colors.bannerTint)
-                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = ingredient.category,
-                            style = AppTheme.typography.bodyExtraSmall.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = AppTheme.colors.primary,
-                            ),
-                        )
+                        when (group) {
+                            IngredientDetailGroup.WATCH_OUT -> {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFFDECEA))
+                                        .border(1.dp, Color(0xFFF5C2C7), RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 7.dp, vertical = 2.dp),
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.result_section_watch_out_title),
+                                        style = AppTheme.typography.bodyExtraSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFB3261E),
+                                        ),
+                                    )
+                                }
+                            }
+
+                            IngredientDetailGroup.WORTH_NOTING -> {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFFBF3DF))
+                                        .border(1.dp, Color(0xFFF5E3C0), RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 7.dp, vertical = 2.dp),
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.result_section_worth_noting_title),
+                                        style = AppTheme.typography.bodyExtraSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFB7791F),
+                                        ),
+                                    )
+                                }
+                            }
+
+                            IngredientDetailGroup.GOOD_TO_KNOW -> {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(AppTheme.colors.bannerTint)
+                                        .border(1.dp, Color(0xFFD6E5D7), RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 7.dp, vertical = 2.dp),
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.result_section_good_to_know_title),
+                                        style = AppTheme.typography.bodyExtraSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = AppTheme.colors.primary,
+                                        ),
+                                    )
+                                }
+                            }
+
+                            IngredientDetailGroup.REMAINING -> { /* No tag chip */ }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(AppTheme.colors.bannerTint)
+                                .padding(horizontal = 8.dp, vertical = 3.dp),
+                        ) {
+                            Text(
+                                text = ingredient.category,
+                                style = AppTheme.typography.bodyExtraSmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppTheme.colors.primary,
+                                ),
+                            )
+                        }
                     }
                 }
                 if (ingredient.isCatchAll && ingredient.catchAllNote != null) {

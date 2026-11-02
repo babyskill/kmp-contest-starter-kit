@@ -422,4 +422,10 @@ Education only - this is not medical advice.</string>
     <string name="result_fit_not_enough_info_badge">Incomplete capture</string>
     <string name="result_watch_out_clean_title">No personal alerts</string>
     <string name="result_watch_out_clean_subtitle">This product fits your allergy and dietary profile.</string>
+
+    <!-- Result Delete Confirmation Dialog -->
+    <string name="result_delete_dialog_title">Delete scan result?</string>
+    <string name="result_delete_dialog_message">This item will be permanently removed from your history.</string>
+    <string name="result_delete_dialog_confirm">Delete</string>
+    <string name="result_delete_dialog_cancel">Cancel</string>
 </resources>

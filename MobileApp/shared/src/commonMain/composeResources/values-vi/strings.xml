@@ -422,4 +422,10 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="result_fit_not_enough_info_badge">Ghi nhận chưa đầy đủ</string>
     <string name="result_watch_out_clean_title">Không có cảnh báo cá nhân</string>
     <string name="result_watch_out_clean_subtitle">Sản phẩm phù hợp với hồ sơ dị ứng và lựa chọn của bạn.</string>
+
+    <!-- Result Delete Confirmation Dialog -->
+    <string name="result_delete_dialog_title">Xóa kết quả quét?</string>
+    <string name="result_delete_dialog_message">Sản phẩm này sẽ bị xóa vĩnh viễn khỏi lịch sử của bạn.</string>
+    <string name="result_delete_dialog_confirm">Xóa</string>
+    <string name="result_delete_dialog_cancel">Hủy</string>
 </resources>

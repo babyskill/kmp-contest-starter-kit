@@ -86,6 +86,7 @@ fun HomeScreen(
     onNavigateToScan: () -> Unit,
     onNavigateToResult: (sampleId: String?, rawText: String?, name: String?) -> Unit,
     onNavigateToHistoryItem: (result: LabelAnalysisResult) -> Unit,
+    onNavigateToHistory: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val state: LabelLensHomeUiState by viewModel.uiState.collectAsState()
@@ -94,6 +95,7 @@ fun HomeScreen(
         onNavigateToScan = onNavigateToScan,
         onNavigateToResult = onNavigateToResult,
         onNavigateToHistoryItem = onNavigateToHistoryItem,
+        onNavigateToHistory = onNavigateToHistory,
         modifier = modifier,
     )
 }
@@ -104,6 +106,7 @@ fun HomeScreen(
     onNavigateToScan: () -> Unit,
     onNavigateToResult: (sampleId: String?, rawText: String?, name: String?) -> Unit,
     onNavigateToHistoryItem: (result: LabelAnalysisResult) -> Unit,
+    onNavigateToHistory: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val currentHour = remember {
@@ -381,7 +384,7 @@ fun HomeScreen(
                     ),
                 )
                 Row(
-                    modifier = Modifier.clickable { /* Navigate to History */ },
+                    modifier = Modifier.clickable { onNavigateToHistory() },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
@@ -610,6 +613,7 @@ internal fun HomeScreenPreview() {
             onNavigateToScan = {},
             onNavigateToResult = { _, _, _ -> },
             onNavigateToHistoryItem = {},
+            onNavigateToHistory = {},
         )
     }
 }

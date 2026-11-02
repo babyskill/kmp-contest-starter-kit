@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 data class ResultUiState(
     val analysisResult: LabelAnalysisResult? = null,
     val isSaved: Boolean = false,
+    val isDeletable: Boolean = false,
     val isFavorite: Boolean = false,
     val feedbackSubmitted: Boolean = false,
     val isLabelTextExpanded: Boolean = false,
@@ -38,6 +39,8 @@ class ResultViewModel(
 
     private val _uiState = MutableStateFlow(ResultUiState())
     val uiState: StateFlow<ResultUiState> = _uiState.asStateFlow()
+
+    val isDeletable: Boolean get() = _uiState.value.isDeletable
 
     private var lastLoadedKey: String? = null
 
@@ -66,6 +69,7 @@ class ResultViewModel(
                     _uiState.value = _uiState.value.copy(
                         analysisResult = reanalyzed,
                         isSaved = true,
+                        isDeletable = true,
                         portionMode = PortionMath.defaultPortionMode(reanalyzed.portionInfo.servingsPerContainer),
                     )
                     return@launch
@@ -88,6 +92,7 @@ class ResultViewModel(
                     _uiState.value = _uiState.value.copy(
                         analysisResult = analysis,
                         isSaved = false,
+                        isDeletable = false,
                         portionMode = PortionMath.defaultPortionMode(analysis.portionInfo.servingsPerContainer),
                     )
                     return@launch
@@ -130,6 +135,7 @@ class ResultViewModel(
                 _uiState.value = _uiState.value.copy(
                     analysisResult = analysis,
                     isSaved = false,
+                    isDeletable = false,
                     portionMode = PortionMath.defaultPortionMode(analysis.portionInfo.servingsPerContainer),
                 )
             } else {
@@ -139,6 +145,7 @@ class ResultViewModel(
                 _uiState.value = _uiState.value.copy(
                     analysisResult = persistedResult,
                     isSaved = true,
+                    isDeletable = true,
                     portionMode = PortionMath.defaultPortionMode(persistedResult.portionInfo.servingsPerContainer),
                 )
             }
@@ -234,7 +241,21 @@ class ResultViewModel(
             _uiState.value = _uiState.value.copy(
                 analysisResult = current.copy(id = savedId),
                 isSaved = true,
+                isDeletable = true,
             )
+        }
+    }
+
+    fun deleteResult(onDeleted: (() -> Unit)? = null) {
+        val current = _uiState.value.analysisResult ?: return
+        val key = current.id ?: current.barcode ?: current.productName
+        viewModelScope.launch {
+            scanRepository.deleteScan(key)
+            _uiState.value = _uiState.value.copy(
+                isSaved = false,
+                isDeletable = false,
+            )
+            onDeleted?.invoke()
         }
     }
 

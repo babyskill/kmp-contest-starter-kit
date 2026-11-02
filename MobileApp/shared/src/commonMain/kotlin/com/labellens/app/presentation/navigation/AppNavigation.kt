@@ -236,6 +236,7 @@ private fun EntryProviderScope<ScreenRoute>.screens(
                     ),
                 )
             },
+            onNavigateToHistory = { navigator.switchToTab(HistoryScreenRoute) },
         )
     }
 
