@@ -26,11 +26,11 @@ import com.labellens.app.data.repository.UserRepository
 import com.labellens.app.designsystem.components.bottomnav.BottomNavItem
 import com.labellens.app.designsystem.components.bottomnav.BottomNavigationBar
 import com.labellens.app.designsystem.generated.resources.UiRes
-import com.labellens.app.designsystem.generated.resources.ic_camera
-import com.labellens.app.designsystem.generated.resources.ic_favorite
+import com.labellens.app.designsystem.generated.resources.ic_compare_scale
+import com.labellens.app.designsystem.generated.resources.ic_history
 import com.labellens.app.designsystem.generated.resources.ic_home
 import com.labellens.app.designsystem.generated.resources.ic_profile
-import com.labellens.app.designsystem.generated.resources.ic_sparkles
+import com.labellens.app.designsystem.generated.resources.ic_scan_viewfinder
 import com.labellens.app.generated.resources.Res
 import com.labellens.app.generated.resources.bottom_nav_label_compare
 import com.labellens.app.generated.resources.bottom_nav_label_history
@@ -76,15 +76,15 @@ private val TOP_LEVEL_ROUTES: Map<TopLevelScreenRoute, BottomNavItem> = linkedMa
     ),
     HistoryScreenRoute to BottomNavItem(
         label = Res.string.bottom_nav_label_history,
-        icon = UiRes.drawable.ic_favorite,
+        icon = UiRes.drawable.ic_history,
     ),
     ScanTabScreenRoute to BottomNavItem(
         label = Res.string.bottom_nav_label_scan,
-        icon = UiRes.drawable.ic_camera,
+        icon = UiRes.drawable.ic_scan_viewfinder,
     ),
     CompareScreenRoute to BottomNavItem(
         label = Res.string.bottom_nav_label_compare,
-        icon = UiRes.drawable.ic_sparkles,
+        icon = UiRes.drawable.ic_compare_scale,
     ),
     ProfileScreenRoute to BottomNavItem(
         label = Res.string.bottom_nav_label_profile,

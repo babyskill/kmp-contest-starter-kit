@@ -1,5 +1,7 @@
 package com.labellens.app.presentation.screens.home
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,47 +23,62 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.labellens.app.designsystem.components.AppButton
-import com.labellens.app.designsystem.components.AppCardContainer
-import com.labellens.app.designsystem.components.ButtonStyle
+import com.labellens.app.designsystem.generated.resources.UiRes
+import com.labellens.app.designsystem.generated.resources.ic_barcode_card
+import com.labellens.app.designsystem.generated.resources.ic_bell
+import com.labellens.app.designsystem.generated.resources.ic_camera
+import com.labellens.app.designsystem.generated.resources.ic_document_card
+import com.labellens.app.designsystem.generated.resources.ic_leaf_logo
 import com.labellens.app.designsystem.theme.AppTheme
+import com.labellens.app.designsystem.util.PreviewHelper
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.LabelAnalysisResult
 import com.labellens.app.domain.model.SampleProduct
 import com.labellens.app.generated.resources.Res
-import com.labellens.app.generated.resources.content_desc_scan
-import com.labellens.app.generated.resources.content_desc_tip
-import com.labellens.app.generated.resources.home_hero_button
-import com.labellens.app.generated.resources.home_hero_subtitle
-import com.labellens.app.generated.resources.home_hero_title
+import com.labellens.app.generated.resources.hero_grocery_bag
+import com.labellens.app.generated.resources.home_greeting_afternoon
+import com.labellens.app.generated.resources.home_greeting_evening
+import com.labellens.app.generated.resources.home_greeting_morning
+import com.labellens.app.generated.resources.home_greeting_subtitle
 import com.labellens.app.generated.resources.home_quick_action_barcode
 import com.labellens.app.generated.resources.home_quick_action_paste
 import com.labellens.app.generated.resources.home_quick_action_photo
-import com.labellens.app.generated.resources.home_quick_actions_title
 import com.labellens.app.generated.resources.home_recent_scans_empty
 import com.labellens.app.generated.resources.home_recent_scans_title
-import com.labellens.app.generated.resources.home_sample_tap_to_test
 import com.labellens.app.generated.resources.home_samples_title
-import com.labellens.app.generated.resources.home_tip_body
-import com.labellens.app.generated.resources.home_tip_title
-import com.labellens.app.generated.resources.tagline
+import com.labellens.app.generated.resources.home_scan_card_subtitle
+import com.labellens.app.generated.resources.home_scan_card_title
+import com.labellens.app.generated.resources.home_see_all
+import com.labellens.app.generated.resources.sample_cereal
+import com.labellens.app.generated.resources.sample_shampoo
+import com.labellens.app.generated.resources.sample_yogurt
+import com.labellens.app.generated.resources.scan_card_packet
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
 
 @Composable
 fun HomeScreen(
@@ -72,138 +89,272 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
 ) {
     val state: LabelLensHomeUiState by viewModel.uiState.collectAsState()
+    HomeScreen(
+        state = state,
+        onNavigateToScan = onNavigateToScan,
+        onNavigateToResult = onNavigateToResult,
+        onNavigateToHistoryItem = onNavigateToHistoryItem,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun HomeScreen(
+    state: LabelLensHomeUiState,
+    onNavigateToScan: () -> Unit,
+    onNavigateToResult: (sampleId: String?, rawText: String?, name: String?) -> Unit,
+    onNavigateToHistoryItem: (result: LabelAnalysisResult) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val currentHour = remember {
+        runCatching {
+            val epochSec = Clock.System.now().toEpochMilliseconds() / 1000L
+            val instant = Instant.fromEpochSeconds(epochSec)
+            instant.toLocalDateTime(TimeZone.currentSystemDefault()).hour
+        }.getOrNull() ?: 14
+    }
+
+    val greetingRes = when (currentHour) {
+        in 5..11 -> Res.string.home_greeting_morning
+        in 12..17 -> Res.string.home_greeting_afternoon
+        else -> Res.string.home_greeting_evening
+    }
+
+    // Prioritize sample products with dedicated preview assets
+    val orderedSamples = remember(state.sampleProducts) {
+        val sample1 = state.sampleProducts.firstOrNull { it.id == "sample_honey_oats" } ?: BuiltInSamples.sample1
+        val sample3 = state.sampleProducts.firstOrNull { it.id == "sample_matcha_biscuits" } ?: BuiltInSamples.sample3
+        val sample8 = state.sampleProducts.firstOrNull { it.id == "sample_clony_shampoo" } ?: BuiltInSamples.sample8
+        val featured = listOf(sample1, sample3, sample8)
+        val others = state.sampleProducts.filterNot { it.id in listOf(sample1.id, sample3.id, sample8.id) }
+        featured + others
+    }
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .background(AppTheme.colors.background)
             .padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(top = 24.dp, bottom = 140.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        contentPadding = PaddingValues(top = 16.dp, bottom = 120.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        // App Header
+        // 1. App Header: Logo Mark + LabelLens + Notification Bell
         item {
-            Column {
-                Text(
-                    text = "LabelLens",
-                    style = AppTheme.typography.headlineLarge.copy(
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.text.primary,
-                    ),
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(Res.string.tagline),
-                    style = AppTheme.typography.bodyLarge.copy(
-                        fontSize = 16.sp,
-                        color = AppTheme.colors.text.secondary,
-                    ),
-                )
-            }
-        }
-
-        // Oversized Hero Scan Card
-        item {
-            AppCardContainer(
-                modifier = Modifier.fillMaxWidth(),
-                backgroundColor = AppTheme.colors.primary,
-                shape = RoundedCornerShape(20.dp),
-                onClick = onNavigateToScan,
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(12.dp),
-                ) {
-                    Text(
-                        text = stringResource(Res.string.home_hero_title),
-                        style = AppTheme.typography.headlineMedium.copy(
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                        ),
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = stringResource(Res.string.home_hero_subtitle),
-                        style = AppTheme.typography.bodyMedium.copy(
-                            color = Color.White.copy(alpha = 0.9f),
-                        ),
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White)
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(AppTheme.colors.scanCard),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Text(
-                            text = stringResource(Res.string.home_hero_button),
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.primary,
-                            style = AppTheme.typography.bodyMedium,
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
                         Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = stringResource(Res.string.content_desc_scan),
-                            tint = AppTheme.colors.primary,
-                            modifier = Modifier.size(18.dp),
+                            painter = painterResource(UiRes.drawable.ic_leaf_logo),
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "LabelLens",
+                        style = AppTheme.typography.titleLarge.copy(
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.colors.text.primary,
+                        ),
+                    )
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .clickable { /* Visual only */ },
+                    shape = CircleShape,
+                    color = Color.White,
+                    shadowElevation = 2.dp,
+                    border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            painter = painterResource(UiRes.drawable.ic_bell),
+                            contentDescription = null,
+                            tint = AppTheme.colors.text.primary,
+                            modifier = Modifier.size(20.dp),
                         )
                     }
                 }
             }
         }
 
-        // Quick Actions Row
+        // 2. Greeting Block with Hero Grocery Bag illustration on the right
         item {
-            Text(
-                text = stringResource(Res.string.home_quick_actions_title),
-                style = AppTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppTheme.colors.text.primary,
-                ),
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(greetingRes),
+                        style = AppTheme.typography.headlineMedium.copy(
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.colors.text.primary,
+                        ),
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = stringResource(Res.string.home_greeting_subtitle),
+                        style = AppTheme.typography.bodyMedium.copy(
+                            fontSize = 14.sp,
+                            color = AppTheme.colors.text.secondary,
+                            lineHeight = 20.sp,
+                        ),
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Image(
+                    painter = painterResource(Res.drawable.hero_grocery_bag),
+                    contentDescription = null,
+                    modifier = Modifier.width(124.dp).height(100.dp),
+                    contentScale = ContentScale.Fit,
+                )
+            }
+        }
+
+        // 3. Oversized deep-green Scan Card
+        item {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigateToScan() },
+                shape = RoundedCornerShape(24.dp),
+                color = AppTheme.colors.scanCard,
+                shadowElevation = 4.dp,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.scan_card_packet),
+                        contentDescription = null,
+                        modifier = Modifier.size(92.dp),
+                        contentScale = ContentScale.Fit,
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(Res.string.home_scan_card_title),
+                            style = AppTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontSize = 19.sp,
+                            ),
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(Res.string.home_scan_card_subtitle),
+                            style = AppTheme.typography.bodySmall.copy(
+                                color = Color.White.copy(alpha = 0.92f),
+                                lineHeight = 17.sp,
+                            ),
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Surface(
+                        modifier = Modifier.size(36.dp),
+                        shape = CircleShape,
+                        color = Color.White,
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = null,
+                                tint = AppTheme.colors.scanCard,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. Quick Actions Row (3 White Cards)
+        item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                QuickActionChip(
-                    label = stringResource(Res.string.home_quick_action_barcode),
-                    iconName = "Barcode",
-                    modifier = Modifier.weight(1f),
-                    onClick = onNavigateToScan,
-                )
-                QuickActionChip(
+                QuickActionCard(
                     label = stringResource(Res.string.home_quick_action_photo),
-                    iconName = "Photo",
+                    iconRes = UiRes.drawable.ic_camera,
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToScan,
                 )
-                QuickActionChip(
+                QuickActionCard(
+                    label = stringResource(Res.string.home_quick_action_barcode),
+                    iconRes = UiRes.drawable.ic_barcode_card,
+                    modifier = Modifier.weight(1f),
+                    onClick = onNavigateToScan,
+                )
+                QuickActionCard(
                     label = stringResource(Res.string.home_quick_action_paste),
-                    iconName = "Text",
+                    iconRes = UiRes.drawable.ic_document_card,
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToScan,
                 )
             }
         }
 
-        // Built-in Samples Carousel
+        // 5. "Thử mẫu có sẵn" Horizontal Cards with Photo Tops
         item {
-            Text(
-                text = stringResource(Res.string.home_samples_title),
-                style = AppTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppTheme.colors.text.primary,
-                ),
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(Res.string.home_samples_title),
+                    style = AppTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = AppTheme.colors.text.primary,
+                    ),
+                )
+                Row(
+                    modifier = Modifier.clickable { onNavigateToScan() },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.home_see_all),
+                        style = AppTheme.typography.bodySmall.copy(
+                            color = AppTheme.colors.text.secondary,
+                            fontWeight = FontWeight.Medium,
+                        ),
+                    )
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = null,
+                        tint = AppTheme.colors.text.secondary,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(12.dp))
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                items(state.sampleProducts) { sample ->
+                items(orderedSamples) { sample ->
                     SampleProductCard(
                         sample = sample,
                         onClick = {
@@ -214,63 +365,57 @@ fun HomeScreen(
             }
         }
 
-        // Calm Tip Card
+        // 6. "Gần đây" List Rows
         item {
-            Card(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFFBF3DF), // Amber container
-                ),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                Text(
+                    text = stringResource(Res.string.home_recent_scans_title),
+                    style = AppTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = AppTheme.colors.text.primary,
+                    ),
+                )
                 Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.Top,
+                    modifier = Modifier.clickable { /* Navigate to History */ },
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = stringResource(Res.string.content_desc_tip),
-                        tint = Color(0xFFB7791F),
-                        modifier = Modifier.size(22.dp),
+                    Text(
+                        text = stringResource(Res.string.home_see_all),
+                        style = AppTheme.typography.bodySmall.copy(
+                            color = AppTheme.colors.text.secondary,
+                            fontWeight = FontWeight.Medium,
+                        ),
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = stringResource(Res.string.home_tip_title),
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFFB7791F),
-                            style = AppTheme.typography.bodyMedium,
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = stringResource(Res.string.home_tip_body),
-                            style = AppTheme.typography.bodySmall.copy(
-                                color = AppTheme.colors.text.secondary,
-                            ),
-                        )
-                    }
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = null,
+                        tint = AppTheme.colors.text.secondary,
+                        modifier = Modifier.size(14.dp),
+                    )
                 }
             }
-        }
-
-        // Recent Scans
-        item {
-            Text(
-                text = stringResource(Res.string.home_recent_scans_title),
-                style = AppTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppTheme.colors.text.primary,
-                ),
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             if (state.recentScans.isEmpty()) {
-                Text(
-                    text = stringResource(Res.string.home_recent_scans_empty),
-                    style = AppTheme.typography.bodyMedium.copy(
-                        color = AppTheme.colors.text.secondary,
-                    ),
-                    modifier = Modifier.padding(vertical = 12.dp),
-                )
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.White,
+                    border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
+                ) {
+                    Text(
+                        text = stringResource(Res.string.home_recent_scans_empty),
+                        style = AppTheme.typography.bodyMedium.copy(
+                            color = AppTheme.colors.text.secondary,
+                        ),
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     state.recentScans.forEach { scan ->
@@ -286,29 +431,39 @@ fun HomeScreen(
 }
 
 @Composable
-private fun QuickActionChip(
+private fun QuickActionCard(
     label: String,
-    iconName: String,
+    iconRes: DrawableResource,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    Card(
+    Surface(
         modifier = modifier.clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFFFFF),
-        ),
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White,
+        shadowElevation = 2.dp,
+        border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp, horizontal = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = label,
+                tint = AppTheme.colors.primary,
+                modifier = Modifier.size(28.dp),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = label,
                 style = AppTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp,
                     color = AppTheme.colors.text.primary,
                 ),
+                maxLines = 1,
             )
         }
     }
@@ -319,40 +474,68 @@ private fun SampleProductCard(
     sample: SampleProduct,
     onClick: () -> Unit,
 ) {
-    Card(
+    val photoRes = when (sample.id) {
+        "sample_honey_oats" -> Res.drawable.sample_cereal
+        "sample_matcha_biscuits" -> Res.drawable.sample_yogurt
+        "sample_clony_shampoo" -> Res.drawable.sample_shampoo
+        else -> null
+    }
+
+    Surface(
         modifier = Modifier
-            .width(220.dp)
+            .width(148.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFFFFF),
-        ),
+        shape = RoundedCornerShape(24.dp),
+        color = Color.White,
+        shadowElevation = 2.dp,
+        border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Text(
-                text = sample.name,
-                fontWeight = FontWeight.Bold,
-                style = AppTheme.typography.bodyLarge,
-                color = AppTheme.colors.text.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = sample.frontDescription,
-                style = AppTheme.typography.bodySmall,
-                color = AppTheme.colors.text.secondary,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = stringResource(Res.string.home_sample_tap_to_test),
-                style = AppTheme.typography.bodyExtraSmall.copy(
-                    color = AppTheme.colors.primary,
-                    fontWeight = FontWeight.SemiBold,
-                ),
-            )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            if (photoRes != null) {
+                Image(
+                    painter = painterResource(photoRes),
+                    contentDescription = sample.name,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(105.dp)
+                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(105.dp)
+                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                        .background(AppTheme.colors.alternative),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(UiRes.drawable.ic_leaf_logo),
+                        contentDescription = null,
+                        tint = AppTheme.colors.primary,
+                        modifier = Modifier.size(36.dp),
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    text = sample.name,
+                    fontWeight = FontWeight.Bold,
+                    style = AppTheme.typography.bodyMedium.copy(
+                        fontSize = 14.sp,
+                        color = AppTheme.colors.text.primary,
+                        lineHeight = 18.sp,
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }
@@ -362,27 +545,48 @@ private fun RecentScanRow(
     scan: LabelAnalysisResult,
     onClick: () -> Unit,
 ) {
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White,
+        shadowElevation = 2.dp,
+        border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(14.dp),
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(AppTheme.colors.alternative),
+                contentAlignment = Alignment.Center,
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.scan_card_packet),
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp),
+                    contentScale = ContentScale.Fit,
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = scan.productName,
-                    fontWeight = FontWeight.SemiBold,
-                    style = AppTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    style = AppTheme.typography.bodyMedium.copy(fontSize = 15.sp),
                     color = AppTheme.colors.text.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = scan.verdict,
-                    style = AppTheme.typography.bodySmall,
-                    color = AppTheme.colors.text.secondary,
+                    style = AppTheme.typography.bodySmall.copy(
+                        fontSize = 12.sp,
+                        color = AppTheme.colors.text.secondary,
+                    ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -390,9 +594,22 @@ private fun RecentScanRow(
             Icon(
                 imageVector = Icons.Default.ArrowForward,
                 contentDescription = null,
-                tint = AppTheme.colors.outline,
+                tint = AppTheme.colors.text.secondary,
                 modifier = Modifier.size(16.dp),
             )
         }
+    }
+}
+
+@Preview
+@Composable
+internal fun HomeScreenPreview() {
+    PreviewHelper {
+        HomeScreen(
+            state = LabelLensHomeUiState(),
+            onNavigateToScan = {},
+            onNavigateToResult = { _, _, _ -> },
+            onNavigateToHistoryItem = {},
+        )
     }
 }

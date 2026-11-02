@@ -300,6 +300,13 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="profile_btn_settings">Cài đặt &amp; Miễn trừ trách nhiệm</string>
 
     <!-- Home Screen -->
+    <string name="home_greeting_morning">Chào buổi sáng ☀️</string>
+    <string name="home_greeting_afternoon">Chào buổi chiều ✌</string>
+    <string name="home_greeting_evening">Chào buổi tối 🌙</string>
+    <string name="home_greeting_subtitle">Quét nhãn, hiểu thành phần, chọn đồ phù hợp với bạn.</string>
+    <string name="home_scan_card_title">Quét nhãn mới</string>
+    <string name="home_scan_card_subtitle">Chụp hoặc quét nhãn sản phẩm để phân tích thành phần</string>
+    <string name="home_see_all">Xem tất cả</string>
     <string name="home_hero_title">Quét nhãn bất kỳ</string>
     <string name="home_hero_subtitle">Hướng camera vào bao bì thực phẩm hoặc thực phẩm chức năng. Thông tin dễ hiểu, không hoang mang.</string>
     <string name="home_hero_button">Bắt đầu quét</string>
@@ -413,4 +420,6 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="result_source_verbatim_prefix">Dòng gốc trên nhãn: </string>
     <string name="result_fit_header_badge">Phù hợp hồ sơ</string>
     <string name="result_fit_not_enough_info_badge">Ghi nhận chưa đầy đủ</string>
+    <string name="result_watch_out_clean_title">Không có cảnh báo cá nhân</string>
+    <string name="result_watch_out_clean_subtitle">Sản phẩm phù hợp với hồ sơ dị ứng và lựa chọn của bạn.</string>
 </resources>

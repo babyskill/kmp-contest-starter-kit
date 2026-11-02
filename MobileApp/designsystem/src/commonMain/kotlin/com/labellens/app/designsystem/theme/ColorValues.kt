@@ -19,6 +19,11 @@ val Color.Companion.BLACK_3_HEX_1F: Color get() = Color(0xFF1F222A)
 val Color.Companion.BLACK_4_HEX_26: Color get() = Color(0xFF262A35)
 val Color.Companion.BLACK_5_HEX_35: Color get() = Color(0xFF35383F)
 
+val Color.Companion.BACKGROUND_CREAM: Color get() = Color(0xFFF5F2E9)
+val Color.Companion.SCAN_CARD_GREEN: Color get() = Color(0xFF3C7245)
+val Color.Companion.BANNER_TINT_GREEN: Color get() = Color(0xFFEDF2EB)
+val Color.Companion.BANNER_HEADLINE_GREEN: Color get() = Color(0xFF005C30)
+
 /**
  * https://mui.com/material-ui/customization/color/
  * Below list are 500 shades of material colors hex codes.

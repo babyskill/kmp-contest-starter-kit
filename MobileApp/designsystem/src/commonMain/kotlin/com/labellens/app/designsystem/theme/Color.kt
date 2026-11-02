@@ -36,6 +36,9 @@ data class AppColors(
     val textInput: TextInput = TextInput(),
     val bottomNav: BottomNav = BottomNav(),
     val outline: Color = Color.Unspecified,
+    val scanCard: Color = Color.Unspecified,
+    val bannerTint: Color = Color.Unspecified,
+    val bannerHeadline: Color = Color.Unspecified,
 ) {
     // App is light-only; always returns light Material ColorScheme
     fun asMaterialColorScheme(@Suppress("UNUSED_PARAMETER") isDark: Boolean = false): androidx.compose.material3.ColorScheme = lightColorScheme(
@@ -158,7 +161,7 @@ val lightModeAppColors =
         onPrimary = Color.White,
         alternative = PrimaryAlpha8Color,
         onAlternative = PrimaryColor,
-        background = Color(0xFFF7F8F5),
+        background = Color.BACKGROUND_CREAM,
         surfaceContainer = Color(0xFFFFFFFF),
         text = AppColors.Text.DefaultLight,
         textInput =
@@ -174,6 +177,9 @@ val lightModeAppColors =
             unselectedTextIcon = Color(0xFF3D4A42).copy(alpha = 0.6f),
         ),
         outline = Color(0xFFE2E8E2),
+        scanCard = Color.SCAN_CARD_GREEN,
+        bannerTint = Color.BANNER_TINT_GREEN,
+        bannerHeadline = Color.BANNER_HEADLINE_GREEN,
     )
 
 val darkModeAppColors =
@@ -197,4 +203,7 @@ val darkModeAppColors =
             selectedTextIcon = Color(0xFF2E9A68),
         ),
         outline = Color(0xFF2F4239),
+        scanCard = Color(0xFF285231),
+        bannerTint = Color(0xFF1B3D2B),
+        bannerHeadline = Color(0xFF74D69B),
     )

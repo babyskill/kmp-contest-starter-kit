@@ -34,7 +34,7 @@ import com.labellens.app.designsystem.util.PreviewHelper
 @Composable
 fun AppCardContainer(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(20.dp),
+    shape: Shape = RoundedCornerShape(24.dp),
     backgroundColor: Color = AppTheme.colors.surfaceContainer,
     onClick: (() -> Unit)? = null,
     contentPaddingValues: PaddingValues = PaddingValues(AppTheme.spacing.cardContentSpacing),

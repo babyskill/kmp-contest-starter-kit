@@ -1,5 +1,6 @@
 package com.labellens.app.presentation.screens.result
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -38,6 +39,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,10 +53,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.labellens.app.designsystem.components.AppButton
 import com.labellens.app.designsystem.components.ButtonStyle
+import com.labellens.app.designsystem.generated.resources.UiRes
+import com.labellens.app.designsystem.generated.resources.ic_beaker_amber
+import com.labellens.app.designsystem.generated.resources.ic_leaf_amber
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.analyzer.AnalysisStrings
 import com.labellens.app.domain.analyzer.PortionMath
@@ -110,7 +116,10 @@ import com.labellens.app.generated.resources.result_section_worth_noting_subtitl
 import com.labellens.app.generated.resources.result_section_worth_noting_title
 import com.labellens.app.generated.resources.result_see_label_text
 import com.labellens.app.generated.resources.result_source_verbatim_prefix
+import com.labellens.app.generated.resources.result_watch_out_clean_subtitle
+import com.labellens.app.generated.resources.result_watch_out_clean_title
 import com.labellens.app.presentation.navigation.ResultScreenRoute
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -212,10 +221,12 @@ fun ResultScreen(
 
         // Product Title & Verdict Header
         item {
-            Card(
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(24.dp),
+                color = Color.White,
+                shadowElevation = 2.dp,
+                border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
@@ -433,19 +444,65 @@ fun ResultScreen(
         }
 
         // Section 1: Watch out for you (Personal flags only)
+        item {
+            SectionHeader(
+                title = stringResource(Res.string.result_section_watch_out_title),
+                subtitle = if (result.watchOutForYou.isNotEmpty()) stringResource(Res.string.result_section_watch_out_subtitle) else null,
+            )
+        }
         if (result.watchOutForYou.isNotEmpty()) {
-            item {
-                SectionHeader(
-                    title = stringResource(Res.string.result_section_watch_out_title),
-                    subtitle = stringResource(Res.string.result_section_watch_out_subtitle),
-                )
-            }
             items(result.watchOutForYou) { item ->
                 FlagItemCard(item = item, onExceptionClick = { viewModel.addPersonalException(it) })
             }
+        } else {
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    color = AppTheme.colors.bannerTint,
+                    border = BorderStroke(1.dp, Color(0xFFD6E5D7)),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(26.dp)
+                                .clip(CircleShape)
+                                .background(AppTheme.colors.primary),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = stringResource(Res.string.result_watch_out_clean_title),
+                                fontWeight = FontWeight.Bold,
+                                color = AppTheme.colors.primary,
+                                style = AppTheme.typography.bodyMedium.copy(fontSize = 15.sp),
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = stringResource(Res.string.result_watch_out_clean_subtitle),
+                                style = AppTheme.typography.bodySmall.copy(
+                                    color = AppTheme.colors.text.primary,
+                                    lineHeight = 18.sp,
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
         }
 
-        // Section 2: Worth noting (General additives, sweeteners, sodium)
+        // Section 2: Worth noting (Two-up amber cards with icon, name, one line)
         if (result.worthNoting.isNotEmpty()) {
             item {
                 SectionHeader(
@@ -453,12 +510,29 @@ fun ResultScreen(
                     subtitle = stringResource(Res.string.result_section_worth_noting_subtitle),
                 )
             }
-            items(result.worthNoting) { item ->
-                FlagItemCard(item = item, onExceptionClick = { viewModel.addPersonalException(it) })
+            val pairs = result.worthNoting.chunked(2)
+            pairs.forEach { pair ->
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        pair.forEach { item ->
+                            TwoUpAmberCard(
+                                item = item,
+                                modifier = Modifier.weight(1f),
+                                onExceptionClick = { viewModel.addPersonalException(it) },
+                            )
+                        }
+                        if (pair.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
             }
         }
 
-        // Section 3: Good to know (Whole grains, wholesome items, botanicals)
+        // Section 3: Good to know (Green tint rows)
         if (result.goodToKnow.isNotEmpty()) {
             item {
                 SectionHeader(
@@ -642,7 +716,7 @@ private fun ProfileFitHeaderCard(
         ProfileFitState.NOT_ENOUGH_INFO -> Triple(Color(0xFFECEFF1), Color(0xFFCFD8DC), Color(0xFF546E7A))
         ProfileFitState.DEPENDS_ON_PORTION -> Triple(Color(0xFFFFF3E0), Color(0xFFFFCC80), Color(0xFFE65100))
         ProfileFitState.WORTH_NOTING -> Triple(Color(0xFFFBF3DF), Color(0xFFF1D38A), Color(0xFFB7791F))
-        ProfileFitState.NO_MATCHES -> Triple(Color(0xFFEDF2ED), Color(0xFFC3DBC8), Color(0xFF16794C))
+        ProfileFitState.NO_MATCHES -> Triple(AppTheme.colors.bannerTint, Color(0xFFC3DBC8), AppTheme.colors.primary)
     }
 
     val iconVector = when (state) {
@@ -655,28 +729,26 @@ private fun ProfileFitHeaderCard(
     }
 
     val shapeModifier = when (state) {
-        ProfileFitState.CONTAINS_YOURS -> RoundedCornerShape(4.dp)
-
-        // Octagonal feel
+        ProfileFitState.CONTAINS_YOURS -> RoundedCornerShape(6.dp)
         ProfileFitState.CANNOT_RULE_OUT -> RoundedCornerShape(topStart = 0.dp, topEnd = 12.dp, bottomStart = 12.dp, bottomEnd = 12.dp)
-
-        // Triangular feel
         ProfileFitState.NOT_ENOUGH_INFO -> CircleShape
-
         ProfileFitState.DEPENDS_ON_PORTION -> RoundedCornerShape(8.dp)
-
-        // Diamond
-        ProfileFitState.WORTH_NOTING -> RoundedCornerShape(2.dp)
-
-        // Square
-        ProfileFitState.NO_MATCHES -> RoundedCornerShape(10.dp) // Shield
+        ProfileFitState.WORTH_NOTING -> RoundedCornerShape(4.dp)
+        ProfileFitState.NO_MATCHES -> RoundedCornerShape(8.dp)
     }
 
-    Card(
+    val badgeLabelText = if (fitHeader.badgeLabel.isNotBlank()) {
+        fitHeader.badgeLabel
+    } else {
+        AnalysisStrings.fitStateBadge(language, state)
+    }
+
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        border = androidx.compose.foundation.BorderStroke(1.5.dp, borderColor),
+        shape = RoundedCornerShape(24.dp),
+        color = containerColor,
+        border = BorderStroke(1.dp, borderColor),
+        shadowElevation = 2.dp,
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Row(
@@ -702,26 +774,23 @@ private fun ProfileFitHeaderCard(
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = if (fitHeader.badgeLabel.isNotBlank()) {
-                            fitHeader.badgeLabel
-                        } else {
-                            AnalysisStrings.fitStateBadge(language, state)
-                        },
+                        text = badgeLabelText,
                         style = AppTheme.typography.bodySmall.copy(
                             fontWeight = FontWeight.ExtraBold,
                             letterSpacing = 0.8.sp,
-                            color = accentColor,
+                            color = if (state == ProfileFitState.NO_MATCHES) AppTheme.colors.bannerHeadline else accentColor,
                         ),
                     )
                 }
 
-                // Correction loop trigger: Misread label? Fix
-                Box(
+                // Correction loop trigger: Misread label? Fix (styled as white pill button)
+                Surface(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.8f))
-                        .clickable { onFixMisreadClick() }
-                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { onFixMisreadClick() },
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White,
+                    shadowElevation = 1.dp,
                 ) {
                     Text(
                         text = stringResource(Res.string.result_fix_misread_btn),
@@ -729,45 +798,47 @@ private fun ProfileFitHeaderCard(
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.primary,
                         ),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             Text(
                 text = fitHeader.title,
                 style = AppTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = accentColor,
+                    fontSize = 21.sp,
+                    color = if (state == ProfileFitState.NO_MATCHES) AppTheme.colors.bannerHeadline else accentColor,
                 ),
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 text = fitHeader.subtitle,
                 style = AppTheme.typography.bodyMedium.copy(
                     color = AppTheme.colors.text.primary,
-                    lineHeight = 20.sp,
+                    lineHeight = 21.sp,
                 ),
             )
 
             fitHeader.reasonNote?.let { reason ->
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.7f))
-                        .padding(10.dp),
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White.copy(alpha = 0.85f))
+                        .padding(12.dp),
                 ) {
                     Text(
                         text = reason,
                         style = AppTheme.typography.bodySmall.copy(
                             color = AppTheme.colors.text.secondary,
                             fontWeight = FontWeight.Medium,
+                            lineHeight = 18.sp,
                         ),
                     )
                 }
@@ -809,29 +880,89 @@ private fun SectionHeader(title: String, subtitle: String? = null) {
 }
 
 @Composable
+private fun TwoUpAmberCard(
+    item: FlaggedItem,
+    modifier: Modifier = Modifier,
+    onExceptionClick: ((String) -> Unit)? = null,
+) {
+    val iconRes = if (item.title.contains("hương", ignoreCase = true) ||
+        item.title.contains("flavor", ignoreCase = true) ||
+        item.title.contains("fragrance", ignoreCase = true) ||
+        item.title.contains("oil", ignoreCase = true) ||
+        item.title.contains("dầu", ignoreCase = true)
+    ) {
+        UiRes.drawable.ic_leaf_amber
+    } else {
+        UiRes.drawable.ic_beaker_amber
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(18.dp),
+        color = Color(0xFFFBF3DF),
+        border = BorderStroke(1.dp, Color(0xFFF5E3C0)),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = null,
+                tint = Color(0xFFB7791F),
+                modifier = Modifier.size(24.dp).padding(top = 1.dp),
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = item.title,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF9E6515),
+                    style = AppTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = item.detail,
+                    style = AppTheme.typography.bodySmall.copy(
+                        fontSize = 12.sp,
+                        color = AppTheme.colors.text.secondary,
+                        lineHeight = 16.sp,
+                    ),
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun FlagItemCard(
     item: FlaggedItem,
     onExceptionClick: ((String) -> Unit)? = null,
 ) {
-    val (containerColor, accentColor) = when (item.severity) {
-        FlagSeverity.PERSONAL_ALLERGEN -> Color(0xFFFDECEA) to Color(0xFFB3261E)
-        FlagSeverity.PERSONAL_AVOID -> Color(0xFFFBF3DF) to Color(0xFFB7791F)
-        FlagSeverity.WORTH_NOTING -> Color(0xFFFBF3DF) to Color(0xFFB7791F)
-        FlagSeverity.GOOD_TO_KNOW -> Color(0xFFEDF2ED) to Color(0xFF16794C)
+    val (containerColor, accentColor, borderColor) = when (item.severity) {
+        FlagSeverity.PERSONAL_ALLERGEN -> Triple(Color(0xFFFDECEA), Color(0xFFB3261E), Color(0xFFF5C2C7))
+        FlagSeverity.PERSONAL_AVOID -> Triple(Color(0xFFFBF3DF), Color(0xFFB7791F), Color(0xFFF5E3C0))
+        FlagSeverity.WORTH_NOTING -> Triple(Color(0xFFFBF3DF), Color(0xFFB7791F), Color(0xFFF5E3C0))
+        FlagSeverity.GOOD_TO_KNOW -> Triple(AppTheme.colors.bannerTint, AppTheme.colors.primary, Color(0xFFD6E5D7))
     }
 
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
+        shape = RoundedCornerShape(18.dp),
+        color = containerColor,
+        border = BorderStroke(1.dp, borderColor),
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.Top,
         ) {
             Box(
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(26.dp)
                     .clip(CircleShape)
                     .background(accentColor),
                 contentAlignment = Alignment.Center,
@@ -853,13 +984,14 @@ private fun FlagItemCard(
                     text = item.title,
                     fontWeight = FontWeight.Bold,
                     color = accentColor,
-                    style = AppTheme.typography.bodyMedium,
+                    style = AppTheme.typography.bodyMedium.copy(fontSize = 15.sp),
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = item.detail,
                     style = AppTheme.typography.bodySmall.copy(
                         color = AppTheme.colors.text.primary,
+                        lineHeight = 18.sp,
                     ),
                 )
 
@@ -906,62 +1038,64 @@ private fun IngredientRow(
     ingredient: IngredientBreakdown,
     onClick: () -> Unit,
 ) {
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(18.dp),
+        color = Color.White,
+        shadowElevation = 1.dp,
+        border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text(
                         text = ingredient.canonicalName,
-                        style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        style = AppTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                        ),
                         color = AppTheme.colors.text.primary,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
-                    if (ingredient.isCatchAll) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFFFBF3DF))
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.result_catch_all_badge),
-                                style = AppTheme.typography.bodyExtraSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 11.sp,
-                                    color = Color(0xFFB7791F),
-                                ),
-                            )
-                        }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(AppTheme.colors.bannerTint)
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                    ) {
+                        Text(
+                            text = ingredient.category,
+                            style = AppTheme.typography.bodyExtraSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = AppTheme.colors.primary,
+                            ),
+                        )
                     }
                 }
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = ingredient.category,
-                    style = AppTheme.typography.bodyExtraSmall,
-                    color = AppTheme.colors.text.secondary,
-                )
                 if (ingredient.isCatchAll && ingredient.catchAllNote != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = ingredient.catchAllNote,
                         style = AppTheme.typography.bodyExtraSmall.copy(
                             color = Color(0xFF8A6D3B),
-                            lineHeight = 14.sp,
+                            lineHeight = 15.sp,
                         ),
                     )
                 }
             }
+            Spacer(modifier = Modifier.width(8.dp))
             Icon(
                 imageVector = Icons.Default.ArrowForward,
                 contentDescription = stringResource(Res.string.action_details),
-                tint = AppTheme.colors.outline,
+                tint = AppTheme.colors.text.secondary,
                 modifier = Modifier.size(16.dp),
             )
         }

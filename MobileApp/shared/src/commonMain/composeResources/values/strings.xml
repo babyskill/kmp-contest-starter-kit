@@ -300,6 +300,13 @@ Education only - this is not medical advice.</string>
     <string name="profile_btn_settings">Settings &amp; Disclaimers</string>
 
     <!-- Home Screen -->
+    <string name="home_greeting_morning">Good morning ☀️</string>
+    <string name="home_greeting_afternoon">Good afternoon ✌</string>
+    <string name="home_greeting_evening">Good evening 🌙</string>
+    <string name="home_greeting_subtitle">Scan labels, understand ingredients, pick what fits you.</string>
+    <string name="home_scan_card_title">Scan New Label</string>
+    <string name="home_scan_card_subtitle">Snap or scan product labels to analyze ingredients</string>
+    <string name="home_see_all">See all</string>
     <string name="home_hero_title">Scan Any Label</string>
     <string name="home_hero_subtitle">Point camera at food or supplement packaging. Plain-language insights, zero fear.</string>
     <string name="home_hero_button">Start Scan</string>
@@ -413,4 +420,6 @@ Education only - this is not medical advice.</string>
     <string name="result_source_verbatim_prefix">Label source line: </string>
     <string name="result_fit_header_badge">Profile-Fit</string>
     <string name="result_fit_not_enough_info_badge">Incomplete capture</string>
+    <string name="result_watch_out_clean_title">No personal alerts</string>
+    <string name="result_watch_out_clean_subtitle">This product fits your allergy and dietary profile.</string>
 </resources>
