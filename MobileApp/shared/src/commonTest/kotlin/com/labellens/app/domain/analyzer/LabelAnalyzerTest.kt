@@ -6,6 +6,8 @@ import com.labellens.app.domain.model.AvoidPreference
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.DietaryGoal
 import com.labellens.app.domain.model.ProductCategory
+import com.labellens.app.domain.model.ProductType
+import com.labellens.app.domain.model.ProfileFitState
 import com.labellens.app.domain.model.ScanSource
 import com.labellens.app.domain.model.UserProfile
 import kotlin.test.Test
@@ -410,5 +412,95 @@ class LabelAnalyzerTest {
             val en = AnalysisStrings.nutritionName(AppLanguage.ENGLISH, nutrient)
             assertEquals(nutrient, en, "English nutrition name should match standardName")
         }
+    }
+
+    @Test
+    fun testFitStateBadgeLocalizationBothLanguages() {
+        val states = ProfileFitState.entries
+        assertEquals(6, states.size, "Must have exactly 6 ProfileFitStates")
+
+        val expectedEn = mapOf(
+            ProfileFitState.CONTAINS_YOURS to "CONTAINS YOURS",
+            ProfileFitState.CANNOT_RULE_OUT to "CANNOT RULE OUT",
+            ProfileFitState.NOT_ENOUGH_INFO to "NOT ENOUGH INFO",
+            ProfileFitState.DEPENDS_ON_PORTION to "DEPENDS ON PORTION",
+            ProfileFitState.WORTH_NOTING to "WORTH NOTING",
+            ProfileFitState.NO_MATCHES to "NO MATCHES",
+        )
+
+        val expectedVi = mapOf(
+            ProfileFitState.CONTAINS_YOURS to "CHỨA DỊ ỨNG",
+            ProfileFitState.CANNOT_RULE_OUT to "KHÔNG THỂ LOẠI TRỪ",
+            ProfileFitState.NOT_ENOUGH_INFO to "CHƯA ĐỦ THÔNG TIN",
+            ProfileFitState.DEPENDS_ON_PORTION to "TÙY KHẨU PHẦN",
+            ProfileFitState.WORTH_NOTING to "ĐÁNG LƯU Ý",
+            ProfileFitState.NO_MATCHES to "KHÔNG TRÙNG KHỚP",
+        )
+
+        for (state in states) {
+            val enBadge = AnalysisStrings.fitStateBadge(AppLanguage.ENGLISH, state)
+            assertEquals(expectedEn[state], enBadge, "English badge label mismatch for $state")
+
+            val viBadge = AnalysisStrings.fitStateBadge(AppLanguage.VIETNAMESE, state)
+            assertEquals(expectedVi[state], viBadge, "Vietnamese badge label mismatch for $state")
+        }
+    }
+
+    @Test
+    fun testProductTypeLineLocalizationClonyAndFoodCases() {
+        // 1. Clony Shampoo sample / OCR cases
+        val clonySample = BuiltInSamples.sample8
+        val clonyResultEn = analyzer.analyze(
+            productName = clonySample.name,
+            rawLabelText = clonySample.fullLabelText,
+            userProfile = UserProfile(),
+            category = clonySample.category,
+            language = AppLanguage.ENGLISH,
+        )
+        assertEquals("Clony", clonyResultEn.productName, "Product proper noun must remain verbatim")
+        assertEquals("Shampoo", clonyResultEn.productType, "Product type line in English mode must read 'Shampoo'")
+
+        val clonyResultVi = analyzer.analyze(
+            productName = clonySample.name,
+            rawLabelText = clonySample.fullLabelText,
+            userProfile = UserProfile(),
+            category = clonySample.category,
+            language = AppLanguage.VIETNAMESE,
+        )
+        assertEquals("Clony", clonyResultVi.productName, "Product proper noun must remain verbatim")
+        assertEquals("Dầu gội", clonyResultVi.productType, "Product type line in Vietnamese mode must read with diacritics 'Dầu gội'")
+
+        // Also assert real photo / OCR case where raw OCR produces "Dau goi Clony" or "Dầu gội Clony"
+        val ocrResultEn = analyzer.analyze(
+            productName = "Dau goi Clony",
+            rawLabelText = clonySample.fullLabelText,
+            userProfile = UserProfile(),
+            category = ProductCategory.COSMETICS,
+            language = AppLanguage.ENGLISH,
+        )
+        assertEquals("Clony", ocrResultEn.productName, "OCR prefix must be cleaned from proper noun")
+        assertEquals("Shampoo", ocrResultEn.productType, "OCR term must map to localized display 'Shampoo'")
+
+        // 2. Food case (Honey Oat Cereal)
+        val foodSample = BuiltInSamples.sample1
+        val foodResultEn = analyzer.analyze(
+            productName = foodSample.name,
+            rawLabelText = foodSample.fullLabelText,
+            userProfile = UserProfile(),
+            category = foodSample.category,
+            language = AppLanguage.ENGLISH,
+        )
+        assertEquals("Honey Oat Cereal", foodResultEn.productName, "Food product name must stay verbatim")
+        assertEquals("Cereal", foodResultEn.productType, "Food product type line in English mode must read 'Cereal'")
+
+        val foodResultVi = analyzer.analyze(
+            productName = foodSample.name,
+            rawLabelText = foodSample.fullLabelText,
+            userProfile = UserProfile(),
+            category = foodSample.category,
+            language = AppLanguage.VIETNAMESE,
+        )
+        assertEquals("Honey Oat Cereal", foodResultVi.productName, "Food product name must stay verbatim")
+        assertEquals("Ngũ cốc", foodResultVi.productType, "Food product type line in Vietnamese mode must read 'Ngũ cốc'")
     }
 }

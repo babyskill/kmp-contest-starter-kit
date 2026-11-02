@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import com.labellens.app.designsystem.components.AppButton
 import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
+import com.labellens.app.domain.analyzer.AnalysisStrings
 import com.labellens.app.domain.analyzer.PortionMath
 import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.ClusterRollUp
@@ -203,6 +204,7 @@ fun ResultScreen(
             item {
                 ProfileFitHeaderCard(
                     fitHeader = fitHeader,
+                    language = state.language,
                     onFixMisreadClick = { viewModel.openFixDialog() },
                 )
             }
@@ -224,6 +226,17 @@ fun ResultScreen(
                             color = AppTheme.colors.text.primary,
                         ),
                     )
+
+                    result.productType?.let { type ->
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = type,
+                            style = AppTheme.typography.bodySmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = AppTheme.colors.primary,
+                            ),
+                        )
+                    }
 
                     result.sourceAttribution?.let { source ->
                         Spacer(modifier = Modifier.height(4.dp))
@@ -619,6 +632,7 @@ fun ResultScreen(
 @Composable
 private fun ProfileFitHeaderCard(
     fitHeader: FitHeaderInfo,
+    language: AppLanguage = AppLanguage.ENGLISH,
     onFixMisreadClick: () -> Unit,
 ) {
     val state = fitHeader.state
@@ -688,7 +702,11 @@ private fun ProfileFitHeaderCard(
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = state.name.replace("_", " "),
+                        text = if (fitHeader.badgeLabel.isNotBlank()) {
+                            fitHeader.badgeLabel
+                        } else {
+                            AnalysisStrings.fitStateBadge(language, state)
+                        },
                         style = AppTheme.typography.bodySmall.copy(
                             fontWeight = FontWeight.ExtraBold,
                             letterSpacing = 0.8.sp,

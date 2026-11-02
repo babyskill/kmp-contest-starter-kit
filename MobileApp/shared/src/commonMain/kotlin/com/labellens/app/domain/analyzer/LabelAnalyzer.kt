@@ -15,6 +15,7 @@ import com.labellens.app.domain.model.LabelAnalysisResult
 import com.labellens.app.domain.model.NutritionFact
 import com.labellens.app.domain.model.PortionInfo
 import com.labellens.app.domain.model.ProductCategory
+import com.labellens.app.domain.model.ProductType
 import com.labellens.app.domain.model.ScanSource
 import com.labellens.app.domain.model.UserProfile
 
@@ -32,6 +33,10 @@ class LabelAnalyzer {
     ): LabelAnalysisResult {
         val normalizedText = rawLabelText.trim()
         val uncertaintyNotes = mutableListOf<String>()
+
+        val cleanedProductName = cleanProductName(productName)
+        val derivedType = deriveProductType(productName, normalizedText, category)
+        val localizedProductType = AnalysisStrings.productTypeName(language, derivedType)
 
         if (normalizedText.length < 15) {
             uncertaintyNotes.add(AnalysisStrings.uncertaintyShortText(language))
@@ -548,7 +553,7 @@ class LabelAnalyzer {
 
         // 7. Construct Plain-Language Verdict
         val verdict = generateVerdict(
-            productName = productName,
+            productName = cleanedProductName,
             category = category,
             watchOutCount = watchOutForYou.size,
             worthNotingCount = worthNoting.size,
@@ -572,7 +577,7 @@ class LabelAnalyzer {
         )
 
         return LabelAnalysisResult(
-            productName = productName,
+            productName = cleanedProductName,
             category = category,
             scanSource = scanSource,
             verdict = verdict,
@@ -593,6 +598,7 @@ class LabelAnalyzer {
             cutLineLabel = if (cutLineIndex != null) AnalysisStrings.cutLineDivider(language) else null,
             haloNotes = haloNotes,
             fitHeader = fitHeader,
+            productType = localizedProductType,
         )
     }
 
@@ -1254,6 +1260,63 @@ class LabelAnalyzer {
             "$baseVerdict ${AnalysisStrings.verdictDisclaimer(language)}"
         } else {
             baseVerdict
+        }
+    }
+
+    fun cleanProductName(name: String): String {
+        var cleaned = name.trim()
+        val prefixes = listOf("Dầu gội ", "Dau goi ", "Dầu xả ", "Dau xa ", "Sữa tắm ", "Sua tam ")
+        for (prefix in prefixes) {
+            if (cleaned.startsWith(prefix, ignoreCase = true)) {
+                cleaned = cleaned.substring(prefix.length).trim()
+                break
+            }
+        }
+        val suffixes = listOf(" Shampoo", " Conditioner", " Body Wash")
+        for (suffix in suffixes) {
+            if (cleaned.endsWith(suffix, ignoreCase = true)) {
+                cleaned = cleaned.substring(0, cleaned.length - suffix.length).trim()
+                break
+            }
+        }
+        return cleaned.ifBlank { name.trim() }
+    }
+
+    fun deriveProductType(
+        productName: String,
+        rawLabelText: String,
+        category: ProductCategory,
+    ): ProductType {
+        val normName = DiacriticUtils.stripDiacritics(productName.lowercase())
+        val normLabel = DiacriticUtils.stripDiacritics(rawLabelText.take(500).lowercase())
+        val combined = "$normName $normLabel"
+
+        return when {
+            normName.contains("dau goi") || normName.contains("shampoo") ||
+                (category == ProductCategory.COSMETICS && combined.contains("dau goi")) ||
+                (category == ProductCategory.COSMETICS && combined.contains("shampoo")) -> ProductType.SHAMPOO
+
+            normName.contains("dau xa") || normName.contains("conditioner") -> ProductType.CONDITIONER
+
+            normName.contains("sua tam") || normName.contains("body wash") || normName.contains("shower gel") -> ProductType.BODY_WASH
+
+            normName.contains("granola bar") || combined.contains("granola bar") -> ProductType.GRANOLA_BAR
+
+            normName.contains("cereal") || normName.contains("oats") || combined.contains("oat clusters") || combined.contains("cereal") -> ProductType.CEREAL
+
+            normName.contains("biscuit") || normName.contains("cookie") || combined.contains("biscuits") -> ProductType.BISCUITS
+
+            normName.contains("noodle") || normName.contains("ramen") || combined.contains("noodles") -> ProductType.NOODLES
+
+            normName.contains("snack") || normName.contains("seaweed") -> ProductType.SNACK
+
+            category == ProductCategory.SUPPLEMENT || normName.contains("supplement") || normName.contains("vitamin") -> ProductType.SUPPLEMENT
+
+            category == ProductCategory.BEVERAGE || normName.contains("cola") || normName.contains("beverage") || normName.contains("soda") -> ProductType.BEVERAGE
+
+            category == ProductCategory.COSMETICS -> ProductType.PERSONAL_CARE
+
+            else -> ProductType.FOOD
         }
     }
 }

@@ -507,6 +507,7 @@ object ProfileFitEvaluator {
                 verbatimSourceLine = directMatchLines.distinct().joinToString(", "),
                 reasonNote = AnalysisStrings.fitContainsYoursDetail(input.language, directAllergenMatches.distinct().joinToString(", ")),
                 isCutOff = false,
+                badgeLabel = AnalysisStrings.fitStateBadge(input.language, ProfileFitState.CONTAINS_YOURS),
             )
         }
 
@@ -551,6 +552,7 @@ object ProfileFitEvaluator {
                 verbatimSourceLine = (precautionaryStatements + catchAllMatches.map { it.substringBefore(" (") }).distinct().joinToString("; "),
                 reasonNote = AnalysisStrings.fitCannotRuleOutDetail(input.language, allReasons.joinToString(", ")),
                 isCutOff = false,
+                badgeLabel = AnalysisStrings.fitStateBadge(input.language, ProfileFitState.CANNOT_RULE_OUT),
             )
         }
 
@@ -565,6 +567,7 @@ object ProfileFitEvaluator {
                 verbatimSourceLine = null,
                 reasonNote = AnalysisStrings.fitNotEnoughInfoDetail(input.language),
                 isCutOff = true,
+                badgeLabel = AnalysisStrings.fitStateBadge(input.language, ProfileFitState.NOT_ENOUGH_INFO),
             )
         }
 
@@ -597,6 +600,7 @@ object ProfileFitEvaluator {
                 verbatimSourceLine = lines.joinToString(", "),
                 reasonNote = AnalysisStrings.fitDependsOnPortionDetail(input.language, terms.joinToString(", ")),
                 isCutOff = false,
+                badgeLabel = AnalysisStrings.fitStateBadge(input.language, ProfileFitState.DEPENDS_ON_PORTION),
             )
         }
 
@@ -611,6 +615,7 @@ object ProfileFitEvaluator {
                 verbatimSourceLine = lines.joinToString(", "),
                 reasonNote = AnalysisStrings.fitWorthNotingDetail(input.language, terms.joinToString(", ")),
                 isCutOff = false,
+                badgeLabel = AnalysisStrings.fitStateBadge(input.language, ProfileFitState.WORTH_NOTING),
             )
         }
 
@@ -623,6 +628,7 @@ object ProfileFitEvaluator {
             verbatimSourceLine = null,
             reasonNote = AnalysisStrings.fitNoMatchesDetail(input.language),
             isCutOff = false,
+            badgeLabel = AnalysisStrings.fitStateBadge(input.language, ProfileFitState.NO_MATCHES),
         )
     }
 

@@ -4,6 +4,8 @@ import com.labellens.app.domain.model.Allergen
 import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.AvoidPreference
 import com.labellens.app.domain.model.DietaryGoal
+import com.labellens.app.domain.model.ProductType
+import com.labellens.app.domain.model.ProfileFitState
 
 object AnalysisStrings {
 
@@ -558,5 +560,57 @@ object AnalysisStrings {
     fun fitNoMatchesDetail(language: AppLanguage): String = when (language) {
         AppLanguage.VIETNAMESE -> "Không phát hiện thành phần cần tránh hoặc chất dị ứng nào trong hồ sơ của bạn."
         AppLanguage.ENGLISH -> "No profile-flagged ingredients or allergens were detected."
+    }
+
+    fun fitStateBadge(language: AppLanguage, state: ProfileFitState): String = when (language) {
+        AppLanguage.VIETNAMESE -> when (state) {
+            ProfileFitState.CONTAINS_YOURS -> "CHỨA DỊ ỨNG"
+            ProfileFitState.CANNOT_RULE_OUT -> "KHÔNG THỂ LOẠI TRỪ"
+            ProfileFitState.NOT_ENOUGH_INFO -> "CHƯA ĐỦ THÔNG TIN"
+            ProfileFitState.DEPENDS_ON_PORTION -> "TÙY KHẨU PHẦN"
+            ProfileFitState.WORTH_NOTING -> "ĐÁNG LƯU Ý"
+            ProfileFitState.NO_MATCHES -> "KHÔNG TRÙNG KHỚP"
+        }
+
+        AppLanguage.ENGLISH -> when (state) {
+            ProfileFitState.CONTAINS_YOURS -> "CONTAINS YOURS"
+            ProfileFitState.CANNOT_RULE_OUT -> "CANNOT RULE OUT"
+            ProfileFitState.NOT_ENOUGH_INFO -> "NOT ENOUGH INFO"
+            ProfileFitState.DEPENDS_ON_PORTION -> "DEPENDS ON PORTION"
+            ProfileFitState.WORTH_NOTING -> "WORTH NOTING"
+            ProfileFitState.NO_MATCHES -> "NO MATCHES"
+        }
+    }
+
+    fun productTypeName(language: AppLanguage, type: ProductType): String = when (language) {
+        AppLanguage.VIETNAMESE -> when (type) {
+            ProductType.SHAMPOO -> "Dầu gội"
+            ProductType.CONDITIONER -> "Dầu xả"
+            ProductType.BODY_WASH -> "Sữa tắm"
+            ProductType.CEREAL -> "Ngũ cốc"
+            ProductType.SNACK -> "Đồ ăn nhẹ"
+            ProductType.BISCUITS -> "Bánh quy"
+            ProductType.NOODLES -> "Mì ăn liền"
+            ProductType.BEVERAGE -> "Đồ uống"
+            ProductType.SUPPLEMENT -> "Thực phẩm bổ sung"
+            ProductType.GRANOLA_BAR -> "Thanh ngũ cốc"
+            ProductType.FOOD -> "Thực phẩm"
+            ProductType.PERSONAL_CARE -> "Chăm sóc cá nhân"
+        }
+
+        AppLanguage.ENGLISH -> when (type) {
+            ProductType.SHAMPOO -> "Shampoo"
+            ProductType.CONDITIONER -> "Conditioner"
+            ProductType.BODY_WASH -> "Body Wash"
+            ProductType.CEREAL -> "Cereal"
+            ProductType.SNACK -> "Snack"
+            ProductType.BISCUITS -> "Biscuits"
+            ProductType.NOODLES -> "Instant Noodles"
+            ProductType.BEVERAGE -> "Beverage"
+            ProductType.SUPPLEMENT -> "Supplement"
+            ProductType.GRANOLA_BAR -> "Granola Bar"
+            ProductType.FOOD -> "Food"
+            ProductType.PERSONAL_CARE -> "Personal Care"
+        }
     }
 }

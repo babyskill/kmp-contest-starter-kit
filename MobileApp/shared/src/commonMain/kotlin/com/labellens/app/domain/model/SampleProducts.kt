@@ -112,7 +112,7 @@ object BuiltInSamples {
 
     val sample8 = SampleProduct(
         id = "sample_clony_shampoo",
-        name = "Dầu gội Clony",
+        name = "Clony",
         category = ProductCategory.COSMETICS,
         frontDescription = "Dầu gội mượt tóc thế hệ mới với tinh dầu olive và silicon protein.",
         fullLabelText = """

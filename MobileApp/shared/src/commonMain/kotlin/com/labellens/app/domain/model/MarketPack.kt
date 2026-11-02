@@ -122,6 +122,7 @@ data class FitHeaderInfo(
     val verbatimSourceLine: String? = null,
     val reasonNote: String? = null,
     val isCutOff: Boolean = false,
+    val badgeLabel: String = "",
 )
 
 @Serializable

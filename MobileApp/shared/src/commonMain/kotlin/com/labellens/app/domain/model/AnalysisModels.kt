@@ -11,6 +11,22 @@ enum class ProductCategory {
 }
 
 @Serializable
+enum class ProductType {
+    SHAMPOO,
+    CONDITIONER,
+    BODY_WASH,
+    CEREAL,
+    SNACK,
+    BISCUITS,
+    NOODLES,
+    BEVERAGE,
+    SUPPLEMENT,
+    GRANOLA_BAR,
+    FOOD,
+    PERSONAL_CARE,
+}
+
+@Serializable
 enum class ScanSource {
     SAMPLE,
     BARCODE,
@@ -122,4 +138,5 @@ data class LabelAnalysisResult(
     val cutLineLabel: String? = null,
     val haloNotes: List<FlaggedItem> = emptyList(),
     val fitHeader: FitHeaderInfo? = null,
+    val productType: String? = null,
 )
