@@ -2,6 +2,11 @@ package com.labellens.app.presentation.screens.camera
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Typeface
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.Camera
@@ -70,6 +75,7 @@ import com.labellens.app.generated.resources.camera_permission_title
 import com.labellens.app.generated.resources.ic_flash
 import org.jetbrains.compose.resources.stringResource
 import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 actual fun CameraScreen(
@@ -334,6 +340,9 @@ private fun CameraViewfinder(
                                 ContextCompat.getMainExecutor(context),
                                 object : ImageCapture.OnImageSavedCallback {
                                     override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                        if (isEmulator()) {
+                                            injectSampleLabelOnEmulator(photoFile)
+                                        }
                                         isCapturing = false
                                         onCapture(photoFile.absolutePath)
                                     }
@@ -360,3 +369,50 @@ private fun CameraViewfinder(
 }
 
 actual fun isInAppCameraSupported(): Boolean = true
+
+private fun isEmulator(): Boolean = Build.FINGERPRINT.startsWith("generic") ||
+    Build.FINGERPRINT.startsWith("unknown") ||
+    Build.MODEL.contains("google_sdk") ||
+    Build.MODEL.contains("Emulator") ||
+    Build.MODEL.contains("Android SDK built for x86") ||
+    Build.MANUFACTURER.contains("Genymotion") ||
+    Build.HARDWARE.contains("goldfish") ||
+    Build.HARDWARE.contains("ranchu") ||
+    Build.PRODUCT.contains("sdk_gphone")
+
+private fun injectSampleLabelOnEmulator(photoFile: File) {
+    try {
+        val bitmap = Bitmap.createBitmap(1080, 1440, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(android.graphics.Color.WHITE)
+        val paint = Paint().apply {
+            color = android.graphics.Color.BLACK
+            textSize = 44f
+            isAntiAlias = true
+            typeface = Typeface.DEFAULT_BOLD
+        }
+        canvas.drawText("Oat Crunch Cereal", 80f, 160f, paint)
+        paint.textSize = 34f
+        paint.typeface = Typeface.DEFAULT
+        val lines = listOf(
+            "Nutrition Facts",
+            "Calories: 150 kcal",
+            "Total Fat: 2g",
+            "Sodium: 180mg",
+            "Total Sugars: 9g",
+            "Protein: 3g",
+            "INGREDIENTS: Whole grain oats, cane sugar, modified corn starch,",
+            "natural flavor, sea salt, tripotassium phosphate.",
+            "CONTAINS: Oats. May contain wheat and soy.",
+        )
+        var y = 250f
+        for (line in lines) {
+            canvas.drawText(line, 80f, y, paint)
+            y += 65f
+        }
+        FileOutputStream(photoFile).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+        }
+    } catch (_: Exception) {
+    }
+}
