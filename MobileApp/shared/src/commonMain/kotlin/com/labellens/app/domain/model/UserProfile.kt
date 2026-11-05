@@ -119,4 +119,5 @@ data class UserProfile(
     val customAllergens: List<String> = emptyList(),
     val enabledAttentionFlags: Set<AttentionFlag> = AttentionFlag.entries.toSet(),
     val ingredientExceptions: Set<String> = emptySet(),
+    val aiAssistEnabled: Boolean = true,
 )

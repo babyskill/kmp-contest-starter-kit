@@ -90,6 +90,12 @@ object AppConfiguration {
     const val CLOUDFLARE_BACKEND_URL = "https://koko-backend.koko-kmp-backend.workers.dev"
 
     /**
+     * LabelLens live Tier 2/3 Backend URL & App Key
+     */
+    const val LABELLENS_BACKEND_URL = "https://labellens-backend.appdexter.workers.dev/v1/analyze"
+    val LABELLENS_APP_KEY: String get() = com.labellens.app.common.BuildConfig.LABELLENS_APP_KEY
+
+    /**
      * Controls how authentication operates across the application.
      */
     val AUTH_MODE: AuthMode = AuthMode.OPTIONAL

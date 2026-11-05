@@ -96,6 +96,9 @@ class ResultViewModelTest {
         override suspend fun updateImportedFoodMode(imported: Boolean) {}
         override suspend fun updateCustomAllergens(customAllergens: List<String>) {}
         override suspend fun updateAttentionFlags(flags: Set<AttentionFlag>) {}
+        override suspend fun updateAiAssistEnabled(enabled: Boolean) {
+            this.profile = this.profile.copy(aiAssistEnabled = enabled)
+        }
         override suspend fun addIngredientException(ingredient: String) {}
         override suspend fun removeIngredientException(ingredient: String) {}
         override suspend fun updateProfile(profile: UserProfile) {

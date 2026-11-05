@@ -304,6 +304,7 @@ buildConfig {
     // Prototyping only — the key ships in the app binary; production should keep the proxy.
     buildConfigField("OPENAI_API_KEY", getRequiredProperty(key = "OPENAI_API_KEY", defaultValue = ""))
     buildConfigField("REPLICATE_API_KEY", getRequiredProperty(key = "REPLICATE_API_KEY", defaultValue = ""))
+    buildConfigField("LABELLENS_APP_KEY", getRequiredProperty(key = "LABELLENS_APP_KEY", defaultValue = ""))
 
     // Adapty or RevenueCat Api key
     buildConfigField(

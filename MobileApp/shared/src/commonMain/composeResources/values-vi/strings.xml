@@ -438,4 +438,10 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="camera_permission_rationale">Để quét thành phần và bảng dinh dưỡng trực tiếp, vui lòng cấp quyền truy cập máy ảnh.</string>
     <string name="camera_permission_allow">Cấp quyền máy ảnh</string>
     <string name="camera_permission_fallback">Chọn từ thư viện ảnh</string>
+
+    <!-- AI Assist -->
+    <string name="profile_ai_assist_title">Trợ lý AI</string>
+    <string name="profile_ai_assist_subtitle">Hỗ trợ phân tích khi nhãn mờ, khó đọc hoặc thông tin chưa đầy đủ</string>
+    <string name="ai_tag_chip">AI</string>
+    <string name="result_ai_assist_source">Trợ lý AI - Tier %1$s - %2$s</string>
 </resources>

@@ -50,6 +50,7 @@ data class FlaggedItem(
     val relatedIngredient: String? = null,
     val verbatimSourceLine: String? = null,
     val isExceptionEligible: Boolean = false,
+    val isAiGenerated: Boolean = false,
 )
 
 @Serializable
@@ -104,6 +105,7 @@ data class IngredientBreakdown(
     val isAfterCutLine: Boolean = false,
     val isCatchAll: Boolean = false,
     val catchAllNote: String? = null,
+    val isAiGenerated: Boolean = false,
 )
 
 @Serializable

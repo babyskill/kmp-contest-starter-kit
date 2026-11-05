@@ -4,6 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.labellens.app.data.repository.ScanRepository
 import com.labellens.app.data.repository.UserProfileRepository
+import com.labellens.app.data.source.remote.apiservices.LabelLensBackendAnalyzeService
+import com.labellens.app.data.source.remote.response.ai.BackendAnalyzeRequest
+import com.labellens.app.data.source.remote.response.ai.BackendUserProfile
+import com.labellens.app.domain.ai.AiAssistMergePolicy
+import com.labellens.app.domain.ai.AiAssistTriggerPolicy
 import com.labellens.app.domain.analyzer.LabelAnalyzer
 import com.labellens.app.domain.analyzer.PortionMath
 import com.labellens.app.domain.model.AppLanguage
@@ -13,6 +18,7 @@ import com.labellens.app.domain.model.PortionMode
 import com.labellens.app.domain.model.ProductCategory
 import com.labellens.app.domain.model.ScanSource
 import com.labellens.app.domain.model.UserProfile
+import com.labellens.app.root.AppConfiguration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +41,7 @@ class ResultViewModel(
     private val scanRepository: ScanRepository,
     private val userProfileRepository: UserProfileRepository,
     private val analyzer: LabelAnalyzer,
+    private val backendAnalyzeService: LabelLensBackendAnalyzeService? = null,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ResultUiState())
@@ -131,17 +138,55 @@ class ResultViewModel(
                 language = lang,
             )
 
+            val finalAnalysis = if (isSampleFallback || src == ScanSource.SAMPLE) {
+                analysis
+            } else {
+                val shouldTrigger = AiAssistTriggerPolicy.shouldTrigger(
+                    isAiAssistEnabled = profile.aiAssistEnabled,
+                    appKey = AppConfiguration.LABELLENS_APP_KEY,
+                    isSample = false,
+                    localResult = analysis,
+                    rawOcrText = text,
+                )
+                if (shouldTrigger && backendAnalyzeService != null) {
+                    val catString = if (category == ProductCategory.SUPPLEMENT) "supplement" else "food"
+                    val userAllergensList = profile.allergies.map { it.displayName } + profile.customAllergens
+                    val userFlagsList = profile.enabledAttentionFlags.map { it.displayName }
+                    val req = BackendAnalyzeRequest(
+                        ocrText = text,
+                        barcode = barcode,
+                        category = catString,
+                        profile = BackendUserProfile(
+                            allergens = userAllergensList.takeIf { it.isNotEmpty() },
+                            flags = userFlagsList.takeIf { it.isNotEmpty() },
+                        ),
+                    )
+                    val cloudResponse = try {
+                        backendAnalyzeService.analyze(req, AppConfiguration.LABELLENS_APP_KEY)
+                    } catch (e: Exception) {
+                        null
+                    }
+                    if (cloudResponse != null) {
+                        AiAssistMergePolicy.merge(analysis, cloudResponse, profile, lang)
+                    } else {
+                        analysis
+                    }
+                } else {
+                    analysis
+                }
+            }
+
             if (isSampleFallback || src == ScanSource.SAMPLE) {
                 _uiState.value = _uiState.value.copy(
-                    analysisResult = analysis,
+                    analysisResult = finalAnalysis,
                     isSaved = false,
                     isDeletable = false,
-                    portionMode = PortionMath.defaultPortionMode(analysis.portionInfo.servingsPerContainer),
+                    portionMode = PortionMath.defaultPortionMode(finalAnalysis.portionInfo.servingsPerContainer),
                 )
             } else {
                 // Completed user scan result (camera photo, barcode lookup, pasted text) -> Auto-save!
-                val savedId = scanRepository.saveScan(analysis)
-                val persistedResult = analysis.copy(id = savedId)
+                val savedId = scanRepository.saveScan(finalAnalysis)
+                val persistedResult = finalAnalysis.copy(id = savedId)
                 _uiState.value = _uiState.value.copy(
                     analysisResult = persistedResult,
                     isSaved = true,

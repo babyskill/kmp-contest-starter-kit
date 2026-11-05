@@ -77,6 +77,7 @@ import com.labellens.app.domain.model.ProfileFitState
 import com.labellens.app.generated.resources.Res
 import com.labellens.app.generated.resources.action_details
 import com.labellens.app.generated.resources.action_favorite
+import com.labellens.app.generated.resources.ai_tag_chip
 import com.labellens.app.generated.resources.btn_back
 import com.labellens.app.generated.resources.content_desc_delete
 import com.labellens.app.generated.resources.result_action_collapse
@@ -931,12 +932,35 @@ private fun FlagItemCard(
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.title,
-                    fontWeight = FontWeight.Bold,
-                    color = accentColor,
-                    style = AppTheme.typography.bodyMedium.copy(fontSize = 15.sp),
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = item.title,
+                        fontWeight = FontWeight.Bold,
+                        color = accentColor,
+                        style = AppTheme.typography.bodyMedium.copy(fontSize = 15.sp),
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    if (item.isAiGenerated) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFFEDE7F6))
+                                .border(1.dp, Color(0xFFB39DDB), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 6.dp, vertical = 1.dp),
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.ai_tag_chip),
+                                style = AppTheme.typography.bodyExtraSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF5E35B1),
+                                ),
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = item.detail,
@@ -1021,6 +1045,24 @@ private fun IngredientRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        if (ingredient.isAiGenerated) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFEDE7F6))
+                                    .border(1.dp, Color(0xFFB39DDB), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.ai_tag_chip),
+                                    style = AppTheme.typography.bodyExtraSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF5E35B1),
+                                    ),
+                                )
+                            }
+                        }
+
                         when (group) {
                             IngredientDetailGroup.WATCH_OUT -> {
                                 Box(

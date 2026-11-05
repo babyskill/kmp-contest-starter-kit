@@ -30,6 +30,7 @@ interface UserProfileRepository {
     suspend fun updateImportedFoodMode(imported: Boolean)
     suspend fun updateCustomAllergens(customAllergens: List<String>)
     suspend fun updateAttentionFlags(flags: Set<AttentionFlag>)
+    suspend fun updateAiAssistEnabled(enabled: Boolean)
     suspend fun addIngredientException(ingredient: String)
     suspend fun removeIngredientException(ingredient: String)
     suspend fun updateProfile(profile: UserProfile)
@@ -127,6 +128,11 @@ class UserProfileRepositoryImpl(
 
     override suspend fun updateAttentionFlags(flags: Set<AttentionFlag>) {
         val updated = getProfile().copy(enabledAttentionFlags = flags)
+        persist(updated)
+    }
+
+    override suspend fun updateAiAssistEnabled(enabled: Boolean) {
+        val updated = getProfile().copy(aiAssistEnabled = enabled)
         persist(updated)
     }
 

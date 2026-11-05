@@ -51,6 +51,8 @@ import com.labellens.app.domain.model.DietaryGoal
 import com.labellens.app.domain.model.Market
 import com.labellens.app.domain.model.MarketPacks
 import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.profile_ai_assist_subtitle
+import com.labellens.app.generated.resources.profile_ai_assist_title
 import com.labellens.app.generated.resources.profile_allergies_subtitle
 import com.labellens.app.generated.resources.profile_allergies_title
 import com.labellens.app.generated.resources.profile_attention_flags_subtitle
@@ -217,6 +219,41 @@ fun ProfileScreen(
                         Switch(
                             checked = profile.importedFoodMode,
                             onCheckedChange = { viewModel.toggleImportedFoodMode() },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = AppTheme.colors.primary,
+                            ),
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // AI Assist Mode Toggle
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFF7F8F5))
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                            Text(
+                                text = stringResource(Res.string.profile_ai_assist_title),
+                                style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = AppTheme.colors.text.primary,
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = stringResource(Res.string.profile_ai_assist_subtitle),
+                                style = AppTheme.typography.bodyExtraSmall,
+                                color = AppTheme.colors.text.secondary,
+                            )
+                        }
+                        Switch(
+                            checked = profile.aiAssistEnabled,
+                            onCheckedChange = { viewModel.toggleAiAssist() },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = AppTheme.colors.primary,

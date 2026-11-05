@@ -438,4 +438,10 @@ Education only - this is not medical advice.</string>
     <string name="camera_permission_rationale">To scan ingredients and nutrition labels directly, please allow camera access.</string>
     <string name="camera_permission_allow">Allow Camera</string>
     <string name="camera_permission_fallback">Choose from photos</string>
+
+    <!-- AI Assist -->
+    <string name="profile_ai_assist_title">AI assist</string>
+    <string name="profile_ai_assist_subtitle">Enhance incomplete or blurry label scans with cloud AI</string>
+    <string name="ai_tag_chip">AI</string>
+    <string name="result_ai_assist_source">AI assist - Tier %1$s - %2$s</string>
 </resources>

@@ -84,6 +84,17 @@ class LabelLensProfileViewModel(
         }
     }
 
+    fun toggleAiAssist() {
+        val newMode = !_uiState.value.userProfile.aiAssistEnabled
+        viewModelScope.launch {
+            userProfileRepository.updateAiAssistEnabled(newMode)
+            _uiState.value = _uiState.value.copy(
+                userProfile = _uiState.value.userProfile.copy(aiAssistEnabled = newMode),
+                isSaved = true,
+            )
+        }
+    }
+
     fun updateCustomAllergenInput(text: String) {
         _uiState.value = _uiState.value.copy(customAllergenInput = text)
     }
