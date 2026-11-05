@@ -11,6 +11,7 @@ androidx-uiTest = "1.12.0"
 androidxLifecycle = "2.11.0"
 buildConfig = "6.0.10"
 calf = "0.13.0"
+camerax = "1.4.1"
 coil = "3.5.0"
 composablePreviewScanner = "0.9.3"
 compose = "1.11.1"
@@ -54,6 +55,10 @@ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", ver
 android-inappreview = { module = "com.google.android.play:review", version.ref = "android-inappreview" }
 android-kotlin-multiplatform-library-gradlePlugin = { module = "com.android.kotlin.multiplatform.library:com.android.kotlin.multiplatform.library.gradle.plugin", version.ref = "agp" }
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-core-splashscreen" }
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }

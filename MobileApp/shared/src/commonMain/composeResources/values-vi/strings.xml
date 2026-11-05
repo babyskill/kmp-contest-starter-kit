@@ -428,4 +428,14 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="result_delete_dialog_message">Sản phẩm này sẽ bị xóa vĩnh viễn khỏi lịch sử của bạn.</string>
     <string name="result_delete_dialog_confirm">Xóa</string>
     <string name="result_delete_dialog_cancel">Hủy</string>
+
+    <!-- In-App Camera Screen (CameraX) -->
+    <string name="camera_guide_hint">Căn chỉnh nhãn trong khung hình</string>
+    <string name="camera_close">Đóng máy ảnh</string>
+    <string name="camera_capture">Chụp ảnh</string>
+    <string name="camera_flash_toggle">Bật/tắt đèn flash</string>
+    <string name="camera_permission_title">Cần quyền truy cập máy ảnh</string>
+    <string name="camera_permission_rationale">Để quét thành phần và bảng dinh dưỡng trực tiếp, vui lòng cấp quyền truy cập máy ảnh.</string>
+    <string name="camera_permission_allow">Cấp quyền máy ảnh</string>
+    <string name="camera_permission_fallback">Chọn từ thư viện ảnh</string>
 </resources>

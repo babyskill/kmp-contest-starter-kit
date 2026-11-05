@@ -56,6 +56,10 @@ data object OnBoardingScreenRoute : ScreenRoute
 data object ScanScreenRoute : ScreenRoute
 
 @Serializable
+@SerialName("Camera")
+data object CameraScreenRoute : ScreenRoute
+
+@Serializable
 @SerialName("Result")
 data class ResultScreenRoute(
     val scanId: String? = null,

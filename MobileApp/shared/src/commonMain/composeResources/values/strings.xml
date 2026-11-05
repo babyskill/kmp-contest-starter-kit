@@ -428,4 +428,14 @@ Education only - this is not medical advice.</string>
     <string name="result_delete_dialog_message">This item will be permanently removed from your history.</string>
     <string name="result_delete_dialog_confirm">Delete</string>
     <string name="result_delete_dialog_cancel">Cancel</string>
+
+    <!-- In-App Camera Screen (CameraX) -->
+    <string name="camera_guide_hint">Align label within frame</string>
+    <string name="camera_close">Close camera</string>
+    <string name="camera_capture">Take photo</string>
+    <string name="camera_flash_toggle">Toggle flash</string>
+    <string name="camera_permission_title">Camera access needed</string>
+    <string name="camera_permission_rationale">To scan ingredients and nutrition labels directly, please allow camera access.</string>
+    <string name="camera_permission_allow">Allow Camera</string>
+    <string name="camera_permission_fallback">Choose from photos</string>
 </resources>

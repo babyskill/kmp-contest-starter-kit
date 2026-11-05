@@ -46,6 +46,8 @@ import com.labellens.app.generated.resources.bottom_nav_label_history
 import com.labellens.app.generated.resources.bottom_nav_label_home
 import com.labellens.app.generated.resources.bottom_nav_label_profile
 import com.labellens.app.generated.resources.bottom_nav_label_scan
+import com.labellens.app.presentation.screens.camera.CameraScreen
+import com.labellens.app.presentation.screens.camera.isInAppCameraSupported
 import com.labellens.app.presentation.screens.compare.CompareScreen
 import com.labellens.app.presentation.screens.compare.CompareViewModel
 import com.labellens.app.presentation.screens.debug.DebugMenuScreen
@@ -119,7 +121,9 @@ fun AppNavigation(
     val scanViewModel = koinViewModel<ScanViewModel>()
     val scanUiState by scanViewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val entryProvider = remember(navigator, scanViewModel) { entryProvider { screens(navigator, scanViewModel) } }
+    val entryProvider = remember(navigator, scanViewModel, coroutineScope) {
+        entryProvider { screens(navigator, scanViewModel, coroutineScope) }
+    }
 
     val isAtRoot = navigationState.currentBackstack.size <= 1
     val activeTopLevel = navigationState.topLevelRoute
@@ -170,22 +174,28 @@ fun AppNavigation(
                         onClickItem = { item ->
                             val targetRoute = TOP_LEVEL_ROUTES.entries
                                 .firstOrNull { it.value === item }?.key ?: return@BottomNavigationBar
-                            if (targetRoute == ScanTabScreenRoute && isCameraCaptureSupported()) {
-                                coroutineScope.launch {
-                                    val captured = FileKit.openCameraPicker()
-                                    if (captured != null) {
-                                        scanViewModel.processImageSource(captured) { raw, name, barcode, sourceName ->
-                                            navigator.navigate(
-                                                ResultScreenRoute(
-                                                    rawText = raw,
-                                                    productName = name,
-                                                    barcode = barcode,
-                                                    sampleId = null,
-                                                    sourceName = sourceName,
-                                                ),
-                                            )
+                            if (targetRoute == ScanTabScreenRoute) {
+                                if (isInAppCameraSupported()) {
+                                    navigator.navigate(CameraScreenRoute)
+                                } else if (isCameraCaptureSupported()) {
+                                    coroutineScope.launch {
+                                        val captured = FileKit.openCameraPicker()
+                                        if (captured != null) {
+                                            scanViewModel.processImageSource(captured) { raw, name, barcode, sourceName ->
+                                                navigator.navigate(
+                                                    ResultScreenRoute(
+                                                        rawText = raw,
+                                                        productName = name,
+                                                        barcode = barcode,
+                                                        sampleId = null,
+                                                        sourceName = sourceName,
+                                                    ),
+                                                )
+                                            }
                                         }
                                     }
+                                } else {
+                                    navigator.navigate(targetRoute)
                                 }
                             } else {
                                 navigator.navigate(targetRoute)
@@ -216,6 +226,7 @@ fun AppNavigation(
 private fun EntryProviderScope<ScreenRoute>.screens(
     navigator: Navigator,
     scanViewModel: ScanViewModel,
+    coroutineScope: kotlinx.coroutines.CoroutineScope,
 ) {
     entry<HomeScreenRoute>(metadata = noAnimationMetadata) {
         val viewModel = koinViewModel<HomeViewModel>()
@@ -260,6 +271,7 @@ private fun EntryProviderScope<ScreenRoute>.screens(
         ScanScreen(
             viewModel = scanViewModel,
             onNavigateBack = { navigator.switchToTab(HomeScreenRoute) },
+            onNavigateToCamera = { navigator.navigate(CameraScreenRoute) },
             onNavigateToResult = { rawText, name, barcode, sampleId, sourceName ->
                 navigator.navigate(
                     ResultScreenRoute(
@@ -310,6 +322,7 @@ private fun EntryProviderScope<ScreenRoute>.screens(
         ScanScreen(
             viewModel = scanViewModel,
             onNavigateBack = { navigator.goBack() },
+            onNavigateToCamera = { navigator.navigate(CameraScreenRoute) },
             onNavigateToResult = { rawText, name, barcode, sampleId, sourceName ->
                 navigator.navigate(
                     ResultScreenRoute(
@@ -320,6 +333,45 @@ private fun EntryProviderScope<ScreenRoute>.screens(
                         sourceName = sourceName,
                     ),
                 )
+            },
+        )
+    }
+
+    entry<CameraScreenRoute> {
+        CameraScreen(
+            onCapture = { filePath ->
+                navigator.goBack()
+                scanViewModel.processImageSource(filePath) { raw, name, barcode, sourceName ->
+                    navigator.navigate(
+                        ResultScreenRoute(
+                            rawText = raw,
+                            productName = name,
+                            barcode = barcode,
+                            sampleId = null,
+                            sourceName = sourceName,
+                        ),
+                    )
+                }
+            },
+            onClose = { navigator.goBack() },
+            onFallbackToFilePicker = {
+                navigator.goBack()
+                coroutineScope.launch {
+                    val captured = FileKit.openCameraPicker()
+                    if (captured != null) {
+                        scanViewModel.processImageSource(captured) { raw, name, barcode, sourceName ->
+                            navigator.navigate(
+                                ResultScreenRoute(
+                                    rawText = raw,
+                                    productName = name,
+                                    barcode = barcode,
+                                    sampleId = null,
+                                    sourceName = sourceName,
+                                ),
+                            )
+                        }
+                    }
+                }
             },
         )
     }

@@ -69,6 +69,7 @@ import com.labellens.app.generated.resources.scan_photo_subtitle
 import com.labellens.app.generated.resources.scan_photo_title
 import com.labellens.app.generated.resources.scan_sample_run_btn
 import com.labellens.app.generated.resources.scan_samples_section_title
+import com.labellens.app.presentation.screens.camera.isInAppCameraSupported
 import com.labellens.app.util.file.openCameraPicker
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
@@ -82,6 +83,7 @@ fun ScanScreen(
     onNavigateBack: () -> Unit,
     onNavigateToResult: (rawText: String, productName: String, barcode: String?, sampleId: String?, sourceName: String?) -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateToCamera: (() -> Unit)? = null,
 ) {
     val state by viewModel.uiState.collectAsState()
     var pastedText by remember { mutableStateOf("") }
@@ -203,11 +205,15 @@ fun ScanScreen(
                             text = stringResource(Res.string.scan_btn_take_photo),
                             modifier = Modifier.weight(1f),
                             onClick = {
-                                coroutineScope.launch {
-                                    val captured = FileKit.openCameraPicker()
-                                    if (captured != null) {
-                                        viewModel.processImageSource(captured) { raw, name, barcode, sourceName ->
-                                            onNavigateToResult(raw, name, barcode, null, sourceName)
+                                if (isInAppCameraSupported() && onNavigateToCamera != null) {
+                                    onNavigateToCamera()
+                                } else {
+                                    coroutineScope.launch {
+                                        val captured = FileKit.openCameraPicker()
+                                        if (captured != null) {
+                                            viewModel.processImageSource(captured) { raw, name, barcode, sourceName ->
+                                                onNavigateToResult(raw, name, barcode, null, sourceName)
+                                            }
                                         }
                                     }
                                 }
