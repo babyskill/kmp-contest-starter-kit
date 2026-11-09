@@ -153,6 +153,7 @@ class ResultViewModel(
                     val catString = if (category == ProductCategory.SUPPLEMENT) "supplement" else "food"
                     val userAllergensList = profile.allergies.map { it.displayName } + profile.customAllergens
                     val userFlagsList = profile.enabledAttentionFlags.map { it.displayName }
+                    val langCode = if (lang == AppLanguage.VIETNAMESE) "vi" else "en"
                     val req = BackendAnalyzeRequest(
                         ocrText = text,
                         barcode = barcode,
@@ -161,9 +162,10 @@ class ResultViewModel(
                             allergens = userAllergensList.takeIf { it.isNotEmpty() },
                             flags = userFlagsList.takeIf { it.isNotEmpty() },
                         ),
+                        language = langCode,
                     )
                     val cloudResponse = try {
-                        backendAnalyzeService.analyze(req, AppConfiguration.LABELLENS_APP_KEY)
+                        backendAnalyzeService.analyze(req, AppConfiguration.LABELLENS_APP_KEY, langCode)
                     } catch (e: Exception) {
                         null
                     }

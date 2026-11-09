@@ -10,6 +10,7 @@ data class BackendAnalyzeRequest(
     @SerialName("barcode") val barcode: String? = null,
     @SerialName("category") val category: String? = null,
     @SerialName("profile") val profile: BackendUserProfile? = null,
+    @SerialName("language") val language: String? = null,
 )
 
 @Serializable

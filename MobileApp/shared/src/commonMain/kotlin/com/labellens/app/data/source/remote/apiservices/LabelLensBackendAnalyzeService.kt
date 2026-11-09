@@ -14,23 +14,35 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.withTimeoutOrNull
 
 interface LabelLensBackendAnalyzeService {
-    suspend fun analyze(request: BackendAnalyzeRequest, appKey: String): BackendAnalyzeResponse?
+    suspend fun analyze(
+        request: BackendAnalyzeRequest,
+        appKey: String,
+        language: String? = null,
+    ): BackendAnalyzeResponse?
 }
 
 class DefaultLabelLensBackendAnalyzeService(
     private val httpClient: HttpClient,
+    private val defaultLanguage: String? = null,
 ) : LabelLensBackendAnalyzeService {
 
     override suspend fun analyze(
         request: BackendAnalyzeRequest,
         appKey: String,
+        language: String?,
     ): BackendAnalyzeResponse? {
         if (appKey.isBlank()) return null
+        val effectiveLanguage = language ?: request.language ?: defaultLanguage
+        val finalRequest = if (request.language == null && effectiveLanguage != null) {
+            request.copy(language = effectiveLanguage)
+        } else {
+            request
+        }
         return try {
             val response = httpClient.post(AppConfiguration.LABELLENS_BACKEND_URL) {
                 header("x-app-key", appKey)
                 contentType(ContentType.Application.Json)
-                setBody(request)
+                setBody(finalRequest)
             }
             if (response.status == HttpStatusCode.OK) {
                 response.body<BackendAnalyzeResponse>()

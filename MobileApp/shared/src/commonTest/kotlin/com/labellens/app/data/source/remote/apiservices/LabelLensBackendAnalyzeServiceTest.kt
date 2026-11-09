@@ -4,6 +4,7 @@ import com.labellens.app.data.source.remote.response.ai.BackendAnalyzeRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.engine.mock.toByteArray
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -15,6 +16,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class LabelLensBackendAnalyzeServiceTest {
 
@@ -135,5 +137,73 @@ class LabelLensBackendAnalyzeServiceTest {
 
         val response = service.analyze(BackendAnalyzeRequest(ocrText = "Text"), "")
         assertNull(response)
+    }
+
+    @Test
+    fun `BackendAnalyzeRequest serializes language field for vi`() {
+        val json = Json { explicitNulls = false }
+        val request = BackendAnalyzeRequest(ocrText = "Tra xanh", language = "vi")
+        val serialized = json.encodeToString(BackendAnalyzeRequest.serializer(), request)
+        assertTrue(serialized.contains("\"language\":\"vi\""))
+    }
+
+    @Test
+    fun `BackendAnalyzeRequest serializes language field for en`() {
+        val json = Json { explicitNulls = false }
+        val request = BackendAnalyzeRequest(ocrText = "Green tea", language = "en")
+        val serialized = json.encodeToString(BackendAnalyzeRequest.serializer(), request)
+        assertTrue(serialized.contains("\"language\":\"en\""))
+    }
+
+    @Test
+    fun `analyze passes language into network request body`() = runTest {
+        var recordedBody = ""
+        val client = HttpClient(MockEngine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            engine {
+                addHandler { requestData ->
+                    recordedBody = requestData.body.toByteArray().decodeToString()
+                    respond(
+                        content = fakeSuccessJson,
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+            }
+        }
+        val service = DefaultLabelLensBackendAnalyzeService(client)
+        val request = BackendAnalyzeRequest(ocrText = "Tra xanh", language = "vi")
+        val response = service.analyze(request, "valid-key")
+
+        assertNotNull(response)
+        assertTrue(recordedBody.contains("\"language\":\"vi\""))
+    }
+
+    @Test
+    fun `analyze with explicit language parameter sets language in request body`() = runTest {
+        var recordedBody = ""
+        val client = HttpClient(MockEngine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            engine {
+                addHandler { requestData ->
+                    recordedBody = requestData.body.toByteArray().decodeToString()
+                    respond(
+                        content = fakeSuccessJson,
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+            }
+        }
+        val service = DefaultLabelLensBackendAnalyzeService(client)
+        val request = BackendAnalyzeRequest(ocrText = "Green tea")
+        val response = service.analyze(request, "valid-key", language = "en")
+
+        assertNotNull(response)
+        assertTrue(recordedBody.contains("\"language\":\"en\""))
     }
 }
