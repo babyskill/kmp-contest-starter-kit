@@ -6,6 +6,7 @@ import com.labellens.app.data.source.local.dao.ScanHistoryDao
 import com.labellens.app.data.source.local.entity.ScanHistoryEntity
 import com.labellens.app.data.source.local.entity.toAnalysisResult
 import com.labellens.app.domain.analyzer.LabelAnalyzer
+import com.labellens.app.domain.analyzer.ProductNameSanitizer
 import com.labellens.app.domain.model.LabelAnalysisResult
 import com.labellens.app.domain.model.UserProfile
 import com.labellens.app.util.extensions.nowEpochMillis
@@ -56,8 +57,9 @@ class ScanRepositoryImpl(
         val langCode = userPreferences.getString(com.labellens.app.data.source.preferences.UserPreferences.KEY_APP_LANGUAGE, null)
         val lang = com.labellens.app.domain.model.AppLanguage.fromCode(langCode)
         // Re-analyze with current profile to update personal flags
+        val sanitizedName = ProductNameSanitizer.displayProductName(current.productName, lang)
         val reanalyzed = analyzer.analyze(
-            productName = current.productName,
+            productName = sanitizedName,
             rawLabelText = current.rawInputText,
             userProfile = profile,
             category = current.category,

@@ -41,9 +41,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.labellens.app.data.repository.UserProfileRepository
 import com.labellens.app.designsystem.components.AppButton
 import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.theme.AppTheme
+import com.labellens.app.domain.analyzer.ProductNameSanitizer
+import com.labellens.app.domain.analyzer.ScanSummaryLocalizer
 import com.labellens.app.domain.model.LabelAnalysisResult
 import com.labellens.app.generated.resources.Res
 import com.labellens.app.generated.resources.content_desc_delete
@@ -64,6 +67,7 @@ import com.labellens.app.generated.resources.result_delete_dialog_confirm
 import com.labellens.app.generated.resources.result_delete_dialog_message
 import com.labellens.app.generated.resources.result_delete_dialog_title
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 @Composable
 fun HistoryScreen(
@@ -71,6 +75,8 @@ fun HistoryScreen(
     onNavigateToResult: (result: LabelAnalysisResult) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val userProfileRepository = koinInject<UserProfileRepository>()
+    val language by userProfileRepository.languageFlow.collectAsState()
     val state by viewModel.uiState.collectAsState()
     val scans = if (state.filterFavoritesOnly) state.favoriteScans else state.allScans
     var itemPendingDelete by remember { mutableStateOf<String?>(null) }
@@ -162,14 +168,14 @@ fun HistoryScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = scan.productName,
+                                text = ProductNameSanitizer.displayProductName(scan.productName, language),
                                 fontWeight = FontWeight.Bold,
                                 style = AppTheme.typography.bodyLarge,
                                 color = AppTheme.colors.text.primary,
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = scan.verdict,
+                                text = ScanSummaryLocalizer.localizedSummary(scan, language),
                                 style = AppTheme.typography.bodySmall,
                                 color = AppTheme.colors.text.secondary,
                                 maxLines = 1,

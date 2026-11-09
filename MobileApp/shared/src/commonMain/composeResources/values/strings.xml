@@ -267,6 +267,8 @@ Education only - this is not medical advice.</string>
     <string name="ingredient_section_aliases">Label Aliases &amp; Multilingual Names</string>
     <string name="ingredient_section_sources">Sources &amp; Standards</string>
     <string name="ingredient_fallback_standard">Not in the database yet</string>
+    <string name="ingredient_unknown_definition">Information for this ingredient is not available in the database yet.</string>
+    <string name="product_name_fallback_untitled">Untitled label</string>
     <string name="ingredient_avoid_safe">Generally recognized as safe with no common restricted dietary flags.</string>
     <string name="ingredient_avoid_flagged">Flagged for: %1$s. Check your personal allergens and goals.</string>
     <string name="ingredient_sources_description">Knowledge synthesized from Codex Alimentarius, US FDA GRAS notices, European Food Safety Authority (EFSA), and regional food standards agencies.</string>
@@ -280,7 +282,11 @@ Education only - this is not medical advice.</string>
     <string name="compare_row_ingredients">Ingredients Count</string>
     <string name="compare_row_calories">Calories</string>
     <string name="compare_row_sugar">Sugar</string>
+    <string name="compare_row_sugars">Sugars</string>
     <string name="compare_row_sodium">Sodium</string>
+    <string name="compare_row_saturated_fat">Saturated Fat</string>
+    <string name="compare_row_protein">Protein</string>
+    <string name="compare_row_dietary_fiber">Dietary Fiber</string>
     <string name="compare_row_verdict">Verdict</string>
     <string name="compare_none_flagged">None flagged</string>
     <string name="compare_empty_state">Scan or select products to compare</string>
@@ -317,7 +323,7 @@ Education only - this is not medical advice.</string>
     <string name="home_quick_action_paste">Paste Text</string>
     <string name="home_samples_title">Try Built-in Samples</string>
     <string name="home_tip_title">Calm Tip</string>
-    <string name="home_tip_body">Imported Asian packaging often groups allergens under \'알레르기\' or \'アレルギー\' at the very bottom.</string>
+    <string name="home_tip_body">Imported Asian packaging often groups allergens under '알레르기' or 'アレルギー' at the very bottom.</string>
     <string name="home_recent_scans_title">Recent Scans</string>
     <string name="home_recent_scans_empty">No scans yet. Try a sample or scan a label above!</string>
     <string name="home_sample_tap_to_test">Tap to test →</string>
@@ -392,7 +398,7 @@ Education only - this is not medical advice.</string>
     <string name="onboarding_desc_1">Photograph any food or supplement label, including imported Asian packaging, and get an honest, plain-language explanation.</string>
     <string name="onboarding_badge_1">Honest Breakdown</string>
     <string name="onboarding_title_2">Personal context,\nnot a scary single-score.</string>
-    <string name="onboarding_desc_2">We never label foods \'toxic\' or \'dirty\'. We highlight wholesome ingredients, note additives plainly, and alert you to your allergens.</string>
+    <string name="onboarding_desc_2">We never label foods 'toxic' or 'dirty'. We highlight wholesome ingredients, note additives plainly, and alert you to your allergens.</string>
     <string name="onboarding_badge_2">Calm &amp; Science-Backed</string>
     <string name="onboarding_title_3">100% on-device.\nYour health stays private.</string>
     <string name="onboarding_desc_3">Everything runs locally on your phone. No logins required, no tracking profiles sold, and all warnings remain completely free.</string>
@@ -417,7 +423,7 @@ Education only - this is not medical advice.</string>
     <string name="result_fix_dialog_title">Edit Label Text</string>
     <string name="result_fix_dialog_confirm">Re-analyze</string>
     <string name="result_fix_dialog_cancel">Cancel</string>
-    <string name="result_exception_btn">I\'m fine with this ingredient</string>
+    <string name="result_exception_btn">I'm fine with this ingredient</string>
     <string name="result_source_verbatim_prefix">Label source line: </string>
     <string name="result_fit_header_badge">Profile-Fit</string>
     <string name="result_fit_not_enough_info_badge">Incomplete capture</string>

@@ -11,6 +11,7 @@ import com.labellens.app.domain.ai.AiAssistMergePolicy
 import com.labellens.app.domain.ai.AiAssistTriggerPolicy
 import com.labellens.app.domain.analyzer.LabelAnalyzer
 import com.labellens.app.domain.analyzer.PortionMath
+import com.labellens.app.domain.analyzer.ProductNameSanitizer
 import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.LabelAnalysisResult
@@ -109,7 +110,7 @@ class ResultViewModel(
             // Fallback: analyze rawText
             val isSampleFallback = rawText == null && sampleId == null && scanId == null
             val text = rawText ?: BuiltInSamples.sample2.fullLabelText
-            val name = productName ?: if (lang == AppLanguage.VIETNAMESE) "Sản phẩm quét" else "Scanned Product"
+            val name = ProductNameSanitizer.displayProductName(productName, lang)
             val category = if (text.contains("SUPPLEMENT", ignoreCase = true)) ProductCategory.SUPPLEMENT else ProductCategory.FOOD
             val src = when (sourceName) {
                 "Open Food Facts" -> ScanSource.BARCODE

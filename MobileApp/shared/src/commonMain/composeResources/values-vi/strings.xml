@@ -267,6 +267,8 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="ingredient_section_aliases">Tên gọi khác &amp; Tên đa ngôn ngữ</string>
     <string name="ingredient_section_sources">Tiêu chuẩn &amp; Nguồn tham chiếu</string>
     <string name="ingredient_fallback_standard">Chưa có trong cơ sở dữ liệu</string>
+    <string name="ingredient_unknown_definition">Chưa có thông tin định nghĩa cho thành phần này trong cơ sở dữ liệu.</string>
+    <string name="product_name_fallback_untitled">Chưa đặt tên</string>
     <string name="ingredient_avoid_safe">Thường được công nhận là an toàn, không có cảnh báo kiêng khem phổ biến.</string>
     <string name="ingredient_avoid_flagged">Cảnh báo cho: %1$s. Hãy kiểm tra dị ứng và mục tiêu cá nhân của bạn.</string>
     <string name="ingredient_sources_description">Kiến thức tổng hợp từ Codex Alimentarius, thông báo GRAS của FDA Hoa Kỳ, Cơ quan An toàn Thực phẩm Châu Âu (EFSA) và các cơ quan tiêu chuẩn thực phẩm khu vực.</string>
@@ -280,7 +282,11 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="compare_row_ingredients">Số thành phần</string>
     <string name="compare_row_calories">Năng lượng</string>
     <string name="compare_row_sugar">Đường</string>
+    <string name="compare_row_sugars">Đường</string>
     <string name="compare_row_sodium">Natri</string>
+    <string name="compare_row_saturated_fat">Chất béo bão hòa</string>
+    <string name="compare_row_protein">Chất đạm</string>
+    <string name="compare_row_dietary_fiber">Chất xơ</string>
     <string name="compare_row_verdict">Nhận định</string>
     <string name="compare_none_flagged">Không có cảnh báo</string>
     <string name="compare_empty_state">Hãy quét hoặc chọn sản phẩm để so sánh</string>
@@ -317,7 +323,7 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="home_quick_action_paste">Dán văn bản</string>
     <string name="home_samples_title">Thử mẫu có sẵn</string>
     <string name="home_tip_title">Mẹo nhỏ</string>
-    <string name="home_tip_body">Bao bì châu Á nhập khẩu thường nhóm các chất gây dị ứng dưới mục \'알레르기\' hoặc \'アレルギー\' ở phía dưới cùng.</string>
+    <string name="home_tip_body">Bao bì châu Á nhập khẩu thường nhóm các chất gây dị ứng dưới mục '알레르기' hoặc 'アレルギー' ở phía dưới cùng.</string>
     <string name="home_recent_scans_title">Lần quét gần đây</string>
     <string name="home_recent_scans_empty">Chưa có lần quét nào. Hãy thử mẫu có sẵn hoặc quét nhãn ở trên!</string>
     <string name="home_sample_tap_to_test">Chạm để thử →</string>
@@ -392,7 +398,7 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="onboarding_desc_1">Chụp ảnh nhãn thực phẩm hoặc thực phẩm chức năng bất kỳ, kể cả bao bì châu Á nhập khẩu, và nhận giải thích trung thực, dễ hiểu.</string>
     <string name="onboarding_badge_1">Phân tích trung thực</string>
     <string name="onboarding_title_2">Ngữ cảnh cá nhân hóa,\nkhông chỉ là một điểm số đáng sợ.</string>
-    <string name="onboarding_desc_2">Chúng tôi không bao giờ gán nhãn thực phẩm là \'độc hại\' hay \'bẩn\'. Chúng tôi nêu bật thành phần lành mạnh, phụ gia rõ ràng và cảnh báo dị ứng cho bạn.</string>
+    <string name="onboarding_desc_2">Chúng tôi không bao giờ gán nhãn thực phẩm là 'độc hại' hay 'bẩn'. Chúng tôi nêu bật thành phần lành mạnh, phụ gia rõ ràng và cảnh báo dị ứng cho bạn.</string>
     <string name="onboarding_badge_2">Khách quan &amp; Dựa trên khoa học</string>
     <string name="onboarding_title_3">100% trên thiết bị.\nDữ liệu sức khỏe luôn riêng tư.</string>
     <string name="onboarding_desc_3">Mọi thứ chạy hoàn toàn trên điện thoại của bạn. Không cần đăng nhập, không bán dữ liệu và mọi cảnh báo an toàn luôn miễn phí.</string>

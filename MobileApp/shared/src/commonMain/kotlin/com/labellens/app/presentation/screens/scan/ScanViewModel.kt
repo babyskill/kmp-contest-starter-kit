@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.labellens.app.data.repository.ScanRepository
 import com.labellens.app.data.source.remote.apiservices.barcode.BarcodeLookupService
 import com.labellens.app.data.source.remote.response.barcode.toLabelText
+import com.labellens.app.domain.analyzer.ProductNameSanitizer
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.SampleProduct
 import com.labellens.app.domain.scanner.getPlatformLabelScanner
@@ -158,8 +159,8 @@ class ScanViewModel(
             scanRepository.incrementPhotoAnalysisCount()
             _uiState.value = _uiState.value.copy(isProcessing = false)
 
-            // First line or snippet as product name
-            val candidateName = extractedText.lines().firstOrNull { it.trim().length in 3..50 }?.trim() ?: "Scanned Product"
+            // First line or snippet as product name only if it looks like a valid product name
+            val candidateName = extractedText.lines().map { it.trim() }.firstOrNull { ProductNameSanitizer.looksLikeProductName(it) } ?: ""
             onFinished(extractedText, candidateName, detectedBarcode, null)
         }
     }

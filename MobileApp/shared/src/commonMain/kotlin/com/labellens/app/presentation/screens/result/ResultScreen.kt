@@ -70,6 +70,8 @@ import com.labellens.app.designsystem.generated.resources.ic_leaf_amber
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.analyzer.AnalysisStrings
 import com.labellens.app.domain.analyzer.PortionMath
+import com.labellens.app.domain.analyzer.ProductNameSanitizer
+import com.labellens.app.domain.analyzer.ScanSummaryLocalizer
 import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.ClusterRollUp
 import com.labellens.app.domain.model.FitHeaderInfo
@@ -255,7 +257,7 @@ fun ResultScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = result.productName,
+                        text = ProductNameSanitizer.displayProductName(result.productName, state.language),
                         style = AppTheme.typography.headlineMedium.copy(
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
@@ -298,7 +300,7 @@ fun ResultScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        text = result.verdict,
+                        text = ScanSummaryLocalizer.localizedSummary(result, state.language),
                         style = AppTheme.typography.bodyLarge.copy(
                             color = AppTheme.colors.text.primary,
                             lineHeight = 22.sp,

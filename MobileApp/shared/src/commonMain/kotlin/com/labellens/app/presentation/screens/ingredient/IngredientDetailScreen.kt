@@ -50,6 +50,7 @@ import com.labellens.app.generated.resources.ingredient_section_what_is_it
 import com.labellens.app.generated.resources.ingredient_section_who_avoid
 import com.labellens.app.generated.resources.ingredient_section_why_used
 import com.labellens.app.generated.resources.ingredient_sources_description
+import com.labellens.app.generated.resources.ingredient_unknown_definition
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -126,7 +127,7 @@ fun IngredientDetailScreen(
             InfoSectionCard(
                 title = stringResource(Res.string.ingredient_section_what_is_it),
                 description = ingredient?.plainExplanation(language)
-                    ?: stringResource(Res.string.ingredient_avoid_safe),
+                    ?: stringResource(Res.string.ingredient_unknown_definition),
             )
         }
 
@@ -146,17 +147,19 @@ fun IngredientDetailScreen(
             )
         }
 
-        // Section: Who may want to avoid it
-        item {
-            val avoidText = if (ingredient?.avoidForTags?.isNotEmpty() == true) {
-                stringResource(Res.string.ingredient_avoid_flagged, ingredient.avoidForTags.joinToString(", "))
-            } else {
-                stringResource(Res.string.ingredient_avoid_safe)
+        // Section: Who may want to avoid it (shown only when ingredient is known)
+        if (ingredient != null) {
+            item {
+                val avoidText = if (ingredient.avoidForTags.isNotEmpty()) {
+                    stringResource(Res.string.ingredient_avoid_flagged, ingredient.avoidForTags.joinToString(", "))
+                } else {
+                    stringResource(Res.string.ingredient_avoid_safe)
+                }
+                InfoSectionCard(
+                    title = stringResource(Res.string.ingredient_section_who_avoid),
+                    description = avoidText,
+                )
             }
-            InfoSectionCard(
-                title = stringResource(Res.string.ingredient_section_who_avoid),
-                description = avoidText,
-            )
         }
 
         // Section: Aliases & Multilingual Names

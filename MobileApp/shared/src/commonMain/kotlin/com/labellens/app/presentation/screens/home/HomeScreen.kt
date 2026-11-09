@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.labellens.app.data.repository.UserProfileRepository
 import com.labellens.app.designsystem.generated.resources.UiRes
 import com.labellens.app.designsystem.generated.resources.ic_barcode_card
 import com.labellens.app.designsystem.generated.resources.ic_bell
@@ -50,6 +51,9 @@ import com.labellens.app.designsystem.generated.resources.ic_document_card
 import com.labellens.app.designsystem.generated.resources.ic_leaf_logo
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.designsystem.util.PreviewHelper
+import com.labellens.app.domain.analyzer.ProductNameSanitizer
+import com.labellens.app.domain.analyzer.ScanSummaryLocalizer
+import com.labellens.app.domain.model.AppLanguage
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.LabelAnalysisResult
 import com.labellens.app.domain.model.SampleProduct
@@ -78,6 +82,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import kotlin.time.Clock
 
 @Composable
@@ -89,9 +94,12 @@ fun HomeScreen(
     onNavigateToHistory: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val userProfileRepository = koinInject<UserProfileRepository>()
+    val language by userProfileRepository.languageFlow.collectAsState()
     val state: LabelLensHomeUiState by viewModel.uiState.collectAsState()
     HomeScreen(
         state = state,
+        language = language,
         onNavigateToScan = onNavigateToScan,
         onNavigateToResult = onNavigateToResult,
         onNavigateToHistoryItem = onNavigateToHistoryItem,
@@ -103,6 +111,7 @@ fun HomeScreen(
 @Composable
 fun HomeScreen(
     state: LabelLensHomeUiState,
+    language: AppLanguage = AppLanguage.DEFAULT,
     onNavigateToScan: () -> Unit,
     onNavigateToResult: (sampleId: String?, rawText: String?, name: String?) -> Unit,
     onNavigateToHistoryItem: (result: LabelAnalysisResult) -> Unit,
@@ -431,6 +440,7 @@ fun HomeScreen(
                     state.recentScans.forEach { scan ->
                         RecentScanRow(
                             scan = scan,
+                            language = language,
                             onClick = { onNavigateToHistoryItem(scan) },
                         )
                     }
@@ -553,6 +563,7 @@ private fun SampleProductCard(
 @Composable
 private fun RecentScanRow(
     scan: LabelAnalysisResult,
+    language: AppLanguage,
     onClick: () -> Unit,
 ) {
     Surface(
@@ -583,7 +594,7 @@ private fun RecentScanRow(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = scan.productName,
+                    text = ProductNameSanitizer.displayProductName(scan.productName, language),
                     fontWeight = FontWeight.Bold,
                     style = AppTheme.typography.bodyMedium.copy(fontSize = 15.sp),
                     color = AppTheme.colors.text.primary,
@@ -592,7 +603,7 @@ private fun RecentScanRow(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = scan.verdict,
+                    text = ScanSummaryLocalizer.localizedSummary(scan, language),
                     style = AppTheme.typography.bodySmall.copy(
                         fontSize = 12.sp,
                         color = AppTheme.colors.text.secondary,
