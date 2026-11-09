@@ -102,8 +102,9 @@ fun IngredientDetailScreen(
                 colors = CardDefaults.cardColors(containerColor = Color.White),
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
+                    val shortTitle = com.labellens.app.data.source.remote.response.ai.BackendSectionItem.extractFirstClause(canonicalName)
                     Text(
-                        text = ingredient?.displayName(language) ?: canonicalName,
+                        text = ingredient?.displayName(language) ?: shortTitle,
                         style = AppTheme.typography.headlineMedium.copy(
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,

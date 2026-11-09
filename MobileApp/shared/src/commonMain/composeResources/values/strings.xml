@@ -208,6 +208,15 @@
     <string name="result_section_worth_noting_subtitle">Notable additives, flavorings, or preservatives</string>
     <string name="result_section_good_to_know_title">Good to know</string>
     <string name="result_section_good_to_know_subtitle">Positive attributes and wholesome ingredients</string>
+    <string name="result_section_main_ingredients_title">Main ingredients</string>
+    <string name="result_warning_for_you_label">Warning for you</string>
+    <string name="result_warning_contains">Contains %1$s — not suitable because you are allergic to %1$s.</string>
+    <string name="result_warning_contains_generic">Contains allergens — not suitable for your profile.</string>
+    <string name="result_warning_cannot_rule_out">May contain %1$s — cannot rule out allergens.</string>
+    <string name="result_warning_cannot_rule_out_generic">Cannot rule out allergens — check package carefully.</string>
+    <string name="compare_sugar_zero">0 teaspoons of sugar</string>
+    <string name="compare_sugar_teaspoons">≈ %1$s teaspoons of sugar</string>
+    <string name="compare_daily_needs">≈ %1$d%% of daily needs</string>
     <string name="result_section_breakdown_title">Full breakdown</string>
     <string name="result_section_breakdown_subtitle">Tap any ingredient for its culinary purpose &amp; dose context</string>
     <string name="result_section_nutrition_title">Nutrition highlights</string>

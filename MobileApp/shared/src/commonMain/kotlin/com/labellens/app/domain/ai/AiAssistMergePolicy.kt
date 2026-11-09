@@ -75,29 +75,33 @@ object AiAssistMergePolicy {
 
         // 1. Process watchOut
         for (item in cloudResponse.data.sections.watchOut) {
-            val norm = normalize(item)
+            val norm = normalize(item.title)
             if (norm.isNotBlank() && existingTitles.add(norm)) {
-                val isAllergen = matchesUserAllergen(item, userProfile)
+                val isAllergen = matchesUserAllergen(item.title, userProfile) ||
+                    (item.ingredient.isNotBlank() && matchesUserAllergen(item.ingredient, userProfile))
                 if (isAllergen) {
                     hasAllergenMatch = true
                 }
                 val severity = if (isAllergen) FlagSeverity.PERSONAL_ALLERGEN else FlagSeverity.PERSONAL_AVOID
                 newWatchOut.add(
                     FlaggedItem(
-                        title = item,
-                        detail = item,
+                        title = item.title,
+                        detail = item.detail,
                         severity = severity,
+                        relatedIngredient = item.ingredient.ifBlank { null },
                         verbatimSourceLine = null,
                         isAiGenerated = true,
+                        value = item.value.ifBlank { null },
+                        compare = item.compare.ifBlank { null },
                     ),
                 )
                 if (existingBreakdownNames.add(norm)) {
                     newBreakdown.add(
                         IngredientBreakdown(
-                            rawName = item,
-                            canonicalName = item,
+                            rawName = item.ingredient.ifBlank { item.title },
+                            canonicalName = item.title,
                             category = if (language == AppLanguage.VIETNAMESE) "Trợ lý AI" else "AI Assist",
-                            plainExplanation = item,
+                            plainExplanation = item.detail,
                             whyUsed = "",
                             doseContextNote = "",
                             isKnown = true,
@@ -110,24 +114,27 @@ object AiAssistMergePolicy {
 
         // 2. Process worthNoting
         for (item in cloudResponse.data.sections.worthNoting) {
-            val norm = normalize(item)
+            val norm = normalize(item.title)
             if (norm.isNotBlank() && existingTitles.add(norm)) {
                 newWorthNoting.add(
                     FlaggedItem(
-                        title = item,
-                        detail = item,
+                        title = item.title,
+                        detail = item.detail,
                         severity = FlagSeverity.WORTH_NOTING,
+                        relatedIngredient = item.ingredient.ifBlank { null },
                         verbatimSourceLine = null,
                         isAiGenerated = true,
+                        value = item.value.ifBlank { null },
+                        compare = item.compare.ifBlank { null },
                     ),
                 )
                 if (existingBreakdownNames.add(norm)) {
                     newBreakdown.add(
                         IngredientBreakdown(
-                            rawName = item,
-                            canonicalName = item,
+                            rawName = item.ingredient.ifBlank { item.title },
+                            canonicalName = item.title,
                             category = if (language == AppLanguage.VIETNAMESE) "Trợ lý AI" else "AI Assist",
-                            plainExplanation = item,
+                            plainExplanation = item.detail,
                             whyUsed = "",
                             doseContextNote = "",
                             isKnown = true,
@@ -140,24 +147,27 @@ object AiAssistMergePolicy {
 
         // 3. Process goodToKnow
         for (item in cloudResponse.data.sections.goodToKnow) {
-            val norm = normalize(item)
+            val norm = normalize(item.title)
             if (norm.isNotBlank() && existingTitles.add(norm)) {
                 newGoodToKnow.add(
                     FlaggedItem(
-                        title = item,
-                        detail = item,
+                        title = item.title,
+                        detail = item.detail,
                         severity = FlagSeverity.GOOD_TO_KNOW,
+                        relatedIngredient = item.ingredient.ifBlank { null },
                         verbatimSourceLine = null,
                         isAiGenerated = true,
+                        value = item.value.ifBlank { null },
+                        compare = item.compare.ifBlank { null },
                     ),
                 )
                 if (existingBreakdownNames.add(norm)) {
                     newBreakdown.add(
                         IngredientBreakdown(
-                            rawName = item,
-                            canonicalName = item,
+                            rawName = item.ingredient.ifBlank { item.title },
+                            canonicalName = item.title,
                             category = if (language == AppLanguage.VIETNAMESE) "Trợ lý AI" else "AI Assist",
-                            plainExplanation = item,
+                            plainExplanation = item.detail,
                             whyUsed = "",
                             doseContextNote = "",
                             isKnown = true,
@@ -211,7 +221,10 @@ object AiAssistMergePolicy {
             "AI assist - Tier ${cloudResponse.tierUsed} - ${cloudResponse.model}"
         }
 
+        val finalVerdict = cloudResponse.data.summary?.trim()?.takeIf { it.isNotBlank() } ?: localResult.verdict
+
         return localResult.copy(
+            verdict = finalVerdict,
             watchOutForYou = localResult.watchOutForYou + newWatchOut,
             worthNoting = localResult.worthNoting + newWorthNoting,
             goodToKnow = localResult.goodToKnow + newGoodToKnow,

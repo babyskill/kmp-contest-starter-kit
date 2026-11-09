@@ -51,6 +51,8 @@ data class FlaggedItem(
     val verbatimSourceLine: String? = null,
     val isExceptionEligible: Boolean = false,
     val isAiGenerated: Boolean = false,
+    val value: String? = null,
+    val compare: String? = null,
 )
 
 @Serializable

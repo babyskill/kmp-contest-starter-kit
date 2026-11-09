@@ -55,7 +55,7 @@ class AiAssistMergePolicyTest {
         tierUsed = tier,
         model = model,
         data = BackendAnalyzeData(
-            sections = BackendSections(
+            sections = BackendSections.fromStrings(
                 goodToKnow = goodToKnow,
                 worthNoting = worthNoting,
                 watchOut = watchOut,

@@ -7,8 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,8 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,7 +30,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -67,24 +62,20 @@ import com.labellens.app.designsystem.components.ButtonStyle
 import com.labellens.app.designsystem.generated.resources.UiRes
 import com.labellens.app.designsystem.generated.resources.ic_beaker_amber
 import com.labellens.app.designsystem.generated.resources.ic_leaf_amber
+import com.labellens.app.designsystem.generated.resources.ic_leaf_logo
 import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.analyzer.AnalysisStrings
-import com.labellens.app.domain.analyzer.PortionMath
+import com.labellens.app.domain.analyzer.LocalComparisonHelper
 import com.labellens.app.domain.analyzer.ProductNameSanitizer
 import com.labellens.app.domain.analyzer.ScanSummaryLocalizer
 import com.labellens.app.domain.model.AppLanguage
-import com.labellens.app.domain.model.ClusterRollUp
-import com.labellens.app.domain.model.FitHeaderInfo
 import com.labellens.app.domain.model.FlagSeverity
 import com.labellens.app.domain.model.FlaggedItem
-import com.labellens.app.domain.model.IngredientBreakdown
 import com.labellens.app.domain.model.LabelAnalysisResult
-import com.labellens.app.domain.model.PortionMode
+import com.labellens.app.domain.model.ProductCategory
 import com.labellens.app.domain.model.ProfileFitState
 import com.labellens.app.generated.resources.Res
-import com.labellens.app.generated.resources.action_details
 import com.labellens.app.generated.resources.action_favorite
-import com.labellens.app.generated.resources.ai_tag_chip
 import com.labellens.app.generated.resources.btn_back
 import com.labellens.app.generated.resources.content_desc_delete
 import com.labellens.app.generated.resources.result_action_collapse
@@ -95,14 +86,10 @@ import com.labellens.app.generated.resources.result_btn_needs_fix
 import com.labellens.app.generated.resources.result_btn_save_history
 import com.labellens.app.generated.resources.result_btn_saved_history
 import com.labellens.app.generated.resources.result_btn_saved_history_desc
-import com.labellens.app.generated.resources.result_catch_all_badge
-import com.labellens.app.generated.resources.result_catch_all_note
-import com.labellens.app.generated.resources.result_cut_line_divider
 import com.labellens.app.generated.resources.result_delete_dialog_cancel
 import com.labellens.app.generated.resources.result_delete_dialog_confirm
 import com.labellens.app.generated.resources.result_delete_dialog_message
 import com.labellens.app.generated.resources.result_delete_dialog_title
-import com.labellens.app.generated.resources.result_exception_btn
 import com.labellens.app.generated.resources.result_feedback_prompt
 import com.labellens.app.generated.resources.result_feedback_thanks
 import com.labellens.app.generated.resources.result_fix_dialog_cancel
@@ -111,31 +98,29 @@ import com.labellens.app.generated.resources.result_fix_dialog_title
 import com.labellens.app.generated.resources.result_fix_misread_btn
 import com.labellens.app.generated.resources.result_header_title
 import com.labellens.app.generated.resources.result_loading
-import com.labellens.app.generated.resources.result_personal_summary_contains
-import com.labellens.app.generated.resources.result_personal_summary_nothing
-import com.labellens.app.generated.resources.result_personal_summary_prefix
-import com.labellens.app.generated.resources.result_portion_servings_count
-import com.labellens.app.generated.resources.result_portion_single_serving
-import com.labellens.app.generated.resources.result_portion_whole_pack
-import com.labellens.app.generated.resources.result_rollup_sodium_subtitle
-import com.labellens.app.generated.resources.result_rollup_sweeteners_subtitle
-import com.labellens.app.generated.resources.result_section_breakdown_subtitle
-import com.labellens.app.generated.resources.result_section_breakdown_title
-import com.labellens.app.generated.resources.result_section_good_to_know_subtitle
 import com.labellens.app.generated.resources.result_section_good_to_know_title
-import com.labellens.app.generated.resources.result_section_nutrition_subtitle
-import com.labellens.app.generated.resources.result_section_nutrition_title
-import com.labellens.app.generated.resources.result_section_watch_out_subtitle
-import com.labellens.app.generated.resources.result_section_watch_out_title
-import com.labellens.app.generated.resources.result_section_worth_noting_subtitle
+import com.labellens.app.generated.resources.result_section_main_ingredients_title
 import com.labellens.app.generated.resources.result_section_worth_noting_title
 import com.labellens.app.generated.resources.result_see_label_text
-import com.labellens.app.generated.resources.result_source_verbatim_prefix
-import com.labellens.app.generated.resources.result_watch_out_clean_subtitle
-import com.labellens.app.generated.resources.result_watch_out_clean_title
+import com.labellens.app.generated.resources.result_warning_cannot_rule_out
+import com.labellens.app.generated.resources.result_warning_cannot_rule_out_generic
+import com.labellens.app.generated.resources.result_warning_contains
+import com.labellens.app.generated.resources.result_warning_contains_generic
+import com.labellens.app.generated.resources.result_warning_for_you_label
 import com.labellens.app.presentation.navigation.ResultScreenRoute
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+
+data class PlainResultRowModel(
+    val title: String,
+    val value: String? = null,
+    val compare: String? = null,
+    val percentValue: Int? = null,
+    val detail: String = "",
+    val ingredientTarget: String = "",
+    val severity: FlagSeverity = FlagSeverity.GOOD_TO_KNOW,
+    val isPersonalWarning: Boolean = false,
+)
 
 @Composable
 fun ResultScreen(
@@ -184,7 +169,18 @@ fun ResultScreen(
         return
     }
 
-    val groupedIngredients = remember(result) { groupAndOrderIngredients(result) }
+    // Build row models for Section 5 (Good to know) and Section 6 (Worth noting)
+    val goodToKnowRows = remember(result, state.language) {
+        buildGoodToKnowRows(result, state.language)
+    }
+
+    val worthNotingRows = remember(result, state.language) {
+        buildWorthNotingRows(result, state.language)
+    }
+
+    val mainIngredients = remember(result.fullBreakdown) {
+        result.fullBreakdown.filter { it.canonicalName.isNotBlank() }
+    }
 
     LazyColumn(
         modifier = modifier
@@ -192,9 +188,9 @@ fun ResultScreen(
             .background(AppTheme.colors.background)
             .padding(horizontal = 20.dp),
         contentPadding = PaddingValues(top = 16.dp, bottom = 140.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // Top Header Bar with Back Button & Favorite Toggle
+        // 1. Top Header Bar: Back arrow + "Phân tích nhãn" / "Label analysis"
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -235,237 +231,61 @@ fun ResultScreen(
             }
         }
 
-        // Wave 2: Six-State Deterministic Profile-Fit Header Card
-        result.fitHeader?.let { fitHeader ->
-            item {
-                ProfileFitHeaderCard(
-                    fitHeader = fitHeader,
-                    language = state.language,
-                    onFixMisreadClick = { viewModel.openFixDialog() },
-                )
-            }
-        }
-
-        // Product Title & Verdict Header
+        // 2. Product Card: photo thumbnail (or category icon), product name, short subtitle
         item {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                color = Color.White,
-                shadowElevation = 2.dp,
-                border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = ProductNameSanitizer.displayProductName(result.productName, state.language),
-                        style = AppTheme.typography.headlineMedium.copy(
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.text.primary,
-                        ),
-                    )
-
-                    result.productType?.let { type ->
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = type,
-                            style = AppTheme.typography.bodySmall.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = AppTheme.colors.primary,
-                            ),
-                        )
-                    }
-
-                    result.sourceAttribution?.let { source ->
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = source,
-                            style = AppTheme.typography.bodySmall.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = AppTheme.colors.primary,
-                            ),
-                        )
-                    }
-
-                    result.quickGlance?.let { glance ->
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = glance,
-                            style = AppTheme.typography.bodySmall.copy(
-                                fontWeight = FontWeight.Medium,
-                                color = AppTheme.colors.text.secondary,
-                            ),
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Text(
-                        text = ScanSummaryLocalizer.localizedSummary(result, state.language),
-                        style = AppTheme.typography.bodyLarge.copy(
-                            color = AppTheme.colors.text.primary,
-                            lineHeight = 22.sp,
-                        ),
-                    )
-                }
-            }
+            ProductCard(
+                result = result,
+                language = state.language,
+            )
         }
 
-        // Alias Roll-Up Card (Sweeteners & Sodium Sources)
-        if (result.sweetenerRollUp != null || result.sodiumRollUp != null) {
+        // 3. Verdict Card (light green, leaf icon): ONE short plain sentence
+        item {
+            VerdictCard(
+                result = result,
+                language = state.language,
+            )
+        }
+
+        // 4. Personal Warning Banner (light red, warning icon): shown ONLY for CONTAINS_YOURS and CANNOT_RULE_OUT
+        val fitState = result.fitHeader?.state
+        if (fitState == ProfileFitState.CONTAINS_YOURS || fitState == ProfileFitState.CANNOT_RULE_OUT) {
             item {
-                AliasRollUpCard(
-                    sweetenerRollUp = result.sweetenerRollUp,
-                    sodiumRollUp = result.sodiumRollUp,
-                    onNavigateToIngredientDetail = onNavigateToIngredientDetail,
+                PersonalWarningBanner(
+                    fitHeader = result.fitHeader,
+                    fitState = fitState,
+                    onFixClick = { viewModel.openFixDialog() },
                 )
             }
         }
 
-        // Portion Reality & Nutrition Highlights (when present)
-        if (result.nutritionHighlights.isNotEmpty()) {
+        // Supplement Education Disclaimer (stays exactly as-is for supplement category)
+        if (result.category == ProductCategory.SUPPLEMENT) {
             item {
-                SectionHeader(
-                    title = stringResource(Res.string.result_section_nutrition_title),
-                    subtitle = stringResource(Res.string.result_section_nutrition_subtitle),
-                )
+                SupplementDisclaimerCard(language = state.language)
+            }
+        }
+
+        // 5. Section "Điểm tốt" / "Good to know"
+        if (goodToKnowRows.isNotEmpty()) {
+            item {
+                SectionTitle(text = stringResource(Res.string.result_section_good_to_know_title))
             }
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
                 ) {
-                    Column(
-                        modifier = Modifier.padding(18.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp),
-                    ) {
-                        // Serving size & Servings per container info
-                        result.portionInfo.servingSize?.let { size ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = size,
-                                    style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                                    color = AppTheme.colors.text.secondary,
-                                )
-                                result.portionInfo.servingsPerContainer?.let { s ->
-                                    val countStr = if (s % 1.0 == 0.0) s.toInt().toString() else s.toString()
-                                    Text(
-                                        text = stringResource(Res.string.result_portion_servings_count, countStr),
-                                        style = AppTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-                                        color = AppTheme.colors.primary,
-                                    )
-                                }
-                            }
-                        }
-
-                        // [1 Serving] / [Whole Pack] Segmented Toggle (Shown only when servingsPerContainer > 1)
-                        if (PortionMath.shouldShowToggle(result.portionInfo.servingsPerContainer)) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFF2F4EF))
-                                    .padding(4.dp),
-                            ) {
-                                val isSingle = state.portionMode == PortionMode.SINGLE_SERVING
-                                val isWhole = state.portionMode == PortionMode.WHOLE_PACK
-
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(if (isSingle) Color.White else Color.Transparent)
-                                        .clickable { viewModel.setPortionMode(PortionMode.SINGLE_SERVING) }
-                                        .padding(vertical = 8.dp),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.result_portion_single_serving),
-                                        style = AppTheme.typography.bodyMedium.copy(
-                                            fontWeight = if (isSingle) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (isSingle) AppTheme.colors.primary else AppTheme.colors.text.secondary,
-                                        ),
-                                    )
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(if (isWhole) Color.White else Color.Transparent)
-                                        .clickable { viewModel.setPortionMode(PortionMode.WHOLE_PACK) }
-                                        .padding(vertical = 8.dp),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.result_portion_whole_pack),
-                                        style = AppTheme.typography.bodyMedium.copy(
-                                            fontWeight = if (isWhole) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (isWhole) AppTheme.colors.primary else AppTheme.colors.text.secondary,
-                                        ),
-                                    )
-                                }
-                            }
-                        }
-
-                        val currentFacts = remember(result.nutritionHighlights, state.portionMode, result.portionInfo.servingsPerContainer, state.language) {
-                            PortionMath.scaleNutritionFacts(
-                                facts = result.nutritionHighlights,
-                                mode = state.portionMode,
-                                servingsPerContainer = result.portionInfo.servingsPerContainer,
-                                language = state.language,
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        goodToKnowRows.forEachIndexed { index, row ->
+                            PlainResultRow(
+                                item = row,
+                                onClick = { onNavigateToIngredientDetail(row.ingredientTarget) },
                             )
-                        }
-
-                        currentFacts.forEach { fact ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = fact.name,
-                                        style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                                        color = AppTheme.colors.text.primary,
-                                    )
-                                    fact.secondaryDetail?.let { sec ->
-                                        Text(
-                                            text = sec,
-                                            style = AppTheme.typography.bodyExtraSmall.copy(fontWeight = FontWeight.Medium),
-                                            color = AppTheme.colors.text.secondary,
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = fact.amount,
-                                        style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                                        color = AppTheme.colors.text.primary,
-                                    )
-                                    fact.contextIndicator?.let { ctx ->
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(AppTheme.colors.alternative)
-                                                .padding(horizontal = 8.dp, vertical = 2.dp),
-                                        ) {
-                                            Text(
-                                                text = ctx,
-                                                style = AppTheme.typography.bodyExtraSmall.copy(fontWeight = FontWeight.Medium),
-                                                color = AppTheme.colors.primary,
-                                                maxLines = 1,
-                                                softWrap = false,
-                                            )
-                                        }
-                                    }
-                                }
+                            if (index < goodToKnowRows.size - 1) {
+                                HorizontalDivider(color = Color(0xFFF2F4EF), thickness = 1.dp)
                             }
                         }
                     }
@@ -473,29 +293,100 @@ fun ResultScreen(
             }
         }
 
-        // Unified Ingredient Detail list
-        if (groupedIngredients.isNotEmpty()) {
+        // 6. Section "Cần để ý" / "Worth noting"
+        if (worthNotingRows.isNotEmpty()) {
             item {
-                SectionHeader(
-                    title = stringResource(Res.string.result_section_breakdown_title),
-                    subtitle = stringResource(Res.string.result_section_breakdown_subtitle),
-                )
+                SectionTitle(text = stringResource(Res.string.result_section_worth_noting_title))
             }
-            items(groupedIngredients) { grouped ->
-                IngredientRow(
-                    ingredient = grouped.ingredient,
-                    group = grouped.group,
-                    onClick = { onNavigateToIngredientDetail(grouped.ingredient.canonicalName) },
-                )
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        worthNotingRows.forEachIndexed { index, row ->
+                            PlainResultRow(
+                                item = row,
+                                onClick = { onNavigateToIngredientDetail(row.ingredientTarget) },
+                            )
+                            if (index < worthNotingRows.size - 1) {
+                                HorizontalDivider(color = Color(0xFFF2F4EF), thickness = 1.dp)
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        // Section 5: See the label text expandable
+        // 7. Section "Thành phần chính" / "Main ingredients"
+        if (mainIngredients.isNotEmpty()) {
+            item {
+                SectionTitle(text = stringResource(Res.string.result_section_main_ingredients_title))
+            }
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        mainIngredients.forEachIndexed { index, ing ->
+                            val gloss = ing.plainExplanation.trim()
+                            val isDefaultGloss = gloss.isBlank() ||
+                                gloss.contains("standard knowledge base", ignoreCase = true) ||
+                                gloss.contains("cơ sở dữ liệu", ignoreCase = true)
+                            val displayText = if (!isDefaultGloss) {
+                                "${ing.canonicalName} — $gloss"
+                            } else {
+                                ing.canonicalName
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onNavigateToIngredientDetail(ing.canonicalName) }
+                                    .padding(vertical = 4.dp, horizontal = 2.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = displayText,
+                                    style = AppTheme.typography.bodyMedium.copy(
+                                        fontSize = 14.sp,
+                                        lineHeight = 20.sp,
+                                        color = AppTheme.colors.text.primary,
+                                    ),
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ArrowForward,
+                                    contentDescription = null,
+                                    tint = AppTheme.colors.text.secondary.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(14.dp),
+                                )
+                            }
+
+                            if (index < mainIngredients.size - 1) {
+                                HorizontalDivider(color = Color(0xFFF4F5F1), thickness = 1.dp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Expandable Raw Label Text
         item {
             Card(
                 modifier = Modifier.fillMaxWidth().clickable { viewModel.toggleLabelTextExpansion() },
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -530,12 +421,13 @@ fun ResultScreen(
             }
         }
 
-        // 1-Tap Right/Wrong Feedback Control
+        // 1-Tap Feedback Control
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F8F5)),
+                border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -569,7 +461,7 @@ fun ResultScreen(
             }
         }
 
-        // Actions: Save to History & Compare
+        // 8. Bottom actions: Saved to History & Compare
         item {
             Row(
                 modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
@@ -621,12 +513,13 @@ fun ResultScreen(
                 )
             }
         }
+
         item {
             Spacer(modifier = Modifier.height(36.dp))
         }
     }
 
-    // Wave 2 - Scope 5: "Misread label? Fix" dialog
+    // Misread Label Fix Dialog
     if (state.isFixDialogOpen) {
         var editedText by remember(result.rawInputText) { mutableStateOf(result.rawInputText) }
         AlertDialog(
@@ -707,161 +600,278 @@ fun ResultScreen(
 }
 
 @Composable
-private fun ProfileFitHeaderCard(
-    fitHeader: FitHeaderInfo,
-    language: AppLanguage = AppLanguage.ENGLISH,
-    onFixMisreadClick: () -> Unit,
+private fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        style = AppTheme.typography.titleMedium.copy(
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = AppTheme.colors.text.primary,
+        ),
+        modifier = Modifier.padding(top = 4.dp),
+    )
+}
+
+/**
+ * 2. Product Card: photo thumbnail or category icon, product name, short subtitle
+ */
+@Composable
+private fun ProductCard(
+    result: LabelAnalysisResult,
+    language: AppLanguage,
 ) {
-    val state = fitHeader.state
-    val (containerColor, borderColor, accentColor) = when (state) {
-        ProfileFitState.CONTAINS_YOURS -> Triple(AppTheme.colors.status.allergenContainer, Color(0xFFF5C2C7), AppTheme.colors.status.allergenRed)
-        ProfileFitState.CANNOT_RULE_OUT -> Triple(AppTheme.colors.status.amberContainer, Color(0xFFF1D38A), AppTheme.colors.status.amber)
-        ProfileFitState.NOT_ENOUGH_INFO -> Triple(Color(0xFFECEFF1), Color(0xFFCFD8DC), Color(0xFF546E7A))
-        ProfileFitState.DEPENDS_ON_PORTION -> Triple(Color(0xFFFFF3E0), Color(0xFFFFCC80), Color(0xFFE65100))
-        ProfileFitState.WORTH_NOTING -> Triple(AppTheme.colors.status.amberContainer, Color(0xFFF1D38A), AppTheme.colors.status.amber)
-        ProfileFitState.NO_MATCHES -> Triple(AppTheme.colors.bannerTint, Color(0xFFC3DBC8), AppTheme.colors.primary)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = Color.White,
+        shadowElevation = 1.dp,
+        border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            // Category Icon Thumbnail in tinted rounded box
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFFEDF2ED)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(
+                        when (result.category) {
+                            ProductCategory.SUPPLEMENT -> UiRes.drawable.ic_beaker_amber
+                            ProductCategory.COSMETICS -> UiRes.drawable.ic_leaf_amber
+                            else -> UiRes.drawable.ic_leaf_logo
+                        },
+                    ),
+                    contentDescription = null,
+                    tint = when (result.category) {
+                        ProductCategory.SUPPLEMENT, ProductCategory.COSMETICS -> Color(0xFFB7791F)
+                        else -> AppTheme.colors.primary
+                    },
+                    modifier = Modifier.size(28.dp),
+                )
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = ProductNameSanitizer.displayProductName(result.productName, language),
+                    style = AppTheme.typography.titleMedium.copy(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.text.primary,
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                // Subtitle: honest short subtitle (e.g. "Không đường" / "No added sugar", productType, or calm descriptor)
+                val subtitle = determineProductSubtitle(result, language)
+                if (subtitle.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = subtitle,
+                        style = AppTheme.typography.bodySmall.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = AppTheme.colors.text.secondary,
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun determineProductSubtitle(result: LabelAnalysisResult, language: AppLanguage): String {
+    // Check if zero/no added sugar is notable
+    val hasNoSugar = result.goodToKnow.any {
+        it.title.contains("không đường", ignoreCase = true) ||
+            it.title.contains("no added sugar", ignoreCase = true) ||
+            it.title.contains("0g sugar", ignoreCase = true)
+    }
+    if (hasNoSugar) {
+        return if (language == AppLanguage.VIETNAMESE) "Không thêm đường" else "No added sugar"
     }
 
-    val iconVector = when (state) {
-        ProfileFitState.CONTAINS_YOURS -> Icons.Default.Close
-        ProfileFitState.CANNOT_RULE_OUT -> Icons.Default.Warning
-        ProfileFitState.NOT_ENOUGH_INFO -> Icons.Default.Info
-        ProfileFitState.DEPENDS_ON_PORTION -> Icons.Default.Warning
-        ProfileFitState.WORTH_NOTING -> Icons.Default.Info
-        ProfileFitState.NO_MATCHES -> Icons.Default.Check
+    // Check quickGlance if it's not the old ingredient count line
+    val qg = result.quickGlance.orEmpty().trim()
+    if (qg.isNotBlank() &&
+        !qg.contains("analysed", ignoreCase = true) &&
+        !qg.contains("phân tích", ignoreCase = true) &&
+        !qg.contains("ingredients", ignoreCase = true)
+    ) {
+        return qg
     }
 
-    val shapeModifier = when (state) {
-        ProfileFitState.CONTAINS_YOURS -> RoundedCornerShape(6.dp)
-        ProfileFitState.CANNOT_RULE_OUT -> RoundedCornerShape(topStart = 0.dp, topEnd = 12.dp, bottomStart = 12.dp, bottomEnd = 12.dp)
-        ProfileFitState.NOT_ENOUGH_INFO -> CircleShape
-        ProfileFitState.DEPENDS_ON_PORTION -> RoundedCornerShape(8.dp)
-        ProfileFitState.WORTH_NOTING -> RoundedCornerShape(4.dp)
-        ProfileFitState.NO_MATCHES -> RoundedCornerShape(8.dp)
+    if (!result.productType.isNullOrBlank()) {
+        return result.productType
     }
 
-    val badgeLabelText = if (fitHeader.badgeLabel.isNotBlank()) {
-        fitHeader.badgeLabel
-    } else {
-        AnalysisStrings.fitStateBadge(language, state)
+    return when (result.category) {
+        ProductCategory.FOOD -> if (language == AppLanguage.VIETNAMESE) "Thực phẩm đóng gói" else "Packaged food"
+        ProductCategory.BEVERAGE -> if (language == AppLanguage.VIETNAMESE) "Đồ uống" else "Beverage"
+        ProductCategory.SUPPLEMENT -> if (language == AppLanguage.VIETNAMESE) "Thực phẩm bổ sung" else "Dietary supplement"
+        ProductCategory.COSMETICS -> if (language == AppLanguage.VIETNAMESE) "Mỹ phẩm / Chăm sóc cá nhân" else "Cosmetics / Personal care"
+    }
+}
+
+/**
+ * 3. Verdict Card (light green, leaf icon): ONE short plain sentence. No model ids, no tier text, no scores.
+ */
+@Composable
+private fun VerdictCard(
+    result: LabelAnalysisResult,
+    language: AppLanguage,
+) {
+    val verdictSentence = remember(result.verdict, language) {
+        val v = result.verdict.trim()
+        if (v.isNotBlank() && !v.equals("Verdict", ignoreCase = true)) {
+            v
+        } else {
+            ScanSummaryLocalizer.localizedSummary(result, language)
+        }
     }
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        color = containerColor,
-        border = BorderStroke(1.dp, borderColor),
-        shadowElevation = 2.dp,
+        shape = RoundedCornerShape(20.dp),
+        color = Color(0xFFEDF2ED),
+        border = BorderStroke(1.dp, Color(0xFFC3DBC8)),
+        shadowElevation = 1.dp,
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(AppTheme.colors.primary),
+                contentAlignment = Alignment.Center,
             ) {
-                // Colour-blind safe badge: distinct shape + icon + label text
-                Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(shapeModifier)
-                        .background(accentColor),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = iconVector,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = badgeLabelText,
-                    style = AppTheme.typography.bodySmall.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = if (state == ProfileFitState.NO_MATCHES) AppTheme.colors.bannerHeadline else accentColor,
-                    ),
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = TextOverflow.Ellipsis,
+                Icon(
+                    painter = painterResource(UiRes.drawable.ic_leaf_logo),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp),
                 )
             }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = fitHeader.title,
-                style = AppTheme.typography.titleMedium.copy(
+                text = verdictSentence,
+                style = AppTheme.typography.bodyMedium.copy(
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (state == ProfileFitState.NO_MATCHES) AppTheme.colors.bannerHeadline else accentColor,
+                    color = Color(0xFF0F5A37),
+                    lineHeight = 21.sp,
                 ),
+                modifier = Modifier.weight(1f),
             )
+        }
+    }
+}
 
-            val showSubtitle = fitHeader.subtitle.isNotBlank() &&
-                !fitHeader.subtitle.trim().equals(fitHeader.title.trim(), ignoreCase = true)
-            if (showSubtitle) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = fitHeader.subtitle,
-                    style = AppTheme.typography.bodyMedium.copy(
-                        color = AppTheme.colors.text.primary,
-                        lineHeight = 21.sp,
-                    ),
+/**
+ * 4. Personal Warning Banner (light red, warning icon, small label "Cảnh báo cho bạn" / "Warning for you"):
+ * ONE short line derived from the fit state. Shown ONLY for CONTAINS_YOURS and CANNOT_RULE_OUT.
+ */
+@Composable
+private fun PersonalWarningBanner(
+    fitHeader: com.labellens.app.domain.model.FitHeaderInfo?,
+    fitState: ProfileFitState,
+    onFixClick: () -> Unit,
+) {
+    val matchedTerm = fitHeader?.matchedTerms?.firstOrNull()?.trim().orEmpty()
+
+    val warningLine = when (fitState) {
+        ProfileFitState.CONTAINS_YOURS -> {
+            if (matchedTerm.isNotBlank()) {
+                stringResource(Res.string.result_warning_contains, matchedTerm)
+            } else {
+                stringResource(Res.string.result_warning_contains_generic)
+            }
+        }
+
+        ProfileFitState.CANNOT_RULE_OUT -> {
+            if (matchedTerm.isNotBlank()) {
+                stringResource(Res.string.result_warning_cannot_rule_out, matchedTerm)
+            } else {
+                stringResource(Res.string.result_warning_cannot_rule_out_generic)
+            }
+        }
+
+        else -> ""
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = Color(0xFFFDECEA),
+        border = BorderStroke(1.dp, Color(0xFFF5C2C7)),
+        shadowElevation = 1.dp,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFB3261E)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp),
                 )
             }
-
-            fitHeader.reasonNote?.let { reason ->
-                if (!reason.trim().equals(fitHeader.title.trim(), ignoreCase = true) &&
-                    (!showSubtitle || !reason.trim().equals(fitHeader.subtitle.trim(), ignoreCase = true))
-                ) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White.copy(alpha = 0.85f))
-                            .padding(12.dp),
-                    ) {
-                        Text(
-                            text = reason,
-                            style = AppTheme.typography.bodySmall.copy(
-                                color = AppTheme.colors.text.secondary,
-                                fontWeight = FontWeight.Medium,
-                                lineHeight = 18.sp,
-                            ),
-                        )
-                    }
-                }
-            }
-
-            fitHeader.verbatimSourceLine?.let { line ->
-                Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(Res.string.result_source_verbatim_prefix) + line,
+                    text = stringResource(Res.string.result_warning_for_you_label),
                     style = AppTheme.typography.bodyExtraSmall.copy(
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                        color = AppTheme.colors.text.secondary,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFB3261E),
+                        letterSpacing = 0.5.sp,
+                    ),
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = warningLine,
+                    style = AppTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF7A130D),
+                        fontSize = 14.sp,
+                        lineHeight = 19.sp,
                     ),
                 )
             }
-
-            // Correction loop trigger: Misread label? Fix (styled as compact text button at card bottom)
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Surface(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable { onFixMisreadClick() },
-                shape = RoundedCornerShape(16.dp),
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onFixClick() },
                 color = Color.White,
-                shadowElevation = 1.dp,
+                shape = RoundedCornerShape(12.dp),
             ) {
                 Text(
                     text = stringResource(Res.string.result_fix_misread_btn),
                     style = AppTheme.typography.bodyExtraSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = AppTheme.colors.primary,
+                        color = Color(0xFFB3261E),
                     ),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 )
             }
         }
@@ -869,510 +879,305 @@ private fun ProfileFitHeaderCard(
 }
 
 @Composable
-private fun SectionHeader(title: String, subtitle: String? = null) {
-    Column {
-        Text(
-            text = title,
-            style = AppTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = AppTheme.colors.text.primary,
-            ),
-        )
-        subtitle?.let {
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = it,
-                style = AppTheme.typography.bodySmall.copy(color = AppTheme.colors.text.secondary),
-            )
-        }
-    }
-}
-
-@Composable
-private fun TwoUpAmberCard(
-    item: FlaggedItem,
-    modifier: Modifier = Modifier,
-    onExceptionClick: ((String) -> Unit)? = null,
-) {
-    val iconRes = if (item.title.contains("hương", ignoreCase = true) ||
-        item.title.contains("flavor", ignoreCase = true) ||
-        item.title.contains("fragrance", ignoreCase = true) ||
-        item.title.contains("oil", ignoreCase = true) ||
-        item.title.contains("dầu", ignoreCase = true)
-    ) {
-        UiRes.drawable.ic_leaf_amber
-    } else {
-        UiRes.drawable.ic_beaker_amber
-    }
-
+private fun SupplementDisclaimerCard(language: AppLanguage) {
     Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(18.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
         color = Color(0xFFFBF3DF),
         border = BorderStroke(1.dp, Color(0xFFF5E3C0)),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(14.dp),
-            verticalAlignment = Alignment.Top,
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                painter = painterResource(iconRes),
+                painter = painterResource(UiRes.drawable.ic_beaker_amber),
                 contentDescription = null,
                 tint = Color(0xFFB7791F),
-                modifier = Modifier.size(24.dp).padding(top = 1.dp),
+                modifier = Modifier.size(20.dp),
             )
             Spacer(modifier = Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.title,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF9E6515),
-                    style = AppTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Spacer(modifier = Modifier.height(3.dp))
-                Text(
-                    text = item.detail,
-                    style = AppTheme.typography.bodySmall.copy(
-                        fontSize = 12.sp,
-                        color = AppTheme.colors.text.secondary,
-                        lineHeight = 16.sp,
-                    ),
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun FlagItemCard(
-    item: FlaggedItem,
-    onExceptionClick: ((String) -> Unit)? = null,
-) {
-    val (containerColor, accentColor, borderColor) = when (item.severity) {
-        FlagSeverity.PERSONAL_ALLERGEN -> Triple(Color(0xFFFDECEA), Color(0xFFB3261E), Color(0xFFF5C2C7))
-        FlagSeverity.PERSONAL_AVOID -> Triple(Color(0xFFFBF3DF), Color(0xFFB7791F), Color(0xFFF5E3C0))
-        FlagSeverity.WORTH_NOTING -> Triple(Color(0xFFFBF3DF), Color(0xFFB7791F), Color(0xFFF5E3C0))
-        FlagSeverity.GOOD_TO_KNOW -> Triple(AppTheme.colors.bannerTint, AppTheme.colors.primary, Color(0xFFD6E5D7))
-    }
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        color = containerColor,
-        border = BorderStroke(1.dp, borderColor),
-    ) {
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(26.dp)
-                    .clip(CircleShape)
-                    .background(accentColor),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = when (item.severity) {
-                        FlagSeverity.GOOD_TO_KNOW -> Icons.Default.Check
-                        FlagSeverity.PERSONAL_ALLERGEN -> Icons.Default.Close
-                        else -> Icons.Default.Warning
-                    },
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp),
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = item.title,
-                        fontWeight = FontWeight.Bold,
-                        color = accentColor,
-                        style = AppTheme.typography.bodyMedium.copy(fontSize = 15.sp),
-                        modifier = Modifier.weight(1f, fill = false),
-                    )
-                    if (item.isAiGenerated) {
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFFEDE7F6))
-                                .border(1.dp, Color(0xFFB39DDB), RoundedCornerShape(6.dp))
-                                .padding(horizontal = 6.dp, vertical = 1.dp),
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.ai_tag_chip),
-                                style = AppTheme.typography.bodyExtraSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF5E35B1),
-                                ),
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = item.detail,
-                    style = AppTheme.typography.bodySmall.copy(
-                        color = AppTheme.colors.text.primary,
-                        lineHeight = 18.sp,
-                    ),
-                )
-
-                // Scope 5: Verbatim source line stays visible
-                item.verbatimSourceLine?.let { line ->
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(Res.string.result_source_verbatim_prefix) + line,
-                        style = AppTheme.typography.bodyExtraSmall.copy(
-                            color = AppTheme.colors.text.secondary,
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                        ),
-                    )
-                }
-
-                // Scope 5: "I'm fine with this ingredient" action for non-allergen items
-                if (item.isExceptionEligible && item.severity != FlagSeverity.PERSONAL_ALLERGEN && onExceptionClick != null) {
-                    val exemptTarget = item.relatedIngredient ?: item.title
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(Color.White)
-                            .border(1.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
-                            .clickable { onExceptionClick(exemptTarget) }
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.result_exception_btn),
-                            style = AppTheme.typography.bodyExtraSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = accentColor,
-                            ),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun IngredientRow(
-    ingredient: IngredientBreakdown,
-    group: IngredientDetailGroup = IngredientDetailGroup.REMAINING,
-    onClick: () -> Unit,
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        shadowElevation = 1.dp,
-        border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(14.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top,
-            ) {
-                Text(
-                    text = ingredient.canonicalName,
-                    style = AppTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                    ),
-                    color = AppTheme.colors.text.primary,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = stringResource(Res.string.action_details),
-                    tint = AppTheme.colors.text.secondary,
-                    modifier = Modifier.size(16.dp).padding(top = 2.dp),
-                )
-            }
-
-            val hasGroupChip = group != IngredientDetailGroup.REMAINING
-            val hasAiChip = ingredient.isAiGenerated
-            val showCategoryChip = !hasAiChip && ingredient.category.isNotBlank()
-
-            if (hasGroupChip || hasAiChip || showCategoryChip) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    when (group) {
-                        IngredientDetailGroup.WATCH_OUT -> {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(AppTheme.colors.status.allergenContainer)
-                                    .border(1.dp, Color(0xFFF5C2C7), RoundedCornerShape(8.dp))
-                                    .padding(horizontal = 7.dp, vertical = 2.dp),
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.result_section_watch_out_title),
-                                    style = AppTheme.typography.bodyExtraSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = AppTheme.colors.status.allergenRed,
-                                    ),
-                                )
-                            }
-                        }
-
-                        IngredientDetailGroup.WORTH_NOTING -> {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(AppTheme.colors.status.amberContainer)
-                                    .border(1.dp, Color(0xFFF5E3C0), RoundedCornerShape(8.dp))
-                                    .padding(horizontal = 7.dp, vertical = 2.dp),
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.result_section_worth_noting_title),
-                                    style = AppTheme.typography.bodyExtraSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = AppTheme.colors.status.amber,
-                                    ),
-                                )
-                            }
-                        }
-
-                        IngredientDetailGroup.GOOD_TO_KNOW -> {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(AppTheme.colors.bannerTint)
-                                    .border(1.dp, Color(0xFFD6E5D7), RoundedCornerShape(8.dp))
-                                    .padding(horizontal = 7.dp, vertical = 2.dp),
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.result_section_good_to_know_title),
-                                    style = AppTheme.typography.bodyExtraSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = AppTheme.colors.primary,
-                                    ),
-                                )
-                            }
-                        }
-
-                        IngredientDetailGroup.REMAINING -> { /* No tag chip */ }
-                    }
-
-                    if (hasAiChip) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFEDE7F6))
-                                .border(1.dp, Color(0xFFB39DDB), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.ai_tag_chip),
-                                style = AppTheme.typography.bodyExtraSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF5E35B1),
-                                ),
-                            )
-                        }
-                    } else if (showCategoryChip) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(AppTheme.colors.bannerTint)
-                                .padding(horizontal = 8.dp, vertical = 3.dp),
-                        ) {
-                            Text(
-                                text = ingredient.category,
-                                style = AppTheme.typography.bodyExtraSmall.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = AppTheme.colors.primary,
-                                ),
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (ingredient.isCatchAll && ingredient.catchAllNote != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = ingredient.catchAllNote,
-                    style = AppTheme.typography.bodyExtraSmall.copy(
-                        color = Color(0xFF8A6D3B),
-                        lineHeight = 15.sp,
-                    ),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CutLineDivider(label: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = Color(0xFFE2E4DE),
-            thickness = 1.dp,
-        )
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFF0F2ED))
-                .padding(horizontal = 12.dp, vertical = 4.dp),
-        ) {
             Text(
-                text = label,
+                text = AnalysisStrings.verdictDisclaimer(language),
                 style = AppTheme.typography.bodyExtraSmall.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppTheme.colors.text.secondary,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF7A4D05),
+                    lineHeight = 16.sp,
                 ),
             )
         }
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = Color(0xFFE2E4DE),
-            thickness = 1.dp,
-        )
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * 5 & 6. Row item pattern:
+ * icon in tinted circle + short title (label) + value chip + everyday comparison line (with progress bar for %) + chevron
+ */
 @Composable
-private fun AliasRollUpCard(
-    sweetenerRollUp: ClusterRollUp?,
-    sodiumRollUp: ClusterRollUp?,
-    onNavigateToIngredientDetail: (String) -> Unit,
+private fun PlainResultRow(
+    item: PlainResultRowModel,
+    onClick: () -> Unit,
 ) {
-    if (sweetenerRollUp == null && sodiumRollUp == null) return
+    val (circleBg, iconColor, iconVector) = when {
+        item.isPersonalWarning -> Triple(Color(0xFFFDECEA), Color(0xFFB3261E), Icons.Default.Close)
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        item.severity == FlagSeverity.WORTH_NOTING || item.severity == FlagSeverity.PERSONAL_AVOID ->
+            Triple(Color(0xFFFBF3DF), Color(0xFFB7791F), Icons.Default.Warning)
+
+        else -> Triple(Color(0xFFEDF2ED), AppTheme.colors.primary, Icons.Default.Check)
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .clickable { onClick() }
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+        // Icon in tinted circle
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .clip(CircleShape)
+                .background(circleBg),
+            contentAlignment = Alignment.Center,
         ) {
-            // Sweeteners roll-up
-            sweetenerRollUp?.let { rollUp ->
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(
-                            text = rollUp.title,
-                            style = AppTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFB7791F),
-                            ),
-                        )
-                        Text(
-                            text = stringResource(Res.string.result_rollup_sweeteners_subtitle),
-                            style = AppTheme.typography.bodyExtraSmall.copy(
-                                fontWeight = FontWeight.Normal,
-                                color = AppTheme.colors.text.secondary,
-                            ),
-                        )
-                    }
+            Icon(
+                imageVector = iconVector,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(16.dp),
+            )
+        }
 
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+        Spacer(modifier = Modifier.width(12.dp))
+
+        // Title + comparison line (+ progress bar)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = item.title,
+                style = AppTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
+                    color = AppTheme.colors.text.primary,
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            if (!item.compare.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = item.compare,
+                    style = AppTheme.typography.bodyExtraSmall.copy(
+                        fontWeight = FontWeight.Normal,
+                        color = AppTheme.colors.text.secondary,
+                        fontSize = 12.sp,
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                // Slim progress bar for percentage comparisons (cap 0..100)
+                if (item.percentValue != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    val fraction = (item.percentValue / 100f).coerceIn(0f, 1f)
+                    Box(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(Color(0xFFE2E4DE)),
                     ) {
-                        rollUp.items.forEach { item ->
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(Color(0xFFFDF7E7))
-                                    .border(1.dp, Color(0xFFEEDBB2), RoundedCornerShape(10.dp))
-                                    .clickable { onNavigateToIngredientDetail(item.canonicalName) }
-                                    .padding(horizontal = 10.dp, vertical = 6.dp),
-                            ) {
-                                Text(
-                                    text = item.canonicalName,
-                                    style = AppTheme.typography.bodySmall.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF7A4D05),
-                                    ),
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (sweetenerRollUp != null && sodiumRollUp != null) {
-                HorizontalDivider(color = Color(0xFFF0F0EE), thickness = 1.dp)
-            }
-
-            // Sodium roll-up
-            sodiumRollUp?.let { rollUp ->
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(
-                            text = rollUp.title,
-                            style = AppTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = AppTheme.colors.primary,
-                            ),
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(fraction)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(iconColor),
                         )
-                        Text(
-                            text = stringResource(Res.string.result_rollup_sodium_subtitle),
-                            style = AppTheme.typography.bodyExtraSmall.copy(
-                                fontWeight = FontWeight.Normal,
-                                color = AppTheme.colors.text.secondary,
-                            ),
-                        )
-                    }
-
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        rollUp.items.forEach { item ->
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(Color(0xFFEDF2ED))
-                                    .border(1.dp, Color(0xFFCCE0D3), RoundedCornerShape(10.dp))
-                                    .clickable { onNavigateToIngredientDetail(item.canonicalName) }
-                                    .padding(horizontal = 10.dp, vertical = 6.dp),
-                            ) {
-                                Text(
-                                    text = item.canonicalName,
-                                    style = AppTheme.typography.bodySmall.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF0F5A37),
-                                    ),
-                                )
-                            }
-                        }
                     }
                 }
             }
         }
+
+        // Value chip (e.g. "0 g", "36 mg", "3,1 g")
+        if (!item.value.isNullOrBlank()) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFF2F4EF))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = item.value,
+                    style = AppTheme.typography.bodyExtraSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.text.primary,
+                        fontSize = 12.sp,
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Chevron
+        Icon(
+            imageVector = Icons.Default.ArrowForward,
+            contentDescription = null,
+            tint = AppTheme.colors.text.secondary.copy(alpha = 0.6f),
+            modifier = Modifier.size(16.dp),
+        )
     }
+}
+
+/**
+ * Builds rows for Section 5: "Điểm tốt" / "Good to know"
+ */
+private fun buildGoodToKnowRows(result: LabelAnalysisResult, language: AppLanguage): List<PlainResultRowModel> {
+    val rows = mutableListOf<PlainResultRowModel>()
+    val seenKeys = mutableSetOf<String>()
+
+    // 1. From goodToKnow
+    for (item in result.goodToKnow) {
+        val key = item.title.lowercase().trim()
+        if (key.isNotBlank() && seenKeys.add(key)) {
+            val compareVal = item.compare?.ifBlank { null }
+                ?: LocalComparisonHelper.computeComparison(item.title, item.value, language).first
+            val pct = LocalComparisonHelper.parsePercentage(compareVal)
+
+            rows.add(
+                PlainResultRowModel(
+                    title = item.title,
+                    value = item.value?.ifBlank { null },
+                    compare = compareVal,
+                    percentValue = pct,
+                    detail = item.detail,
+                    ingredientTarget = item.relatedIngredient?.ifBlank { item.title } ?: item.title,
+                    severity = FlagSeverity.GOOD_TO_KNOW,
+                    isPersonalWarning = false,
+                ),
+            )
+        }
+    }
+
+    // 2. From nutritionHighlights when local analysis didn't provide AI goodToKnow
+    if (result.goodToKnow.isEmpty()) {
+        for (fact in result.nutritionHighlights) {
+            val norm = fact.name.lowercase().trim()
+            val isPositive = norm.contains("dam") || norm.contains("protein") ||
+                norm.contains("canxi") || norm.contains("calcium") ||
+                norm.contains("fiber") || norm.contains("xo") ||
+                ((norm.contains("sugar") || norm.contains("duong")) && fact.amount.startsWith("0"))
+            if (isPositive) {
+                val displayName = AnalysisStrings.nutritionName(language, fact.name)
+                val key = displayName.lowercase().trim()
+                if (seenKeys.add(key)) {
+                    val (comp, pct) = LocalComparisonHelper.computeComparison(displayName, fact.amount, language)
+                    rows.add(
+                        PlainResultRowModel(
+                            title = displayName,
+                            value = fact.amount,
+                            compare = comp ?: fact.secondaryDetail,
+                            percentValue = pct ?: LocalComparisonHelper.parsePercentage(fact.secondaryDetail),
+                            detail = fact.name,
+                            ingredientTarget = fact.name,
+                            severity = FlagSeverity.GOOD_TO_KNOW,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    return rows
+}
+
+/**
+ * Builds rows for Section 6: "Cần để ý" / "Worth noting"
+ */
+private fun buildWorthNotingRows(result: LabelAnalysisResult, language: AppLanguage): List<PlainResultRowModel> {
+    val rows = mutableListOf<PlainResultRowModel>()
+    val seenKeys = mutableSetOf<String>()
+
+    // 1. Personal warnings from watchOutForYou (styled RED)
+    for (item in result.watchOutForYou) {
+        val key = item.title.lowercase().trim()
+        if (key.isNotBlank() && seenKeys.add(key)) {
+            val compareVal = item.compare?.ifBlank { null }
+                ?: LocalComparisonHelper.computeComparison(item.title, item.value, language).first
+            val pct = LocalComparisonHelper.parsePercentage(compareVal)
+
+            rows.add(
+                PlainResultRowModel(
+                    title = item.title,
+                    value = item.value?.ifBlank { null },
+                    compare = compareVal,
+                    percentValue = pct,
+                    detail = item.detail,
+                    ingredientTarget = item.relatedIngredient?.ifBlank { item.title } ?: item.title,
+                    severity = item.severity,
+                    isPersonalWarning = true,
+                ),
+            )
+        }
+    }
+
+    // 2. Notable items from worthNoting (styled AMBER)
+    for (item in result.worthNoting) {
+        val key = item.title.lowercase().trim()
+        if (key.isNotBlank() && seenKeys.add(key)) {
+            val compareVal = item.compare?.ifBlank { null }
+                ?: LocalComparisonHelper.computeComparison(item.title, item.value, language).first
+            val pct = LocalComparisonHelper.parsePercentage(compareVal)
+
+            rows.add(
+                PlainResultRowModel(
+                    title = item.title,
+                    value = item.value?.ifBlank { null },
+                    compare = compareVal,
+                    percentValue = pct,
+                    detail = item.detail,
+                    ingredientTarget = item.relatedIngredient?.ifBlank { item.title } ?: item.title,
+                    severity = FlagSeverity.WORTH_NOTING,
+                    isPersonalWarning = false,
+                ),
+            )
+        }
+    }
+
+    // 3. From nutritionHighlights when local analysis didn't provide AI worthNoting
+    if (result.worthNoting.isEmpty()) {
+        for (fact in result.nutritionHighlights) {
+            val norm = fact.name.lowercase().trim()
+            val isNotable = ((norm.contains("sugar") || norm.contains("duong")) && !fact.amount.startsWith("0")) ||
+                norm.contains("sodium") || norm.contains("natri") ||
+                norm.contains("fat") || norm.contains("chat beo")
+            if (isNotable) {
+                val displayName = AnalysisStrings.nutritionName(language, fact.name)
+                val key = displayName.lowercase().trim()
+                if (seenKeys.add(key)) {
+                    val (comp, pct) = LocalComparisonHelper.computeComparison(displayName, fact.amount, language)
+                    rows.add(
+                        PlainResultRowModel(
+                            title = displayName,
+                            value = fact.amount,
+                            compare = comp ?: fact.secondaryDetail,
+                            percentValue = pct ?: LocalComparisonHelper.parsePercentage(fact.secondaryDetail),
+                            detail = fact.name,
+                            ingredientTarget = fact.name,
+                            severity = FlagSeverity.WORTH_NOTING,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    return rows
 }
