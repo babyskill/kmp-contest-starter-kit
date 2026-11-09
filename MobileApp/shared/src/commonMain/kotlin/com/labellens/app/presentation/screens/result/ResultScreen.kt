@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -55,6 +56,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -89,6 +92,7 @@ import com.labellens.app.generated.resources.result_btn_compare
 import com.labellens.app.generated.resources.result_btn_needs_fix
 import com.labellens.app.generated.resources.result_btn_save_history
 import com.labellens.app.generated.resources.result_btn_saved_history
+import com.labellens.app.generated.resources.result_btn_saved_history_desc
 import com.labellens.app.generated.resources.result_catch_all_badge
 import com.labellens.app.generated.resources.result_catch_all_note
 import com.labellens.app.generated.resources.result_cut_line_divider
@@ -494,17 +498,20 @@ fun ResultScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = stringResource(Res.string.result_see_label_text),
                             style = AppTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                             color = AppTheme.colors.text.primary,
+                            modifier = Modifier.weight(1f),
                         )
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = stringResource(if (state.isLabelTextExpanded) Res.string.result_action_collapse else Res.string.result_action_expand),
                             style = AppTheme.typography.bodySmall.copy(color = AppTheme.colors.primary, fontWeight = FontWeight.SemiBold),
+                            maxLines = 1,
+                            softWrap = false,
                         )
                     }
                     if (state.isLabelTextExpanded) {
@@ -568,10 +575,15 @@ fun ResultScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (state.isSaved) {
+                    val savedDesc = stringResource(Res.string.result_btn_saved_history_desc)
                     Row(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
+                            .defaultMinSize(minHeight = 48.dp)
+                            .semantics(mergeDescendants = true) {
+                                contentDescription = savedDesc
+                            }
                             .padding(horizontal = 8.dp),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
@@ -587,6 +599,9 @@ fun ResultScreen(
                             text = stringResource(Res.string.result_btn_saved_history),
                             style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                             color = AppTheme.colors.primary,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 } else {

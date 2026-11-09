@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
@@ -48,6 +49,7 @@ import com.labellens.app.designsystem.theme.AppTheme
 import com.labellens.app.domain.model.BuiltInSamples
 import com.labellens.app.domain.model.SampleProduct
 import com.labellens.app.generated.resources.Res
+import com.labellens.app.generated.resources.btn_back
 import com.labellens.app.generated.resources.scan_analyzing_subtitle
 import com.labellens.app.generated.resources.scan_analyzing_title
 import com.labellens.app.generated.resources.scan_barcode_lookup_btn
@@ -159,20 +161,35 @@ fun ScanScreen(
         }
 
         item {
-            Text(
-                text = stringResource(Res.string.scan_header_title),
-                style = AppTheme.typography.headlineLarge.copy(
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.text.primary,
-                ),
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(Res.string.scan_header_subtitle),
-                style = AppTheme.typography.bodyMedium,
-                color = AppTheme.colors.text.secondary,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = stringResource(Res.string.btn_back),
+                        tint = AppTheme.colors.text.primary,
+                    )
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(Res.string.scan_header_title),
+                        style = AppTheme.typography.headlineLarge.copy(
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.colors.text.primary,
+                        ),
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = stringResource(Res.string.scan_header_subtitle),
+                        style = AppTheme.typography.bodyMedium,
+                        color = AppTheme.colors.text.secondary,
+                    )
+                }
+            }
         }
 
         // Camera / Gallery Photo Scan Card

@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.labellens.app.designsystem.components.AppButton
@@ -562,13 +563,15 @@ fun ProfileScreen(
                             style = AppTheme.typography.bodySmall,
                             color = AppTheme.colors.text.secondary,
                             maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "->",
+                        text = "→",
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.primary,
-                        style = AppTheme.typography.bodySmall,
+                        style = AppTheme.typography.titleMedium,
                     )
                 }
             }

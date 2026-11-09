@@ -220,7 +220,8 @@
     <string name="result_btn_accurate">Accurate</string>
     <string name="result_btn_needs_fix">Needs Fix</string>
     <string name="result_btn_save_history">Save to History</string>
-    <string name="result_btn_saved_history">Saved to History</string>
+    <string name="result_btn_saved_history">Saved</string>
+    <string name="result_btn_saved_history_desc">Saved to History</string>
     <string name="result_btn_compare">Compare</string>
     <!-- Wave 1: Alias Roll-up, Portion Math, 2% Cut-Line, Badges & Halos -->
     <string name="result_rollup_sweeteners_title">Sweeteners (%1$d found)</string>
@@ -300,9 +301,9 @@ Education only - this is not medical advice.</string>
     <string name="profile_btn_settings">Settings &amp; Disclaimers</string>
 
     <!-- Home Screen -->
-    <string name="home_greeting_morning">Good morning ☀️</string>
-    <string name="home_greeting_afternoon">Good afternoon ✌</string>
-    <string name="home_greeting_evening">Good evening 🌙</string>
+    <string name="home_greeting_morning">Good morning&#160;☀️</string>
+    <string name="home_greeting_afternoon">Good afternoon&#160;✌</string>
+    <string name="home_greeting_evening">Good evening&#160;🌙</string>
     <string name="home_greeting_subtitle">Scan labels, understand ingredients, pick what fits you.</string>
     <string name="home_scan_card_title">Scan New Label</string>
     <string name="home_scan_card_subtitle">Snap or scan product labels to analyze ingredients</string>
@@ -319,7 +320,7 @@ Education only - this is not medical advice.</string>
     <string name="home_tip_body">Imported Asian packaging often groups allergens under \'알레르기\' or \'アレルギー\' at the very bottom.</string>
     <string name="home_recent_scans_title">Recent Scans</string>
     <string name="home_recent_scans_empty">No scans yet. Try a sample or scan a label above!</string>
-    <string name="home_sample_tap_to_test">Tap to test -&gt;</string>
+    <string name="home_sample_tap_to_test">Tap to test →</string>
     <string name="content_desc_scan">Scan</string>
     <string name="content_desc_tip">Tip</string>
 
@@ -344,7 +345,7 @@ Education only - this is not medical advice.</string>
     <string name="scan_paste_placeholder">Paste ingredients and nutrition facts here...</string>
     <string name="scan_paste_analyze_btn">Analyze Pasted Text</string>
     <string name="scan_samples_section_title">Built-in Test Samples</string>
-    <string name="scan_sample_run_btn">Run -&gt;</string>
+    <string name="scan_sample_run_btn">Run →</string>
 
     <!-- History Screen -->
     <string name="history_title">Scan History</string>
@@ -408,7 +409,7 @@ Education only - this is not medical advice.</string>
     <string name="profile_custom_allergens_subtitle">Add free-text ingredients you are sensitive to (exact phrase boundary matching).</string>
     <string name="profile_custom_allergens_add_btn">Add</string>
     <string name="profile_custom_allergens_placeholder">e.g. corn, gelatin, red dye</string>
-    <string name="profile_attention_flags_title">Attention Flags (v1)</string>
+    <string name="profile_attention_flags_title">Attention Flags</string>
     <string name="profile_attention_flags_subtitle">Select key nutritional and additive flags to be notified in scan headers.</string>
     <string name="profile_exceptions_title">Personal Exceptions</string>
     <string name="profile_exceptions_subtitle">Ingredients you marked as acceptable. Suppressed from attention flags but never from direct allergen alerts.</string>

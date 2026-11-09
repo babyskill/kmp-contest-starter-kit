@@ -220,7 +220,8 @@
     <string name="result_btn_accurate">Chính xác</string>
     <string name="result_btn_needs_fix">Cần sửa</string>
     <string name="result_btn_save_history">Lưu vào lịch sử</string>
-    <string name="result_btn_saved_history">Đã lưu vào lịch sử</string>
+    <string name="result_btn_saved_history">Đã lưu</string>
+    <string name="result_btn_saved_history_desc">Đã lưu vào lịch sử</string>
     <string name="result_btn_compare">So sánh</string>
     <!-- Wave 1: Alias Roll-up, Portion Math, 2% Cut-Line, Badges & Halos -->
     <string name="result_rollup_sweeteners_title">Chất tạo ngọt (phát hiện %1$d loại)</string>
@@ -300,9 +301,9 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="profile_btn_settings">Cài đặt &amp; Miễn trừ trách nhiệm</string>
 
     <!-- Home Screen -->
-    <string name="home_greeting_morning">Chào buổi sáng ☀️</string>
-    <string name="home_greeting_afternoon">Chào buổi chiều ✌</string>
-    <string name="home_greeting_evening">Chào buổi tối 🌙</string>
+    <string name="home_greeting_morning">Chào buổi sáng&#160;☀️</string>
+    <string name="home_greeting_afternoon">Chào buổi chiều&#160;✌</string>
+    <string name="home_greeting_evening">Chào buổi tối&#160;🌙</string>
     <string name="home_greeting_subtitle">Quét nhãn, hiểu thành phần, chọn đồ phù hợp với bạn.</string>
     <string name="home_scan_card_title">Quét nhãn mới</string>
     <string name="home_scan_card_subtitle">Chụp hoặc quét nhãn sản phẩm để phân tích thành phần</string>
@@ -319,7 +320,7 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="home_tip_body">Bao bì châu Á nhập khẩu thường nhóm các chất gây dị ứng dưới mục \'알레르기\' hoặc \'アレルギー\' ở phía dưới cùng.</string>
     <string name="home_recent_scans_title">Lần quét gần đây</string>
     <string name="home_recent_scans_empty">Chưa có lần quét nào. Hãy thử mẫu có sẵn hoặc quét nhãn ở trên!</string>
-    <string name="home_sample_tap_to_test">Chạm để thử -&gt;</string>
+    <string name="home_sample_tap_to_test">Chạm để thử →</string>
     <string name="content_desc_scan">Quét</string>
     <string name="content_desc_tip">Mẹo</string>
 
@@ -344,7 +345,7 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="scan_paste_placeholder">Dán thành phần và thông tin dinh dưỡng tại đây...</string>
     <string name="scan_paste_analyze_btn">Phân tích văn bản</string>
     <string name="scan_samples_section_title">Mẫu thử nghiệm có sẵn</string>
-    <string name="scan_sample_run_btn">Chạy thử -&gt;</string>
+    <string name="scan_sample_run_btn">Chạy thử →</string>
 
     <!-- History Screen -->
     <string name="history_title">Lịch sử quét</string>
@@ -408,7 +409,7 @@ Chỉ mang tính chất giáo dục - đây không phải lời khuyên y tế.<
     <string name="profile_custom_allergens_subtitle">Thêm thành phần tự do bạn nhạy cảm (đối sánh chính xác theo ranh giới từ).</string>
     <string name="profile_custom_allergens_add_btn">Thêm</string>
     <string name="profile_custom_allergens_placeholder">ví dụ: bắp/ngô, gelatin, phẩm đỏ</string>
-    <string name="profile_attention_flags_title">Cờ chú ý dinh dưỡng (v1)</string>
+    <string name="profile_attention_flags_title">Cờ chú ý dinh dưỡng</string>
     <string name="profile_attention_flags_subtitle">Chọn các cờ dinh dưỡng và phụ gia cần nhận thông báo trên tiêu đề kết quả.</string>
     <string name="profile_exceptions_title">Ngoại lệ cá nhân</string>
     <string name="profile_exceptions_subtitle">Các thành phần bạn đánh dấu chấp nhận được. Ẩn khỏi cờ chú ý nhưng không bao giờ ẩn cảnh báo dị ứng trực tiếp.</string>

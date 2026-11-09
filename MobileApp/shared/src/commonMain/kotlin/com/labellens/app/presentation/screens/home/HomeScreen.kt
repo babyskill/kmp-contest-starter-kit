@@ -203,13 +203,20 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
+                    val rawGreeting = stringResource(greetingRes)
+                    val greetingText = rawGreeting
+                        .replace(" ☀️", "\u00A0☀️")
+                        .replace(" ✌", "\u00A0✌")
+                        .replace(" 🌙", "\u00A0🌙")
                     Text(
-                        text = stringResource(greetingRes),
+                        text = greetingText,
                         style = AppTheme.typography.headlineMedium.copy(
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.text.primary,
                         ),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,14 +21,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,6 +59,10 @@ import com.labellens.app.generated.resources.history_product_plural
 import com.labellens.app.generated.resources.history_product_single
 import com.labellens.app.generated.resources.history_subtitle_pattern
 import com.labellens.app.generated.resources.history_title
+import com.labellens.app.generated.resources.result_delete_dialog_cancel
+import com.labellens.app.generated.resources.result_delete_dialog_confirm
+import com.labellens.app.generated.resources.result_delete_dialog_message
+import com.labellens.app.generated.resources.result_delete_dialog_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -63,6 +73,7 @@ fun HistoryScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val scans = if (state.filterFavoritesOnly) state.favoriteScans else state.allScans
+    var itemPendingDelete by remember { mutableStateOf<String?>(null) }
 
     LazyColumn(
         modifier = modifier
@@ -75,10 +86,9 @@ fun HistoryScreen(
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(Res.string.history_title),
                         style = AppTheme.typography.headlineLarge.copy(
@@ -95,13 +105,22 @@ fun HistoryScreen(
                         color = AppTheme.colors.text.secondary,
                     )
                 }
-
-                AppButton(
-                    text = if (state.filterFavoritesOnly) stringResource(Res.string.history_filter_all) else stringResource(Res.string.history_filter_favorites),
-                    size = com.labellens.app.designsystem.components.ButtonSize.EXTRA_SMALL,
-                    style = ButtonStyle.ALTERNATIVE,
-                    onClick = { viewModel.toggleFavoritesFilter() },
-                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = AppTheme.colors.alternative,
+                    modifier = Modifier.clickable { viewModel.toggleFavoritesFilter() },
+                ) {
+                    Text(
+                        text = if (state.filterFavoritesOnly) stringResource(Res.string.history_filter_all) else stringResource(Res.string.history_filter_favorites),
+                        style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                        color = AppTheme.colors.onAlternative,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
 
@@ -169,7 +188,7 @@ fun HistoryScreen(
                             }
                         }
 
-                        IconButton(onClick = { viewModel.deleteItem(scan.id ?: scan.barcode ?: scan.productName) }) {
+                        IconButton(onClick = { itemPendingDelete = scan.id ?: scan.barcode ?: scan.productName }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = stringResource(Res.string.content_desc_delete),
@@ -181,5 +200,44 @@ fun HistoryScreen(
                 }
             }
         }
+    }
+
+    itemPendingDelete?.let { itemId ->
+        AlertDialog(
+            onDismissRequest = { itemPendingDelete = null },
+            title = {
+                Text(
+                    text = stringResource(Res.string.result_delete_dialog_title),
+                    style = AppTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = AppTheme.colors.text.primary,
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(Res.string.result_delete_dialog_message),
+                    style = AppTheme.typography.bodyMedium,
+                    color = AppTheme.colors.text.secondary,
+                )
+            },
+            confirmButton = {
+                AppButton(
+                    text = stringResource(Res.string.result_delete_dialog_confirm),
+                    size = com.labellens.app.designsystem.components.ButtonSize.SMALL,
+                    style = ButtonStyle.PRIMARY,
+                    onClick = {
+                        viewModel.deleteItem(itemId)
+                        itemPendingDelete = null
+                    },
+                )
+            },
+            dismissButton = {
+                AppButton(
+                    text = stringResource(Res.string.result_delete_dialog_cancel),
+                    size = com.labellens.app.designsystem.components.ButtonSize.SMALL,
+                    style = ButtonStyle.ALTERNATIVE,
+                    onClick = { itemPendingDelete = null },
+                )
+            },
+        )
     }
 }
