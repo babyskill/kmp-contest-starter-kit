@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -419,7 +421,7 @@ fun ResultScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Column {
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = fact.name,
                                         style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
@@ -433,6 +435,7 @@ fun ResultScreen(
                                         )
                                     }
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = fact.amount,
@@ -451,6 +454,8 @@ fun ResultScreen(
                                                 text = ctx,
                                                 style = AppTheme.typography.bodyExtraSmall.copy(fontWeight = FontWeight.Medium),
                                                 color = AppTheme.colors.primary,
+                                                maxLines = 1,
+                                                softWrap = false,
                                             )
                                         }
                                     }
@@ -463,18 +468,20 @@ fun ResultScreen(
         }
 
         // Unified Ingredient Detail list
-        item {
-            SectionHeader(
-                title = stringResource(Res.string.result_section_breakdown_title),
-                subtitle = stringResource(Res.string.result_section_breakdown_subtitle),
-            )
-        }
-        items(groupedIngredients) { grouped ->
-            IngredientRow(
-                ingredient = grouped.ingredient,
-                group = grouped.group,
-                onClick = { onNavigateToIngredientDetail(grouped.ingredient.canonicalName) },
-            )
+        if (groupedIngredients.isNotEmpty()) {
+            item {
+                SectionHeader(
+                    title = stringResource(Res.string.result_section_breakdown_title),
+                    subtitle = stringResource(Res.string.result_section_breakdown_subtitle),
+                )
+            }
+            items(groupedIngredients) { grouped ->
+                IngredientRow(
+                    ingredient = grouped.ingredient,
+                    group = grouped.group,
+                    onClick = { onNavigateToIngredientDetail(grouped.ingredient.canonicalName) },
+                )
+            }
         }
 
         // Section 5: See the label text expandable
@@ -556,15 +563,39 @@ fun ResultScreen(
         // Actions: Save to History & Compare
         item {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                AppButton(
-                    text = stringResource(if (state.isSaved) Res.string.result_btn_saved_history else Res.string.result_btn_save_history),
-                    enabled = !state.isSaved,
-                    modifier = Modifier.weight(1f),
-                    onClick = { viewModel.saveToHistory() },
-                )
+                if (state.isSaved) {
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = AppTheme.colors.primary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(Res.string.result_btn_saved_history),
+                            style = AppTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = AppTheme.colors.primary,
+                        )
+                    }
+                } else {
+                    AppButton(
+                        text = stringResource(Res.string.result_btn_save_history),
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.saveToHistory() },
+                    )
+                }
                 AppButton(
                     text = stringResource(Res.string.result_btn_compare),
                     style = ButtonStyle.ALTERNATIVE,
@@ -572,6 +603,9 @@ fun ResultScreen(
                     onClick = { onNavigateToCompare(result) },
                 )
             }
+        }
+        item {
+            Spacer(modifier = Modifier.height(36.dp))
         }
     }
 
@@ -663,11 +697,11 @@ private fun ProfileFitHeaderCard(
 ) {
     val state = fitHeader.state
     val (containerColor, borderColor, accentColor) = when (state) {
-        ProfileFitState.CONTAINS_YOURS -> Triple(Color(0xFFFDECEA), Color(0xFFF5C2C7), Color(0xFFB3261E))
-        ProfileFitState.CANNOT_RULE_OUT -> Triple(Color(0xFFFBF3DF), Color(0xFFF1D38A), Color(0xFFB7791F))
+        ProfileFitState.CONTAINS_YOURS -> Triple(AppTheme.colors.status.allergenContainer, Color(0xFFF5C2C7), AppTheme.colors.status.allergenRed)
+        ProfileFitState.CANNOT_RULE_OUT -> Triple(AppTheme.colors.status.amberContainer, Color(0xFFF1D38A), AppTheme.colors.status.amber)
         ProfileFitState.NOT_ENOUGH_INFO -> Triple(Color(0xFFECEFF1), Color(0xFFCFD8DC), Color(0xFF546E7A))
         ProfileFitState.DEPENDS_ON_PORTION -> Triple(Color(0xFFFFF3E0), Color(0xFFFFCC80), Color(0xFFE65100))
-        ProfileFitState.WORTH_NOTING -> Triple(Color(0xFFFBF3DF), Color(0xFFF1D38A), Color(0xFFB7791F))
+        ProfileFitState.WORTH_NOTING -> Triple(AppTheme.colors.status.amberContainer, Color(0xFFF1D38A), AppTheme.colors.status.amber)
         ProfileFitState.NO_MATCHES -> Triple(AppTheme.colors.bannerTint, Color(0xFFC3DBC8), AppTheme.colors.primary)
     }
 
@@ -705,94 +739,81 @@ private fun ProfileFitHeaderCard(
         Column(modifier = Modifier.padding(18.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Colour-blind safe badge: distinct shape + icon + label text
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(shapeModifier)
-                            .background(accentColor),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            imageVector = iconVector,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp),
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = badgeLabelText,
-                        style = AppTheme.typography.bodySmall.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 0.8.sp,
-                            color = if (state == ProfileFitState.NO_MATCHES) AppTheme.colors.bannerHeadline else accentColor,
-                        ),
-                    )
-                }
-
-                // Correction loop trigger: Misread label? Fix (styled as white pill button)
-                Surface(
+                Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { onFixMisreadClick() },
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.White,
-                    shadowElevation = 1.dp,
+                        .size(28.dp)
+                        .clip(shapeModifier)
+                        .background(accentColor),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = stringResource(Res.string.result_fix_misread_btn),
-                        style = AppTheme.typography.bodyExtraSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.primary,
-                        ),
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    Icon(
+                        imageVector = iconVector,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp),
                     )
                 }
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = badgeLabelText,
+                    style = AppTheme.typography.bodySmall.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 0.8.sp,
+                        color = if (state == ProfileFitState.NO_MATCHES) AppTheme.colors.bannerHeadline else accentColor,
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
 
             Spacer(modifier = Modifier.height(14.dp))
 
             Text(
                 text = fitHeader.title,
-                style = AppTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 21.sp,
+                style = AppTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
                     color = if (state == ProfileFitState.NO_MATCHES) AppTheme.colors.bannerHeadline else accentColor,
                 ),
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = fitHeader.subtitle,
-                style = AppTheme.typography.bodyMedium.copy(
-                    color = AppTheme.colors.text.primary,
-                    lineHeight = 21.sp,
-                ),
-            )
+            val showSubtitle = fitHeader.subtitle.isNotBlank() &&
+                !fitHeader.subtitle.trim().equals(fitHeader.title.trim(), ignoreCase = true)
+            if (showSubtitle) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = fitHeader.subtitle,
+                    style = AppTheme.typography.bodyMedium.copy(
+                        color = AppTheme.colors.text.primary,
+                        lineHeight = 21.sp,
+                    ),
+                )
+            }
 
             fitHeader.reasonNote?.let { reason ->
-                Spacer(modifier = Modifier.height(10.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White.copy(alpha = 0.85f))
-                        .padding(12.dp),
+                if (!reason.trim().equals(fitHeader.title.trim(), ignoreCase = true) &&
+                    (!showSubtitle || !reason.trim().equals(fitHeader.subtitle.trim(), ignoreCase = true))
                 ) {
-                    Text(
-                        text = reason,
-                        style = AppTheme.typography.bodySmall.copy(
-                            color = AppTheme.colors.text.secondary,
-                            fontWeight = FontWeight.Medium,
-                            lineHeight = 18.sp,
-                        ),
-                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White.copy(alpha = 0.85f))
+                            .padding(12.dp),
+                    ) {
+                        Text(
+                            text = reason,
+                            style = AppTheme.typography.bodySmall.copy(
+                                color = AppTheme.colors.text.secondary,
+                                fontWeight = FontWeight.Medium,
+                                lineHeight = 18.sp,
+                            ),
+                        )
+                    }
                 }
             }
 
@@ -804,6 +825,26 @@ private fun ProfileFitHeaderCard(
                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                         color = AppTheme.colors.text.secondary,
                     ),
+                )
+            }
+
+            // Correction loop trigger: Misread label? Fix (styled as compact text button at card bottom)
+            Spacer(modifier = Modifier.height(12.dp))
+            Surface(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onFixMisreadClick() },
+                shape = RoundedCornerShape(16.dp),
+                color = Color.White,
+                shadowElevation = 1.dp,
+            ) {
+                Text(
+                    text = stringResource(Res.string.result_fix_misread_btn),
+                    style = AppTheme.typography.bodyExtraSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.primary,
+                    ),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                 )
             }
         }
@@ -1016,111 +1057,124 @@ private fun IngredientRow(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(16.dp),
         color = Color.White,
         shadowElevation = 1.dp,
         border = BorderStroke(1.dp, Color(0xFFEBE6DC)),
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth().padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top,
+            ) {
+                Text(
+                    text = ingredient.canonicalName,
+                    style = AppTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                    ),
+                    color = AppTheme.colors.text.primary,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = stringResource(Res.string.action_details),
+                    tint = AppTheme.colors.text.secondary,
+                    modifier = Modifier.size(16.dp).padding(top = 2.dp),
+                )
+            }
+
+            val hasGroupChip = group != IngredientDetailGroup.REMAINING
+            val hasAiChip = ingredient.isAiGenerated
+            val showCategoryChip = !hasAiChip && ingredient.category.isNotBlank()
+
+            if (hasGroupChip || hasAiChip || showCategoryChip) {
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = ingredient.canonicalName,
-                        style = AppTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                        ),
-                        color = AppTheme.colors.text.primary,
-                        modifier = Modifier.weight(1f, fill = false),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        if (ingredient.isAiGenerated) {
+                    when (group) {
+                        IngredientDetailGroup.WATCH_OUT -> {
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFFEDE7F6))
-                                    .border(1.dp, Color(0xFFB39DDB), RoundedCornerShape(8.dp))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                                    .background(AppTheme.colors.status.allergenContainer)
+                                    .border(1.dp, Color(0xFFF5C2C7), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 7.dp, vertical = 2.dp),
                             ) {
                                 Text(
-                                    text = stringResource(Res.string.ai_tag_chip),
+                                    text = stringResource(Res.string.result_section_watch_out_title),
                                     style = AppTheme.typography.bodyExtraSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF5E35B1),
+                                        color = AppTheme.colors.status.allergenRed,
                                     ),
                                 )
                             }
                         }
 
-                        when (group) {
-                            IngredientDetailGroup.WATCH_OUT -> {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(Color(0xFFFDECEA))
-                                        .border(1.dp, Color(0xFFF5C2C7), RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 7.dp, vertical = 2.dp),
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.result_section_watch_out_title),
-                                        style = AppTheme.typography.bodyExtraSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFFB3261E),
-                                        ),
-                                    )
-                                }
+                        IngredientDetailGroup.WORTH_NOTING -> {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(AppTheme.colors.status.amberContainer)
+                                    .border(1.dp, Color(0xFFF5E3C0), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 7.dp, vertical = 2.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.result_section_worth_noting_title),
+                                    style = AppTheme.typography.bodyExtraSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = AppTheme.colors.status.amber,
+                                    ),
+                                )
                             }
-
-                            IngredientDetailGroup.WORTH_NOTING -> {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(Color(0xFFFBF3DF))
-                                        .border(1.dp, Color(0xFFF5E3C0), RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 7.dp, vertical = 2.dp),
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.result_section_worth_noting_title),
-                                        style = AppTheme.typography.bodyExtraSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFFB7791F),
-                                        ),
-                                    )
-                                }
-                            }
-
-                            IngredientDetailGroup.GOOD_TO_KNOW -> {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(AppTheme.colors.bannerTint)
-                                        .border(1.dp, Color(0xFFD6E5D7), RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 7.dp, vertical = 2.dp),
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.result_section_good_to_know_title),
-                                        style = AppTheme.typography.bodyExtraSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = AppTheme.colors.primary,
-                                        ),
-                                    )
-                                }
-                            }
-
-                            IngredientDetailGroup.REMAINING -> { /* No tag chip */ }
                         }
 
+                        IngredientDetailGroup.GOOD_TO_KNOW -> {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(AppTheme.colors.bannerTint)
+                                    .border(1.dp, Color(0xFFD6E5D7), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 7.dp, vertical = 2.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.result_section_good_to_know_title),
+                                    style = AppTheme.typography.bodyExtraSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = AppTheme.colors.primary,
+                                    ),
+                                )
+                            }
+                        }
+
+                        IngredientDetailGroup.REMAINING -> { /* No tag chip */ }
+                    }
+
+                    if (hasAiChip) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFEDE7F6))
+                                .border(1.dp, Color(0xFFB39DDB), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.ai_tag_chip),
+                                style = AppTheme.typography.bodyExtraSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF5E35B1),
+                                ),
+                            )
+                        }
+                    } else if (showCategoryChip) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
@@ -1137,24 +1191,18 @@ private fun IngredientRow(
                         }
                     }
                 }
-                if (ingredient.isCatchAll && ingredient.catchAllNote != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = ingredient.catchAllNote,
-                        style = AppTheme.typography.bodyExtraSmall.copy(
-                            color = Color(0xFF8A6D3B),
-                            lineHeight = 15.sp,
-                        ),
-                    )
-                }
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = Icons.Default.ArrowForward,
-                contentDescription = stringResource(Res.string.action_details),
-                tint = AppTheme.colors.text.secondary,
-                modifier = Modifier.size(16.dp),
-            )
+
+            if (ingredient.isCatchAll && ingredient.catchAllNote != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = ingredient.catchAllNote,
+                    style = AppTheme.typography.bodyExtraSmall.copy(
+                        color = Color(0xFF8A6D3B),
+                        lineHeight = 15.sp,
+                    ),
+                )
+            }
         }
     }
 }
